@@ -11,7 +11,6 @@ const KEY_STREAK = "dsa_streak_v2";
 const KEY_LAST_DATE = "dsa_last_date_v2";
 const KEY_SOLVE_HISTORY = "dsa_solve_history_v2";
 
-// Start date of the 20-week program: Monday, July 28, 2026
 export const PROGRAM_START_DATE = new Date("2026-07-28T00:00:00");
 
 interface ProgressContextType {
@@ -31,6 +30,7 @@ interface ProgressContextType {
   statusFilter: 'all' | 'solved' | 'unsolved' | 'review';
   setStatusFilter: (filter: 'all' | 'solved' | 'unsolved' | 'review') => void;
   exportJSON: () => void;
+  exportJSONString: () => string;
   importJSON: (jsonString: string) => boolean;
   resetAll: () => void;
   soundEnabled: boolean;
@@ -68,7 +68,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [statusFilter, setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review'>('all');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
-  // Sync state to localStorage
   useEffect(() => {
     localStorage.setItem(KEY_PROGRESS, JSON.stringify(progress));
   }, [progress]);
@@ -150,7 +149,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       duration: 4000
     });
 
-    // Handle streak calculation with calendar days
     const todayStr = format(new Date(), 'yyyy-MM-dd');
     const lastDateStr = localStorage.getItem(KEY_LAST_DATE);
 
@@ -163,12 +161,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (daysDiff === 1) {
           setStreak((prev) => prev + 1);
         } else if (daysDiff > 1) {
-          // If yesterday was Sunday, allow 2-day gap (Saturday -> Monday)
           const yesterday = addDays(new Date(), -1);
           if (yesterday.getDay() === 0 && daysDiff === 2) {
             setStreak((prev) => prev + 1);
           } else {
-            setStreak(1); // Reset streak to 1
+            setStreak(1);
             toast.error("Streak broken! Starting fresh today.", { id: 'streak-reset' });
           }
         }
@@ -177,7 +174,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  // Compute App Stats
   let totalProblems = 0;
   let solvedCount = 0;
   let completedDaysCount = 0;
@@ -197,13 +193,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   });
 
-  // Calculate current week and day based on program start date
   const now = new Date();
   const daysSinceStart = Math.max(0, differenceInCalendarDays(now, PROGRAM_START_DATE));
   const currentDay = Math.min(140, daysSinceStart + 1);
   const currentWeek = Math.min(20, Math.floor(daysSinceStart / 7) + 1);
 
-  // Missed days calculation: past non-rest days up to currentDay that are uncompleted
   let missedDaysCount = 0;
   PLAN_DATA.forEach((w) => {
     w.days.forEach((d) => {
@@ -214,18 +208,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   });
 
-  // Days left until Jan 15, 2027
   const targetDate = new Date("2027-01-15T00:00:00");
   const diffTime = targetDate.getTime() - now.getTime();
   const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
-  // Probability calculation
   const oddsPercentage = Math.min(
     85,
     Math.round(15 + (solvedCount / (totalProblems || 1)) * 60 + Math.min(streak, 20) * 0.5)
   );
 
-  // Projected completion date
   const solvedRatePerDay = solvedCount > 0 ? solvedCount / Math.max(1, daysSinceStart) : 1.8;
   const remainingProblems = totalProblems - solvedCount;
   const projectedDaysNeeded = Math.ceil(remainingProblems / Math.max(0.5, solvedRatePerDay));
@@ -247,7 +238,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     projectedCompletionDate
   };
 
-  const exportJSON = () => {
+  const exportJSONString = (): string => {
     const data = {
       version: 3,
       progress,
@@ -256,7 +247,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       lastDate: localStorage.getItem(KEY_LAST_DATE),
       exportedAt: new Date().toISOString()
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    return JSON.stringify(data, null, 2);
+  };
+
+  const exportJSON = () => {
+    const jsonStr = exportJSONString();
+    const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -314,6 +310,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         statusFilter,
         setStatusFilter,
         exportJSON,
+        exportJSONString,
         importJSON,
         resetAll,
         soundEnabled,

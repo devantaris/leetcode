@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings } from 'lucide-react';
+import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 interface NavbarProps {
   onOpenRules: () => void;
   onOpenStrategy: () => void;
   onOpenReset: () => void;
+  onOpenBackup: () => void;
   onTriggerImport: () => void;
 }
 
@@ -14,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenRules,
   onOpenStrategy,
   onOpenReset,
+  onOpenBackup,
   onTriggerImport
 }) => {
   const { stats, exportJSON, soundEnabled, toggleSound } = useProgress();
@@ -44,10 +46,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* MOBILE STREAK BADGE */}
-          <div className="md:hidden flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 font-mono text-xs font-bold">
-            <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500" />
-            <span>{stats.streak}d</span>
+          {/* MOBILE CONTROLS */}
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={onOpenBackup}
+              className="px-2.5 py-1 rounded-lg bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-mono font-bold flex items-center gap-1"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>Sync</span>
+            </button>
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 font-mono text-xs font-bold">
+              <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500" />
+              <span>{stats.streak}d</span>
+            </div>
           </div>
         </div>
 
@@ -106,6 +117,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{stats.streak} Days</span>
           </div>
 
+          {/* BACKUP & SYNC BUTTON */}
+          <button
+            onClick={onOpenBackup}
+            className="px-3 py-1.5 rounded-lg bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-xs font-semibold text-green-400 transition flex items-center gap-1.5"
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Backup & Sync</span>
+          </button>
+
           {/* RULES & STRATEGY */}
           <button
             onClick={onOpenRules}
@@ -145,13 +165,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="absolute right-0 mt-2 w-48 bg-[#101018] border border-gray-800 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1 text-xs">
                 <button
                   onClick={() => {
+                    onOpenBackup();
+                    setShowSettingsMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-200 flex items-center gap-2 transition"
+                >
+                  <Database className="w-3.5 h-3.5 text-green-400" />
+                  <span>Backup & Sync Hub</span>
+                </button>
+
+                <button
+                  onClick={() => {
                     exportJSON();
                     setShowSettingsMenu(false);
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-200 flex items-center gap-2 transition"
                 >
-                  <Download className="w-3.5 h-3.5 text-green-400" />
-                  <span>Backup JSON</span>
+                  <Download className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Download JSON</span>
                 </button>
 
                 <button
@@ -161,8 +192,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-200 flex items-center gap-2 transition"
                 >
-                  <Upload className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Restore Backup</span>
+                  <Upload className="w-3.5 h-3.5 text-yellow-400" />
+                  <span>Restore JSON File</span>
                 </button>
 
                 <button

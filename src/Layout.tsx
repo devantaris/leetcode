@@ -8,7 +8,7 @@ import { Toaster } from 'react-hot-toast';
 
 export const Layout: React.FC = () => {
   const { importJSON } = useProgress();
-  const [activeModal, setActiveModal] = useState<'rules' | 'strategy' | 'reset' | null>(null);
+  const [activeModal, setActiveModal] = useState<'rules' | 'strategy' | 'reset' | 'backup' | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,7 +26,6 @@ export const Layout: React.FC = () => {
       if (content) {
         importJSON(content);
       }
-      // Reset input value so same file can be selected again
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.readAsText(file);
@@ -41,6 +40,7 @@ export const Layout: React.FC = () => {
           onOpenRules={() => setActiveModal('rules')}
           onOpenStrategy={() => setActiveModal('strategy')}
           onOpenReset={() => setActiveModal('reset')}
+          onOpenBackup={() => setActiveModal('backup')}
           onTriggerImport={handleTriggerImport}
         />
 
@@ -68,6 +68,7 @@ export const Layout: React.FC = () => {
       <Modals
         activeModal={activeModal}
         onClose={() => setActiveModal(null)}
+        onTriggerImportFile={handleTriggerImport}
       />
 
       {/* COMMAND PALETTE (CTRL+K) */}
