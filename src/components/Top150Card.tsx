@@ -6,7 +6,7 @@ import { Trophy } from 'lucide-react';
 import { AnimatedCounter } from './AnimatedCounter';
 
 export const Top150Card: React.FC = () => {
-  const { progress } = useProgress();
+  const { progress, setStatusFilter } = useProgress();
 
   // Gather all unique Top 150 problems in the plan (by lcNumber, skip reviews)
   const top150ProblemsMap = new Map<number, { id: string; difficulty: string }>();
@@ -68,11 +68,20 @@ export const Top150Card: React.FC = () => {
 
           {/* LEFT: Title + Progress */}
           <div className="flex flex-col gap-3 flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-400" />
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-300">
-                LeetCode Top Interview 150
-              </span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-400" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-300">
+                  LeetCode Top Interview 150
+                </span>
+              </div>
+              <a
+                href="#/curriculum"
+                onClick={() => setStatusFilter('top150')}
+                className="text-[11px] font-mono text-indigo-400 hover:text-indigo-300 underline font-semibold transition"
+              >
+                View Top 150 List →
+              </a>
             </div>
 
             <div className="flex items-baseline gap-2">

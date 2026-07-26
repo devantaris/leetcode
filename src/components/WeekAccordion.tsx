@@ -87,6 +87,7 @@ export const WeekAccordion: React.FC = () => {
                 // Filter problems inside day based on search query & dropdown filters
                 const filteredProblems = d.problems.filter((p: Problem) => {
                   if (selectedDifficulty !== 'All' && p.difficulty !== selectedDifficulty) return false;
+                  if (statusFilter === 'top150' && (!TOP_150_LC_NUMBERS.has(p.lcNumber) || p.isReview)) return false;
                   if (statusFilter === 'solved' && !progress[p.id]) return false;
                   if (statusFilter === 'unsolved' && progress[p.id]) return false;
                   if (statusFilter === 'review' && !p.isReview) return false;

@@ -67,6 +67,7 @@ export const SearchAndFilter: React.FC = () => {
             className="bg-[#181824] border border-gray-800 rounded-xl px-3 py-2 text-xs font-mono text-gray-200 focus:outline-none focus:border-orange-500 cursor-pointer"
           >
             <option value="all">All Statuses</option>
+            <option value="top150">🏆 LeetCode Top 150 Only</option>
             <option value="unsolved">Unsolved Only</option>
             <option value="solved">Solved Only</option>
             <option value="review">Blind Reviews Only</option>

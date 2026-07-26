@@ -11,7 +11,7 @@ const KEY_STREAK = "dsa_streak_v2";
 const KEY_LAST_DATE = "dsa_last_date_v2";
 const KEY_SOLVE_HISTORY = "dsa_solve_history_v2";
 
-export const PROGRAM_START_DATE = new Date("2026-07-28T00:00:00");
+export const PROGRAM_START_DATE = new Date("2026-07-27T00:00:00");
 
 interface ProgressContextType {
   progress: UserProgressMap;
@@ -27,8 +27,8 @@ interface ProgressContextType {
   setSearchQuery: (query: string) => void;
   selectedDifficulty: string;
   setSelectedDifficulty: (diff: string) => void;
-  statusFilter: 'all' | 'solved' | 'unsolved' | 'review';
-  setStatusFilter: (filter: 'all' | 'solved' | 'unsolved' | 'review') => void;
+  statusFilter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150';
+  setStatusFilter: (filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150') => void;
   exportJSON: () => void;
   exportJSONString: () => string;
   importJSON: (jsonString: string) => boolean;
@@ -65,7 +65,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [activeWeek, setActiveWeek] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('All');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review' | 'top150'>('all');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   useEffect(() => {
