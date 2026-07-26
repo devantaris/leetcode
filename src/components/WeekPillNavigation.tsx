@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { PLAN_DATA } from '../data/planData';
+import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { Check } from 'lucide-react';
 
 export const WeekPillNavigation: React.FC = () => {

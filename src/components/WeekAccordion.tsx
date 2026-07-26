@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { PLAN_DATA } from '../data/planData';
+import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { ChevronDown, ExternalLink, CheckCircle2, RefreshCw, Trophy, Coffee, Sparkles } from 'lucide-react';
 import type { Problem } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TOP_150_LC_NUMBERS } from '../data/top150List';
 
 export const WeekAccordion: React.FC = () => {
   const {
@@ -231,6 +232,11 @@ export const WeekAccordion: React.FC = () => {
                                         <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${diffBadgeClass}`}>
                                           {p.difficulty}
                                         </span>
+                                        {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
+                                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+                                            TOP 150
+                                          </span>
+                                        )}
                                       </div>
                                     </div>
 

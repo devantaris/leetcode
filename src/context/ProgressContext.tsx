@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UserProgressMap, SolveRecordMap, AppStats } from '../types';
-import { PLAN_DATA } from '../data/planData';
+import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { sounds } from '../utils/audio';
 import confetti from 'canvas-confetti';
 import toast from 'react-hot-toast';

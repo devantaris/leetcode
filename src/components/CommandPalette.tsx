@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { PLAN_DATA } from '../data/planData';
+import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { Search, X, ExternalLink, Command, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Problem } from '../types';

@@ -1,6 +1,7 @@
 import React from 'react';
 import { TodayMission } from '../components/TodayMission';
 import { BrutalityBanner } from '../components/BrutalityBanner';
+import { Top150Card } from '../components/Top150Card';
 import { StatsAnalyticsDashboard } from '../components/StatsAnalyticsDashboard';
 import { HeatmapGrid } from '../components/HeatmapGrid';
 import { DailyFocusTimer } from '../components/DailyFocusTimer';
@@ -22,6 +23,9 @@ export const DashboardPage: React.FC = () => {
 
       {/* BRUTALITY BANNER */}
       <BrutalityBanner />
+
+      {/* LEETCODE TOP 150 PROGRESS */}
+      <Top150Card />
 
       {/* STATS & METRICS */}
       <StatsAnalyticsDashboard />

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { PLAN_DATA } from '../data/planData';
+import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { Sparkles, ExternalLink, CheckCircle2, Coffee, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { TOP_150_LC_NUMBERS } from '../data/top150List';
 
 export const TodayMission: React.FC = () => {
   const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek } = useProgress();
@@ -111,6 +112,11 @@ export const TodayMission: React.FC = () => {
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${badgeColor}`}>
                       {p.difficulty}
                     </span>
+                    {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+                        TOP 150
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-[11px] text-gray-400 italic line-clamp-2 pl-6">

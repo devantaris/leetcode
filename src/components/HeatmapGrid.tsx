@@ -1,6 +1,6 @@
 import React from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { PLAN_DATA } from '../data/planData';
+import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { useNavigate } from 'react-router-dom';
 
 export const HeatmapGrid: React.FC = () => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { CheckCircle2, Flame, Clock, TrendingUp, Target, Skull } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
-import { PLAN_DATA } from '../data/planData';
+import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { AnimatedCounter } from './AnimatedCounter';
 
 export const StatsAnalyticsDashboard: React.FC = () => {
@@ -83,7 +83,7 @@ export const StatsAnalyticsDashboard: React.FC = () => {
             />
           </div>
           <span className="text-[11px] font-mono text-gray-400 mt-2 block">
-            {solvedPct}% of 247 problems done
+            {solvedPct}% of {stats.totalProblems} problems done
           </span>
         </div>
 
