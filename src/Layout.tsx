@@ -61,7 +61,7 @@ export const Layout: React.FC = () => {
 
       {/* FOOTER */}
       <footer className="w-full text-center py-6 text-xs text-gray-500 font-mono border-t border-gray-800/40 bg-[#08080c]">
-        DSA ULTIMATUM PRO • Devansh Kumar • Bennett University CSE (CGPA 8.75) • Target: Jan 2027 Placements
+        LeetCode 150 & 20-Week DSA Planner • Devansh Kumar • Bennett University CSE • Target: Jan 2027 Placements
       </footer>
 
       {/* MODALS */}

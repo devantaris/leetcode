@@ -28,20 +28,20 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* BRAND & USER PROFILE */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 via-orange-500 to-yellow-500 flex items-center justify-center font-black text-black shadow-lg shadow-red-500/20 text-sm">
-              DSA
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 flex items-center justify-center font-black text-black shadow-lg shadow-orange-500/20 text-xs tracking-wider font-mono">
+              LC
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-                  DSA ULTIMATUM
+                  LeetCode Planner
                 </h1>
-                <span className="text-[10px] font-mono font-bold bg-red-500/20 text-red-400 px-2 py-0.5 rounded border border-red-500/30">
-                  PRO
+                <span className="text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/30">
+                  TOP 150
                 </span>
               </div>
               <p className="text-[11px] text-gray-400 font-medium hidden sm:block">
-                Devansh Kumar • Bennett University CSE • CGPA 8.75
+                Devansh Kumar • Bennett University CSE
               </p>
             </div>
           </div>

@@ -142,7 +142,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
           <div>
             <div className="flex items-center gap-2 text-orange-400 font-extrabold text-lg mb-4">
               <BookOpen className="w-5 h-5" />
-              <span>THE 4 COMMANDMENTS OF THE ULTIMATUM</span>
+              <span>THE 4 CORE RULES OF THE PLANNER</span>
             </div>
 
             <div className="space-y-4 text-xs text-gray-300 leading-relaxed">

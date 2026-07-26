@@ -45,15 +45,15 @@ export const BrutalityBanner: React.FC = () => {
             <div>
               <h3
                 className={`text-xs font-black uppercase tracking-wider flex items-center gap-2 ${
-                  isStreakHigh ? 'text-orange-300' : 'text-red-300'
+                  isStreakHigh ? 'text-orange-300' : 'text-amber-300'
                 }`}
               >
-                {isStreakHigh ? 'MOMENTUM UNLOCKED' : 'BRUTAL REALITY CHECK'}
+                {isStreakHigh ? 'EXCELLENT MOMENTUM' : 'DAILY PRACTICE FOCUS'}
               </h3>
               <p className="text-xs sm:text-sm text-gray-300 font-medium mt-0.5 leading-snug">
                 {isStreakHigh
-                  ? `You're on a ${stats.streak}-day streak! Keep grinding — consistency is what separates top FinTech interns from candidates with empty resumes.`
-                  : 'Your competition started LeetCode in Year 1. You are 2 years behind. Every skipped day = 10 people stealing your target offer.'}
+                  ? `You're on a ${stats.streak}-day streak! Keep up the momentum to master the Top 150 problems before placement season.`
+                  : 'Target: 2 LeetCode Top 150 problems daily. Consistency keeps you on track for Jan 15, 2027 placement readiness!'}
               </p>
             </div>
           </div>

@@ -256,7 +256,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dsa_ultimatum_pro_backup_${format(new Date(), 'yyyy-MM-dd')}.json`;
+    a.download = `leetcode_planner_backup_${format(new Date(), 'yyyy-MM-dd')}.json`;
     a.click();
     toast.success("Progress backup downloaded! 💾");
   };
