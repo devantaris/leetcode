@@ -6,7 +6,7 @@ import { Target, TrendingUp, Calendar } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
 
 export const AnalyticsPage: React.FC = () => {
-  const { stats, progress } = useProgress();
+  const { stats, progress, dailySolveLog } = useProgress();
 
   // Difficulty breakdown data for Pie chart
   let easySolved = 0, easyTotal = 0;
@@ -219,7 +219,7 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* TOPIC DISTRIBUTION BAR CHART */}
-      <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl mb-12">
+      <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">
             All 20 Topics Completion Breakdown
@@ -238,6 +238,91 @@ export const AnalyticsPage: React.FC = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* DATE-WISE ACTIVITY TIMELINE & SOLVE HISTORY */}
+      <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl mb-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-gray-800">
+          <div>
+            <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-orange-400" />
+              DATE-WISE SOLVE LOG & STREAK TIMELINE
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Exact date and timestamp record of every solved problem. Consecutive active days determine your streak!
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-bold px-3 py-1 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/30">
+              🔥 {stats.streak}-Day Active Streak
+            </span>
+            <span className="text-xs font-mono font-bold px-3 py-1 rounded-lg bg-gray-800 text-gray-300 border border-gray-700">
+              {dailySolveLog.length} Active Days
+            </span>
+          </div>
+        </div>
+
+        {dailySolveLog.length === 0 ? (
+          <div className="p-8 text-center rounded-xl bg-gray-900/50 border border-gray-800 text-gray-400 text-xs font-mono">
+            No problem solves logged yet. Mark problems solved on the dashboard to build your date history!
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {dailySolveLog.map((group) => (
+              <div key={group.dateStr} className="rounded-xl border border-gray-800/90 bg-[#141420] p-4 flex flex-col gap-3">
+                
+                {/* DATE HEADER */}
+                <div className="flex items-center justify-between border-b border-gray-800/60 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-500/50"></span>
+                    <h4 className="text-xs font-bold font-mono text-white tracking-wide">
+                      {group.displayDate}
+                    </h4>
+                  </div>
+                  <span className="text-[11px] font-mono text-orange-400 font-bold bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20">
+                    {group.items.length} {group.items.length === 1 ? 'problem' : 'problems'} solved
+                  </span>
+                </div>
+
+                {/* SOLVED PROBLEMS LIST FOR THIS DATE */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {group.items.map((item) => {
+                    let badgeColor = "bg-orange-500/20 text-orange-400 border-orange-500/30";
+                    if (item.difficulty === 'Easy') badgeColor = "bg-green-500/20 text-green-400 border-green-500/30";
+                    if (item.difficulty === 'Hard') badgeColor = "bg-red-500/20 text-red-400 border-red-500/30";
+
+                    return (
+                      <div
+                        key={`${group.dateStr}-${item.problemId}`}
+                        className="p-3 rounded-lg bg-[#181826] border border-gray-800 flex items-center justify-between gap-2 hover:border-gray-700 transition"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-bold text-white hover:text-orange-400 transition truncate"
+                          >
+                            {item.name}
+                          </a>
+                          <span className="text-[10px] font-mono text-gray-500">
+                            {item.topic} • {item.timeFormatted}
+                          </span>
+                        </div>
+
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${badgeColor}`}>
+                          {item.difficulty}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
     </motion.div>

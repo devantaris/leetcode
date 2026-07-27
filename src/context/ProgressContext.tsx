@@ -13,10 +13,28 @@ const KEY_SOLVE_HISTORY = "dsa_solve_history_v2";
 
 export const PROGRAM_START_DATE = new Date("2026-07-27T00:00:00");
 
+export interface DailySolveItem {
+  problemId: string;
+  name: string;
+  lcNumber: number;
+  difficulty: string;
+  url: string;
+  topic: string;
+  timestamp: string;
+  timeFormatted: string;
+}
+
+export interface DailySolveGroup {
+  dateStr: string; // 'yyyy-MM-dd'
+  displayDate: string; // e.g. 'Tue, Jul 28, 2026'
+  items: DailySolveItem[];
+}
+
 interface ProgressContextType {
   progress: UserProgressMap;
   solveHistory: SolveRecordMap;
   streak: number;
+  dailySolveLog: DailySolveGroup[];
   stats: AppStats;
   toggleProblem: (problemId: string) => void;
   markDayComplete: (weekNum: number, dayNum: number) => void;
@@ -39,6 +57,112 @@ interface ProgressContextType {
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
+// Helper function to build problem details lookup
+const problemLookupMap = (() => {
+  const map = new Map<string, { name: string; lcNumber: number; difficulty: string; url: string; topic: string }>();
+  PLAN_DATA.forEach((w) => {
+    w.days.forEach((d) => {
+      d.problems.forEach((p) => {
+        if (!map.has(p.id)) {
+          map.set(p.id, { name: p.name, lcNumber: p.lcNumber, difficulty: p.difficulty, url: p.url, topic: d.topic });
+        }
+      });
+    });
+  });
+  return map;
+})();
+
+// Helper to compute daily solve log and dynamic streak from solveHistory
+function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: DailySolveGroup[]; streak: number } {
+  const groupMap: { [dateStr: string]: DailySolveItem[] } = {};
+
+  Object.entries(solveHistory).forEach(([problemId, isoTimestamp]) => {
+    if (!isoTimestamp) return;
+    try {
+      const dateObj = parseISO(isoTimestamp);
+      const dateStr = format(dateObj, 'yyyy-MM-dd');
+      const info = problemLookupMap.get(problemId);
+
+      const item: DailySolveItem = {
+        problemId,
+        name: info?.name || problemId,
+        lcNumber: info?.lcNumber || 0,
+        difficulty: info?.difficulty || 'Medium',
+        url: info?.url || '#',
+        topic: info?.topic || 'General',
+        timestamp: isoTimestamp,
+        timeFormatted: format(dateObj, 'hh:mm a')
+      };
+
+      if (!groupMap[dateStr]) {
+        groupMap[dateStr] = [];
+      }
+      groupMap[dateStr].push(item);
+    } catch {
+      // ignore invalid date strings
+    }
+  });
+
+  // Sort groups descending by date
+  const sortedDates = Object.keys(groupMap).sort((a, b) => b.localeCompare(a));
+  const dailySolveLog: DailySolveGroup[] = sortedDates.map((dateStr) => {
+    const items = groupMap[dateStr].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    const sampleDate = parseISO(items[0]?.timestamp || dateStr);
+    return {
+      dateStr,
+      displayDate: format(sampleDate, 'EEE, MMM dd, yyyy'),
+      items
+    };
+  });
+
+  // Dynamic Streak Calculation
+  const activeDatesSet = new Set<string>(Object.keys(groupMap));
+  if (activeDatesSet.size === 0) {
+    return { dailySolveLog, streak: 0 };
+  }
+
+  const now = new Date();
+  const todayStr = format(now, 'yyyy-MM-dd');
+  const yesterday = addDays(now, -1);
+  const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+
+  let currentCheckDate = now;
+  if (activeDatesSet.has(todayStr)) {
+    currentCheckDate = now;
+  } else if (activeDatesSet.has(yesterdayStr)) {
+    currentCheckDate = yesterday;
+  } else if (yesterday.getDay() === 0) {
+    // If yesterday was Sunday rest day, check Saturday
+    const sat = addDays(now, -2);
+    const satStr = format(sat, 'yyyy-MM-dd');
+    if (activeDatesSet.has(satStr)) {
+      currentCheckDate = sat;
+    } else {
+      return { dailySolveLog, streak: 0 };
+    }
+  } else {
+    return { dailySolveLog, streak: 0 };
+  }
+
+  let calculatedStreak = 0;
+  let iterDate = currentCheckDate;
+
+  // Count backwards day by day
+  for (let i = 0; i < 365; i++) {
+    const dStr = format(iterDate, 'yyyy-MM-dd');
+    if (activeDatesSet.has(dStr)) {
+      calculatedStreak++;
+    } else if (iterDate.getDay() === 0) {
+      // Sunday rest day: skip without breaking
+    } else {
+      break;
+    }
+    iterDate = addDays(iterDate, -1);
+  }
+
+  return { dailySolveLog, streak: calculatedStreak };
+}
+
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [progress, setProgress] = useState<UserProgressMap>(() => {
     try {
@@ -58,9 +182,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   });
 
-  const [streak, setStreak] = useState<number>(() => {
-    return parseInt(localStorage.getItem(KEY_STREAK) || '0', 10);
-  });
+  const { dailySolveLog, streak } = computeLogAndStreak(solveHistory);
 
   const [activeWeek, setActiveWeek] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -148,30 +270,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     toast.success(`Day ${dayNum} (${day.topic}) Fully Completed! 🚀`, {
       duration: 4000
     });
-
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const lastDateStr = localStorage.getItem(KEY_LAST_DATE);
-
-    if (lastDateStr !== todayStr) {
-      if (!lastDateStr) {
-        setStreak(1);
-      } else {
-        const lastDate = parseISO(lastDateStr);
-        const daysDiff = differenceInCalendarDays(new Date(), lastDate);
-        if (daysDiff === 1) {
-          setStreak((prev) => prev + 1);
-        } else if (daysDiff > 1) {
-          const yesterday = addDays(new Date(), -1);
-          if (yesterday.getDay() === 0 && daysDiff === 2) {
-            setStreak((prev) => prev + 1);
-          } else {
-            setStreak(1);
-            toast.error("Streak broken! Starting fresh today.", { id: 'streak-reset' });
-          }
-        }
-      }
-      localStorage.setItem(KEY_LAST_DATE, todayStr);
-    }
   };
 
   let totalProblems = 0;
@@ -267,7 +365,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (parsed && typeof parsed.progress === 'object') {
         setProgress(parsed.progress);
         if (parsed.solveHistory) setSolveHistory(parsed.solveHistory);
-        if (typeof parsed.streak === 'number') setStreak(parsed.streak);
         if (parsed.lastDate) localStorage.setItem(KEY_LAST_DATE, parsed.lastDate);
         toast.success("Progress restored successfully! 🔄");
         return true;
@@ -287,7 +384,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.removeItem(KEY_LAST_DATE);
     setProgress({});
     setSolveHistory({});
-    setStreak(0);
     toast.error("All progress wiped.", { id: 'reset-toast' });
   };
 
@@ -297,6 +393,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         progress,
         solveHistory,
         streak,
+        dailySolveLog,
         stats,
         toggleProblem,
         markDayComplete,
