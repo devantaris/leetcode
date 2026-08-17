@@ -16,8 +16,10 @@ const KEY_USER_PROFILE = "dsa_user_profile_v1";
 export interface UserProfile {
   name: string;
   tagline: string;
-  startDate: string; // ISO date string 'yyyy-MM-dd'
-  targetDate: string; // ISO date string 'yyyy-MM-dd' — placement/goal deadline
+  startDate: string;
+  targetDate: string;
+  restDay: string;        // 'sunday' | 'saturday' | 'none'
+  secondarySkill: string; // e.g. 'project' | 'research' | 'competitive' etc.
 }
 
 const DEFAULT_PROFILE: UserProfile = {
@@ -25,6 +27,8 @@ const DEFAULT_PROFILE: UserProfile = {
   tagline: 'LeetCode Planner',
   startDate: format(new Date(), 'yyyy-MM-dd'),
   targetDate: '2027-01-15',
+  restDay: 'sunday',
+  secondarySkill: 'project',
 };
 
 // ─── Solve Log Types ───────────────────────────────────────────────────────────

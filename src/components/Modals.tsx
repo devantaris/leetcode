@@ -22,6 +22,8 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
   const [editTagline, setEditTagline] = useState<string>(userProfile.tagline);
   const [editStartDate, setEditStartDate] = useState<string>(userProfile.startDate);
   const [editTargetDate, setEditTargetDate] = useState<string>(userProfile.targetDate || '2027-01-15');
+  const [editRestDay, setEditRestDay] = useState<string>(userProfile.restDay || 'sunday');
+  const [editSecondarySkill, setEditSecondarySkill] = useState<string>(userProfile.secondarySkill || 'project');
 
   // Resume state — shift start date to "resume from where you left off"
   const [resumeDate, setResumeDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
@@ -68,6 +70,8 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
       tagline: editTagline.trim() || 'LeetCode Planner',
       startDate: editStartDate,
       targetDate: editTargetDate || '2027-01-15',
+      restDay: editRestDay,
+      secondarySkill: editSecondarySkill,
     };
     updateProfile(profile);
     onClose();

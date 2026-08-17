@@ -15,8 +15,19 @@ export const WeekAccordion: React.FC = () => {
     activeWeek,
     searchQuery,
     selectedDifficulty,
-    statusFilter
+    statusFilter,
+    userProfile,
   } = useProgress();
+
+  const SKILL_LABELS: Record<string, string> = {
+    project: 'your personal project',
+    research: 'your research paper or thesis',
+    competitive: 'competitive programming',
+    systemdesign: 'system design reading',
+    openSource: 'open source contributions',
+    other: 'rest and recharge',
+  };
+  const restActivity = SKILL_LABELS[userProfile?.secondarySkill] || 'your secondary focus';
 
   const [openDays, setOpenDays] = useState<{ [dayKey: string]: boolean }>({});
 
@@ -195,7 +206,7 @@ export const WeekAccordion: React.FC = () => {
                           {d.type === 'rest' ? (
                             <div className="py-3 text-xs text-gray-400 font-medium italic flex items-center gap-2">
                               <Coffee className="w-4 h-4 text-orange-400" />
-                              Rest day — recharge, review your notes, or work on a personal project. Zero DSA guilt today!
+                              Rest day — time for {restActivity}. Zero DSA guilt today!
                             </div>
                           ) : (
                             <div className="flex flex-col gap-2.5 mt-2">

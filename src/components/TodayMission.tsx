@@ -8,6 +8,16 @@ import { TOP_150_LC_NUMBERS } from '../data/top150List';
 export const TodayMission: React.FC = () => {
   const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile } = useProgress();
 
+  const SKILL_LABELS: Record<string, string> = {
+    project: 'your personal project',
+    research: 'your research paper or thesis',
+    competitive: 'competitive programming',
+    systemdesign: 'system design reading',
+    openSource: 'open source contributions',
+    other: 'rest and recharge',
+  };
+  const restActivity = SKILL_LABELS[userProfile.secondarySkill] || 'your secondary focus';
+
   // Determine greeting based on local time
   const hour = new Date().getHours();
   let greeting = "Good Morning";
@@ -70,8 +80,8 @@ export const TodayMission: React.FC = () => {
           <div className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 flex items-center gap-3">
             <Coffee className="w-5 h-5 text-orange-400 shrink-0" />
             <div>
-              <h4 className="font-bold text-white mb-0.5">Sunday Rest Day</h4>
-              <p className="text-gray-400">Recharge, review your notes, or work on a personal project. Zero DSA guilt today!</p>
+              <h4 className="font-bold text-white mb-0.5">Rest Day</h4>
+              <p className="text-gray-400">Time for {restActivity}. Zero DSA guilt today — recharge and come back stronger!</p>
             </div>
           </div>
         ) : (

@@ -34,7 +34,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 6, weekday: "Sat", topic: "LeetCode Weekly Contest", type: "contest", problems: [
         { id: "p16", name: "LeetCode Live Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Solve 2-3 problems under live timer!" }
       ]},
-      { day: 7, weekday: "Sun", topic: "DIP Research Paper / Project Sprint", type: "rest", problems: [] }
+      { day: 7, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -70,7 +70,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 13, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p32", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Push for Q1 and Q2 speed!" }
       ]},
-      { day: 14, weekday: "Sun", topic: "DIP Research / Rest", type: "rest", problems: [] }
+      { day: 14, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -106,7 +106,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 20, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p48", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Solve Q1+Q2!" }
       ]},
-      { day: 21, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 21, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -142,7 +142,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 27, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p64", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Maintain momentum!" }
       ]},
-      { day: 28, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 28, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -178,7 +178,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 34, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p80", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Tree problems in contest!" }
       ]},
-      { day: 35, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 35, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -214,7 +214,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 41, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p96", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Solve 2+ problems!" }
       ]},
-      { day: 42, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 42, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -250,7 +250,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 48, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p112", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Time pressure test!" }
       ]},
-      { day: 49, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 49, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -286,7 +286,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 55, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p128", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Graph problems test!" }
       ]},
-      { day: 56, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 56, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -322,7 +322,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 62, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p144", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "2 months mark!" }
       ]},
-      { day: 63, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 63, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -358,7 +358,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 69, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p160", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Identify DP problems live!" }
       ]},
-      { day: 70, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 70, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -394,7 +394,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 76, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p176", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "DP confidence test!" }
       ]},
-      { day: 77, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 77, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -430,7 +430,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 83, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p192", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Greedy contest speed!" }
       ]},
-      { day: 84, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 84, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -466,7 +466,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 90, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p208", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "All foundational topics complete!" }
       ]},
-      { day: 91, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 91, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -492,7 +492,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 97, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p209", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Keep coding speed alive!" }
       ]},
-      { day: 98, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 98, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -528,7 +528,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 104, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p225", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Push hard!" }
       ]},
-      { day: 105, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 105, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -564,7 +564,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 111, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p241", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Aim for Q3 solve!" }
       ]},
-      { day: 112, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 112, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -600,7 +600,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 118, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p257", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Timed performance test." }
       ]},
-      { day: 119, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 119, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -636,7 +636,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 125, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p273", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "November Sprint ending!" }
       ]},
-      { day: 126, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 126, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
@@ -672,7 +672,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 132, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p289", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Sprint speed check!" }
       ]},
-      { day: 133, weekday: "Sun", topic: "DIP / Project Rest", type: "rest", problems: [] }
+      { day: 133, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
     ]
   },
   {
