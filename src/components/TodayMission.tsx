@@ -70,8 +70,8 @@ export const TodayMission: React.FC = () => {
           <div className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 flex items-center gap-3">
             <Coffee className="w-5 h-5 text-orange-400 shrink-0" />
             <div>
-              <h4 className="font-bold text-white mb-0.5">Sunday Rest Day & Academic Sprint</h4>
-              <p className="text-gray-400">Reserved for DIP Research Paper (Medical/Agriculture Image Encryption) or SkillSync/Biome project work. Zero DSA guilt today!</p>
+              <h4 className="font-bold text-white mb-0.5">Sunday Rest Day</h4>
+              <p className="text-gray-400">Recharge, review your notes, or work on a personal project. Zero DSA guilt today!</p>
             </div>
           </div>
         ) : (
@@ -105,7 +105,7 @@ export const TodayMission: React.FC = () => {
                         rel="noopener noreferrer"
                         className="text-xs font-bold text-white hover:text-orange-400 transition flex items-center gap-1 group line-clamp-1"
                       >
-                        <span>{p.name}</span>
+                        <span className={`transition-all duration-300 ${isChecked ? 'line-through text-gray-500' : ''}`}>{p.name}</span>
                         <ExternalLink className="w-3 h-3 text-gray-500 group-hover:text-orange-400 shrink-0" />
                       </a>
                     </div>
@@ -131,13 +131,19 @@ export const TodayMission: React.FC = () => {
         {/* MARK DAY COMPLETE BUTTON */}
         {todayDayPlan.type !== 'rest' && (
           <div className="flex justify-end mt-4">
-            <button
-              onClick={() => markDayComplete(currentWeekPlan.week, todayDayPlan.day)}
-              className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-green-500 hover:text-black border border-gray-700 text-xs font-bold text-gray-200 transition flex items-center gap-1.5 shadow-md"
-            >
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              Mark Today Complete
-            </button>
+            {isComplete ? (
+              <span className="px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/30 text-xs font-bold text-green-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" /> All Done Today!
+              </span>
+            ) : (
+              <button
+                onClick={() => markDayComplete(currentWeekPlan.week, todayDayPlan.day)}
+                className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-green-500 hover:text-black border border-gray-700 text-xs font-bold text-gray-200 transition flex items-center gap-1.5 shadow-md"
+              >
+                <Sparkles className="w-4 h-4 text-yellow-400" />
+                Mark Today Complete
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -12,6 +12,7 @@ export const OnboardingPage: React.FC = () => {
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
   const [startDate, setStartDate] = useState(today);
+  const [targetDate, setTargetDate] = useState('2027-01-15');
   const [step, setStep] = useState<1 | 2>(1);
   const [nameError, setNameError] = useState('');
 
@@ -29,6 +30,7 @@ export const OnboardingPage: React.FC = () => {
       name: name.trim(),
       tagline: tagline.trim() || 'LeetCode Planner',
       startDate: startDate || today,
+      targetDate: targetDate || '2027-01-15',
     };
     updateProfile(profile);
   };
@@ -127,7 +129,7 @@ export const OnboardingPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Date picker */}
+              {/* Target date */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-orange-400" />
@@ -139,8 +141,21 @@ export const OnboardingPage: React.FC = () => {
                   onChange={(e) => setStartDate(e.target.value)}
                   className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition [color-scheme:dark]"
                 />
-                <p className="text-[11px] text-gray-500 leading-relaxed">
-                  Starting today? Leave it as is. Resuming from a past day? Pick that date so your week counter is accurate.
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-yellow-400" />
+                  Placement / Goal Deadline
+                </label>
+                <input
+                  type="date"
+                  value={targetDate}
+                  onChange={(e) => setTargetDate(e.target.value)}
+                  className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-yellow-500 transition [color-scheme:dark]"
+                />
+                <p className="text-[11px] text-gray-500">
+                  Your interview / placement target date. Drives the countdown timer.
                 </p>
               </div>
 

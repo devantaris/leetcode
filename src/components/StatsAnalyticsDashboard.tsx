@@ -6,7 +6,7 @@ import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { AnimatedCounter } from './AnimatedCounter';
 
 export const StatsAnalyticsDashboard: React.FC = () => {
-  const { stats, progress } = useProgress();
+  const { stats, progress, userProfile } = useProgress();
 
   // Difficulty breakdown data for Pie chart
   let easySolved = 0, easyTotal = 0;
@@ -116,7 +116,7 @@ export const StatsAnalyticsDashboard: React.FC = () => {
             <span className="font-mono text-xs text-gray-400">days left</span>
           </div>
           <span className="text-[11px] font-mono text-blue-400 mt-3 block">
-            Jan 15, 2027 Placements
+            {userProfile.targetDate ? new Date(userProfile.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Jan 15, 2027'} — Target
           </span>
         </div>
 
@@ -159,6 +159,15 @@ export const StatsAnalyticsDashboard: React.FC = () => {
       </div>
 
       {/* CHARTS SECTION */}
+      {stats.solvedCount === 0 ? (
+        <div className="rounded-2xl border border-gray-800 bg-[#101018] p-10 flex flex-col items-center justify-center text-center gap-3">
+          <span className="text-4xl">🎯</span>
+          <h3 className="text-base font-bold text-white">No data yet — start solving!</h3>
+          <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+            Check off your first problems on the Dashboard or Curriculum page. Your difficulty breakdown and topic charts will populate here automatically.
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* CHART 1: DIFFICULTY BREAKDOWN */}
@@ -234,6 +243,7 @@ export const StatsAnalyticsDashboard: React.FC = () => {
         </div>
 
       </div>
+      )}
 
     </div>
   );

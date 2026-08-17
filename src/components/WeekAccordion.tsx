@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { ChevronDown, ExternalLink, CheckCircle2, RefreshCw, Trophy, Coffee, Sparkles } from 'lucide-react';
@@ -19,6 +19,16 @@ export const WeekAccordion: React.FC = () => {
   } = useProgress();
 
   const [openDays, setOpenDays] = useState<{ [dayKey: string]: boolean }>({});
+
+  // Auto-scroll to the current active week on first render
+  useEffect(() => {
+    const el = document.getElementById(`week-anchor-${activeWeek}`);
+    if (el) {
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }, [activeWeek]);
 
   const toggleDayOpen = (dayKey: string) => {
     setOpenDays((prev) => ({ ...prev, [dayKey]: !prev[dayKey] }));
@@ -185,7 +195,7 @@ export const WeekAccordion: React.FC = () => {
                           {d.type === 'rest' ? (
                             <div className="py-3 text-xs text-gray-400 font-medium italic flex items-center gap-2">
                               <Coffee className="w-4 h-4 text-orange-400" />
-                              Sundays are reserved for your DIP Research Paper (Medical/Agriculture Encryption) or Project Work (SkillSync/Biome). Zero DSA guilt today!
+                              Rest day — recharge, review your notes, or work on a personal project. Zero DSA guilt today!
                             </div>
                           ) : (
                             <div className="flex flex-col gap-2.5 mt-2">
@@ -218,7 +228,7 @@ export const WeekAccordion: React.FC = () => {
                                           rel="noopener noreferrer"
                                           className="text-sm font-semibold text-white hover:text-orange-400 transition flex items-center gap-1.5 group"
                                         >
-                                          <span>{p.name}</span>
+                                          <span className={`transition-all duration-300 ${isChecked ? 'line-through text-gray-500' : ''}`}>{p.name}</span>
                                           {p.lcNumber > 0 && <span className="text-xs text-gray-500 font-mono">#{p.lcNumber}</span>}
                                           <ExternalLink className="w-3.5 h-3.5 text-gray-500 group-hover:text-orange-400 transition" />
                                         </a>
@@ -249,13 +259,19 @@ export const WeekAccordion: React.FC = () => {
                               })}
 
                               <div className="flex justify-end mt-2 pt-2 border-t border-gray-800/40">
-                                <button
-                                  onClick={() => markDayComplete(w.week, d.day)}
-                                  className="px-4 py-1.5 rounded-lg bg-gray-800 hover:bg-green-500 hover:text-black border border-gray-700 text-xs font-semibold text-gray-200 transition flex items-center gap-1.5"
-                                >
-                                  <Sparkles className="w-3.5 h-3.5" />
-                                  Mark Day Complete
-                                </button>
+                                {complete ? (
+                                  <span className="px-4 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-xs font-semibold text-green-400 flex items-center gap-1.5">
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> All Done!
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => markDayComplete(w.week, d.day)}
+                                    className="px-4 py-1.5 rounded-lg bg-gray-800 hover:bg-green-500 hover:text-black border border-gray-700 text-xs font-semibold text-gray-200 transition flex items-center gap-1.5"
+                                  >
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    Mark Day Complete
+                                  </button>
+                                )}
                               </div>
                             </div>
                           )}

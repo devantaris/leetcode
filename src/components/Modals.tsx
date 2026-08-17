@@ -21,6 +21,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
   const [editName, setEditName] = useState<string>(userProfile.name);
   const [editTagline, setEditTagline] = useState<string>(userProfile.tagline);
   const [editStartDate, setEditStartDate] = useState<string>(userProfile.startDate);
+  const [editTargetDate, setEditTargetDate] = useState<string>(userProfile.targetDate || '2027-01-15');
 
   // Resume state — shift start date to "resume from where you left off"
   const [resumeDate, setResumeDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
@@ -66,6 +67,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
       name: editName.trim(),
       tagline: editTagline.trim() || 'LeetCode Planner',
       startDate: editStartDate,
+      targetDate: editTargetDate || '2027-01-15',
     };
     updateProfile(profile);
     onClose();
@@ -215,6 +217,23 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
                   placeholder="e.g. IIT Delhi CSE"
                   className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
                 />
+              </div>
+
+              {/* Target Date */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-yellow-400" />
+                  Placement / Goal Deadline
+                </label>
+                <input
+                  type="date"
+                  value={editTargetDate}
+                  onChange={(e) => setEditTargetDate(e.target.value)}
+                  className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-500 transition [color-scheme:dark]"
+                />
+                <p className="text-[11px] text-gray-500">
+                  Your interview / placement deadline. Drives the countdown on the dashboard.
+                </p>
               </div>
 
               {/* Start Date */}

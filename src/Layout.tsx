@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Modals } from './components/Modals';
@@ -12,6 +12,21 @@ export const Layout: React.FC = () => {
   const [activeModal, setActiveModal] = useState<'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Ctrl+K / Cmd+K → open Command Palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+      if (e.key === 'Escape') {
+        setIsCommandPaletteOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleTriggerImport = () => {
     fileInputRef.current?.click();

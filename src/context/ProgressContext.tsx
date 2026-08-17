@@ -17,12 +17,14 @@ export interface UserProfile {
   name: string;
   tagline: string;
   startDate: string; // ISO date string 'yyyy-MM-dd'
+  targetDate: string; // ISO date string 'yyyy-MM-dd' — placement/goal deadline
 }
 
 const DEFAULT_PROFILE: UserProfile = {
   name: 'User',
   tagline: 'LeetCode Planner',
   startDate: format(new Date(), 'yyyy-MM-dd'),
+  targetDate: '2027-01-15',
 };
 
 // ─── Solve Log Types ───────────────────────────────────────────────────────────
@@ -369,7 +371,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   });
 
-  const targetDate = new Date("2027-01-15T00:00:00");
+  const targetDate = userProfile
+    ? parseISO(userProfile.targetDate)
+    : new Date('2027-01-15');
   const diffTime = targetDate.getTime() - now.getTime();
   const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 

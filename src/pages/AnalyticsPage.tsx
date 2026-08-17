@@ -166,54 +166,39 @@ export const AnalyticsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* DIFFICULTY PIE CHART */}
-        <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
+        {/* DAILY SOLVE VELOCITY — unique chart not on Dashboard */}
+        <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-              <Target className="w-4 h-4 text-green-400" />
-              Difficulty Level Ratio
+              <Target className="w-4 h-4 text-orange-400" />
+              Daily Solve Velocity
             </h3>
-            <span className="text-xs font-mono text-gray-400">Easy / Med / Hard</span>
+            <span className="text-xs font-mono text-gray-400">Problems / day (last 14 active days)</span>
           </div>
 
-          <div className="h-56 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={diffChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="solved"
+          {dailySolveLog.length === 0 ? (
+            <div className="h-64 flex items-center justify-center text-gray-500 text-xs font-mono">
+              No solves logged yet.
+            </div>
+          ) : (
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[...dailySolveLog].reverse().slice(-14).map((g) => ({
+                    date: g.dateStr.slice(5), // MM-DD
+                    Solved: g.items.length,
+                  }))}
+                  margin={{ top: 5, right: 10, left: -20, bottom: 20 }}
                 >
-                  {diffChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#181824', borderColor: '#262636', borderRadius: '8px', color: '#fff' }}
-                  formatter={(value: any, name: any) => [`${value} solved`, name]}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono pt-3 border-t border-gray-800">
-            <div>
-              <span className="text-green-400 font-bold block">{easySolved} / {easyTotal}</span>
-              <span className="text-gray-400 text-[10px]">Easy ({Math.round((easySolved / (easyTotal || 1)) * 100)}%)</span>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f1f2e" />
+                  <XAxis dataKey="date" stroke="#636366" fontSize={10} angle={-30} textAnchor="end" />
+                  <YAxis stroke="#636366" fontSize={10} allowDecimals={false} />
+                  <Tooltip contentStyle={{ backgroundColor: '#181824', borderColor: '#262636', borderRadius: '8px', color: '#fff' }} />
+                  <Bar dataKey="Solved" fill="#ff9500" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div>
-              <span className="text-orange-400 font-bold block">{medSolved} / {medTotal}</span>
-              <span className="text-gray-400 text-[10px]">Medium ({Math.round((medSolved / (medTotal || 1)) * 100)}%)</span>
-            </div>
-            <div>
-              <span className="text-red-400 font-bold block">{hardSolved} / {hardTotal}</span>
-              <span className="text-gray-400 text-[10px]">Hard ({Math.round((hardSolved / (hardTotal || 1)) * 100)}%)</span>
-            </div>
-          </div>
+          )}
         </div>
 
       </div>
