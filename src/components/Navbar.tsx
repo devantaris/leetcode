@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database } from 'lucide-react';
+import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 interface NavbarProps {
@@ -8,6 +8,8 @@ interface NavbarProps {
   onOpenStrategy: () => void;
   onOpenReset: () => void;
   onOpenBackup: () => void;
+  onOpenProfile: () => void;
+  onOpenResume: () => void;
   onTriggerImport: () => void;
 }
 
@@ -16,9 +18,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenStrategy,
   onOpenReset,
   onOpenBackup,
+  onOpenProfile,
+  onOpenResume,
   onTriggerImport
 }) => {
-  const { stats, exportJSON, soundEnabled, toggleSound } = useProgress();
+  const { stats, exportJSON, soundEnabled, toggleSound, userProfile } = useProgress();
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
   return (
@@ -41,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-gray-400 font-medium hidden sm:block">
-                Devansh Kumar • Bennett University CSE
+                {userProfile.name} • {userProfile.tagline}
               </p>
             </div>
           </div>
@@ -162,7 +166,33 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {showSettingsMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-[#101018] border border-gray-800 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1 text-xs">
+              <div className="absolute right-0 mt-2 w-52 bg-[#101018] border border-gray-800 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1 text-xs">
+                {/* Profile */}
+                <button
+                  onClick={() => {
+                    onOpenProfile();
+                    setShowSettingsMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-200 flex items-center gap-2 transition"
+                >
+                  <User className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Edit Profile</span>
+                </button>
+
+                {/* Resume from gap */}
+                <button
+                  onClick={() => {
+                    onOpenResume();
+                    setShowSettingsMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 text-yellow-300 flex items-center gap-2 transition"
+                >
+                  <CalendarClock className="w-3.5 h-3.5 text-yellow-400" />
+                  <span>Resume Progress ✈️</span>
+                </button>
+
+                <div className="border-t border-gray-800/60 my-1" />
+
                 <button
                   onClick={() => {
                     onOpenBackup();
@@ -196,12 +226,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span>Restore JSON File</span>
                 </button>
 
+                <div className="border-t border-gray-800/60 my-1" />
+
                 <button
                   onClick={() => {
                     onOpenReset();
                     setShowSettingsMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/20 text-red-400 flex items-center gap-2 transition border-t border-gray-800/60 mt-1 pt-2"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/20 text-red-400 flex items-center gap-2 transition"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-red-400" />
                   <span>Nuclear Reset</span>

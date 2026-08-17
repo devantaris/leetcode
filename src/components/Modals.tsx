@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { X, Sparkles, BookOpen, AlertTriangle, Download, Upload, Copy, Database, Check } from 'lucide-react';
+import type { UserProfile } from '../context/ProgressContext';
+import { X, Sparkles, BookOpen, AlertTriangle, Download, Upload, Copy, Database, Check, User, Tag, Calendar, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { format, addDays, parseISO } from 'date-fns';
 
 interface ModalsProps {
-  activeModal: 'rules' | 'strategy' | 'reset' | 'backup' | null;
+  activeModal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | null;
   onClose: () => void;
   onTriggerImportFile?: () => void;
 }
 
 export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerImportFile }) => {
-  const { resetAll, stats, exportJSON, exportJSONString, importJSON } = useProgress();
+  const { resetAll, stats, exportJSON, exportJSONString, importJSON, userProfile, updateProfile, resumeFromDay } = useProgress();
   const [resetInput, setResetInput] = useState<string>('');
   const [pasteString, setPasteString] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
+
+  // Profile edit state
+  const [editName, setEditName] = useState<string>(userProfile.name);
+  const [editTagline, setEditTagline] = useState<string>(userProfile.tagline);
+  const [editStartDate, setEditStartDate] = useState<string>(userProfile.startDate);
+
+  // Resume state — shift start date to "resume from where you left off"
+  const [resumeDate, setResumeDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
 
   if (!activeModal) return null;
 
@@ -47,10 +57,40 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
     }
   };
 
+  const handleSaveProfile = () => {
+    if (!editName.trim()) {
+      toast.error("Name cannot be empty.");
+      return;
+    }
+    const profile: UserProfile = {
+      name: editName.trim(),
+      tagline: editTagline.trim() || 'LeetCode Planner',
+      startDate: editStartDate,
+    };
+    updateProfile(profile);
+    onClose();
+  };
+
+  const handleResume = () => {
+    if (!resumeDate) {
+      toast.error("Please pick a new start date.");
+      return;
+    }
+    resumeFromDay(resumeDate);
+    onClose();
+  };
+
+  // Helper: given today and a desired "left-off" day number, compute what start date we need
+  const computeStartDateForDay = (targetDay: number): string => {
+    const today = new Date();
+    const daysBack = targetDay - 1;
+    return format(addDays(today, -daysBack), 'yyyy-MM-dd');
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div className="relative w-full max-w-xl bg-[#101018] border border-gray-800 rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[85vh]">
-        
+
         {/* CLOSE BUTTON */}
         <button
           onClick={onClose}
@@ -59,7 +99,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
           <X className="w-5 h-5" />
         </button>
 
-        {/* BACKUP & SYNC MODAL */}
+        {/* ── BACKUP & SYNC MODAL ──────────────────────────────────────────────── */}
         {activeModal === 'backup' && (
           <div>
             <div className="flex items-center gap-2 text-green-400 font-extrabold text-lg mb-2">
@@ -132,12 +172,136 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
                   </button>
                 </div>
               </div>
-
             </div>
           </div>
         )}
 
-        {/* RULES MODAL */}
+        {/* ── PROFILE MODAL ────────────────────────────────────────────────────── */}
+        {activeModal === 'profile' && (
+          <div>
+            <div className="flex items-center gap-2 text-orange-400 font-extrabold text-lg mb-2">
+              <User className="w-5 h-5" />
+              <span>EDIT PROFILE</span>
+            </div>
+            <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+              Update your display name, tagline, or program start date.
+            </p>
+
+            <div className="flex flex-col gap-4">
+              {/* Name */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-orange-400" />
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 transition"
+                />
+              </div>
+
+              {/* Tagline */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-gray-400" />
+                  Tagline
+                </label>
+                <input
+                  type="text"
+                  value={editTagline}
+                  onChange={(e) => setEditTagline(e.target.value)}
+                  placeholder="e.g. IIT Delhi CSE"
+                  className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
+                />
+              </div>
+
+              {/* Start Date */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-orange-400" />
+                  Program Start Date
+                </label>
+                <input
+                  type="date"
+                  value={editStartDate}
+                  onChange={(e) => setEditStartDate(e.target.value)}
+                  className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 transition [color-scheme:dark]"
+                />
+                <p className="text-[11px] text-gray-500">
+                  Changing this shifts your day/week counters. Use "Resume Progress" for gap recovery.
+                </p>
+              </div>
+
+              <button
+                onClick={handleSaveProfile}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-sm transition shadow-lg shadow-orange-500/20 mt-1"
+              >
+                Save Profile
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── RESUME PROGRESS MODAL ────────────────────────────────────────────── */}
+        {activeModal === 'resume' && (
+          <div>
+            <div className="flex items-center gap-2 text-yellow-400 font-extrabold text-lg mb-2">
+              <RotateCcw className="w-5 h-5" />
+              <span>RESUME PROGRESS</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-yellow-950/20 border border-yellow-500/20 text-xs text-yellow-200 leading-relaxed mb-5">
+              <strong className="text-yellow-400">Were you away?</strong> If you missed days due to travel, exams, or anything else — don't go backwards. Instead, shift your program's start date forward so <em>today</em> aligns with the day you left off. <strong className="text-white">Your solved problems stay intact.</strong>
+            </div>
+
+            <div className="p-4 rounded-xl bg-gray-900 border border-gray-800 text-xs text-gray-300 mb-4 space-y-1">
+              <p>Current program start: <strong className="text-white font-mono">{userProfile.startDate}</strong></p>
+              <p>You're currently on: <strong className="text-orange-400 font-mono">Week {stats.currentWeek}, Day {stats.currentDay}</strong></p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-yellow-400" />
+                  New Start Date
+                </label>
+                <input
+                  type="date"
+                  value={resumeDate}
+                  onChange={(e) => setResumeDate(e.target.value)}
+                  max={format(new Date(), 'yyyy-MM-dd')}
+                  className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-500 transition [color-scheme:dark]"
+                />
+                <p className="text-[11px] text-gray-500 leading-relaxed">
+                  Set this to a date that makes <em>today = the day you last left off</em>. For example, if you were on Day 22 and took a 4-week break, set this to{' '}
+                  <strong className="text-gray-300 font-mono">{computeStartDateForDay(22)}</strong>{' '}
+                  so today reads as Day 22.
+                </p>
+              </div>
+
+              {resumeDate && (
+                <div className="p-3 rounded-xl bg-green-950/20 border border-green-500/20 text-xs text-green-300">
+                  With this start date, today will be{' '}
+                  <strong className="text-green-400">
+                    Day {Math.min(140, Math.max(1, Math.round((new Date().getTime() - parseISO(resumeDate).getTime()) / (1000 * 60 * 60 * 24)) + 1))}
+                  </strong>
+                  {' '}of your program.
+                </div>
+              )}
+
+              <button
+                onClick={handleResume}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-bold text-sm transition shadow-lg shadow-yellow-500/20"
+              >
+                Adjust & Resume ✈️
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── RULES MODAL ──────────────────────────────────────────────────────── */}
         {activeModal === 'rules' && (
           <div>
             <div className="flex items-center gap-2 text-orange-400 font-extrabold text-lg mb-4">
@@ -163,13 +327,13 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
 
               <div className="p-3.5 rounded-xl bg-gray-900 border border-gray-800">
                 <h4 className="font-bold text-gray-200 mb-1">4. Sunday Guilt-Free Rest</h4>
-                <p className="text-gray-400">Sundays are strictly for your DIP Research Paper or SkillSync/Biome project work. Zero DSA. Recharge your brain.</p>
+                <p className="text-gray-400">Sundays are strictly for your projects or rest. Zero DSA. Recharge your brain.</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* STRATEGY MODAL */}
+        {/* ── STRATEGY MODAL ───────────────────────────────────────────────────── */}
         {activeModal === 'strategy' && (
           <div>
             <div className="flex items-center gap-2 text-yellow-400 font-extrabold text-lg mb-4">
@@ -197,7 +361,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
           </div>
         )}
 
-        {/* RESET MODAL */}
+        {/* ── RESET MODAL ──────────────────────────────────────────────────────── */}
         {activeModal === 'reset' && (
           <div>
             <div className="flex items-center gap-2 text-red-500 font-extrabold text-lg mb-2">
@@ -206,7 +370,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
             </div>
 
             <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/30 text-xs text-red-300 mb-4">
-              <strong>Warning:</strong> You are about to erase <strong className="text-white font-mono">{stats.solvedCount} solved problems</strong> and your <strong className="text-white font-mono">{stats.streak}-day streak</strong> stored in this browser.
+              <strong>Warning:</strong> You are about to erase <strong className="text-white font-mono">{stats.solvedCount} solved problems</strong>, your <strong className="text-white font-mono">{stats.streak}-day streak</strong>, and your <strong className="text-white font-mono">profile</strong> stored in this browser.
             </div>
 
             <div className="flex flex-col gap-3">

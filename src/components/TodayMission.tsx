@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
 
 export const TodayMission: React.FC = () => {
-  const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek } = useProgress();
+  const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile } = useProgress();
 
   // Determine greeting based on local time
   const hour = new Date().getHours();
@@ -41,7 +41,7 @@ export const TodayMission: React.FC = () => {
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <span>{greeting}, Devansh</span>
+            <span>{greeting}, {userProfile.name}</span>
             <Sparkles className="w-6 h-6 text-yellow-400" />
           </h2>
 

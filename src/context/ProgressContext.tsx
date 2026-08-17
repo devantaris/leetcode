@@ -10,9 +10,22 @@ const KEY_PROGRESS = "dsa_progress_v2";
 const KEY_STREAK = "dsa_streak_v2";
 const KEY_LAST_DATE = "dsa_last_date_v2";
 const KEY_SOLVE_HISTORY = "dsa_solve_history_v2";
+const KEY_USER_PROFILE = "dsa_user_profile_v1";
 
-export const PROGRAM_START_DATE = new Date("2026-07-27T00:00:00");
+// ─── User Profile ─────────────────────────────────────────────────────────────
+export interface UserProfile {
+  name: string;
+  tagline: string;
+  startDate: string; // ISO date string 'yyyy-MM-dd'
+}
 
+const DEFAULT_PROFILE: UserProfile = {
+  name: 'User',
+  tagline: 'LeetCode Planner',
+  startDate: format(new Date(), 'yyyy-MM-dd'),
+};
+
+// ─── Solve Log Types ───────────────────────────────────────────────────────────
 export interface DailySolveItem {
   problemId: string;
   name: string;
@@ -30,12 +43,17 @@ export interface DailySolveGroup {
   items: DailySolveItem[];
 }
 
+// ─── Context Type ──────────────────────────────────────────────────────────────
 interface ProgressContextType {
   progress: UserProgressMap;
   solveHistory: SolveRecordMap;
   streak: number;
   dailySolveLog: DailySolveGroup[];
   stats: AppStats;
+  userProfile: UserProfile;
+  isOnboarded: boolean;
+  updateProfile: (profile: UserProfile) => void;
+  resumeFromDay: (newStartDate: string) => void;
   toggleProblem: (problemId: string) => void;
   markDayComplete: (weekNum: number, dayNum: number) => void;
   isDayComplete: (weekNum: number, dayNum: number) => boolean;
@@ -57,7 +75,7 @@ interface ProgressContextType {
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
-// Helper function to build problem details lookup
+// ─── Problem Lookup Map ────────────────────────────────────────────────────────
 const problemLookupMap = (() => {
   const map = new Map<string, { name: string; lcNumber: number; difficulty: string; url: string; topic: string }>();
   PLAN_DATA.forEach((w) => {
@@ -72,7 +90,7 @@ const problemLookupMap = (() => {
   return map;
 })();
 
-// Helper to compute daily solve log and dynamic streak from solveHistory
+// ─── Streak + Log Computation ──────────────────────────────────────────────────
 function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: DailySolveGroup[]; streak: number } {
   const groupMap: { [dateStr: string]: DailySolveItem[] } = {};
 
@@ -103,7 +121,6 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
     }
   });
 
-  // Sort groups descending by date
   const sortedDates = Object.keys(groupMap).sort((a, b) => b.localeCompare(a));
   const dailySolveLog: DailySolveGroup[] = sortedDates.map((dateStr) => {
     const items = groupMap[dateStr].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
@@ -132,7 +149,6 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
   } else if (activeDatesSet.has(yesterdayStr)) {
     currentCheckDate = yesterday;
   } else if (yesterday.getDay() === 0) {
-    // If yesterday was Sunday rest day, check Saturday
     const sat = addDays(now, -2);
     const satStr = format(sat, 'yyyy-MM-dd');
     if (activeDatesSet.has(satStr)) {
@@ -147,7 +163,6 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
   let calculatedStreak = 0;
   let iterDate = currentCheckDate;
 
-  // Count backwards day by day
   for (let i = 0; i < 365; i++) {
     const dStr = format(iterDate, 'yyyy-MM-dd');
     if (activeDatesSet.has(dStr)) {
@@ -163,7 +178,19 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
   return { dailySolveLog, streak: calculatedStreak };
 }
 
+// ─── Provider ─────────────────────────────────────────────────────────────────
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    try {
+      const saved = localStorage.getItem(KEY_USER_PROFILE);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const isOnboarded = userProfile !== null;
+
   const [progress, setProgress] = useState<UserProgressMap>(() => {
     try {
       const saved = localStorage.getItem(KEY_PROGRESS);
@@ -202,6 +229,33 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem(KEY_STREAK, streak.toString());
   }, [streak]);
 
+  useEffect(() => {
+    if (userProfile !== null) {
+      localStorage.setItem(KEY_USER_PROFILE, JSON.stringify(userProfile));
+    }
+  }, [userProfile]);
+
+  // ── Profile Actions ──────────────────────────────────────────────────────────
+  const updateProfile = (profile: UserProfile) => {
+    setUserProfile(profile);
+    toast.success(`Profile updated! Welcome, ${profile.name} 👋`, { id: 'profile-update' });
+  };
+
+  /**
+   * Shift the program start date forward to recover from a travel gap.
+   * All solved problems are preserved; only the origin date changes.
+   * This makes today's day/week counters pick up from where you left off.
+   */
+  const resumeFromDay = (newStartDate: string) => {
+    setUserProfile((prev) => {
+      const updated = { ...(prev ?? DEFAULT_PROFILE), startDate: newStartDate };
+      localStorage.setItem(KEY_USER_PROFILE, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success('Program date adjusted! Picking up from where you left off 🎯', { id: 'resume-toast' });
+  };
+
+  // ── Sound ────────────────────────────────────────────────────────────────────
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
@@ -209,6 +263,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     toast.success(next ? "Sound Enabled 🔊" : "Sound Muted 🔇", { id: 'sound-toggle' });
   };
 
+  // ── Problem Toggle ───────────────────────────────────────────────────────────
   const toggleProblem = (problemId: string) => {
     const nextState = !progress[problemId];
     const nowIso = new Date().toISOString();
@@ -232,6 +287,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
+  // ── Day Completion ───────────────────────────────────────────────────────────
   const isDayComplete = (weekNum: number, dayNum: number): boolean => {
     const week = PLAN_DATA.find((w) => w.week === weekNum);
     if (!week) return false;
@@ -272,6 +328,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   };
 
+  // ── Stats ────────────────────────────────────────────────────────────────────
   let totalProblems = 0;
   let solvedCount = 0;
   let completedDaysCount = 0;
@@ -292,7 +349,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
 
   const now = new Date();
-  const daysSinceStart = Math.max(0, differenceInCalendarDays(now, PROGRAM_START_DATE));
+
+  // Use the user's chosen start date, falling back to today if not onboarded yet
+  const programStartDate = userProfile
+    ? parseISO(userProfile.startDate)
+    : now;
+
+  const daysSinceStart = Math.max(0, differenceInCalendarDays(now, programStartDate));
   const currentDay = Math.min(140, daysSinceStart + 1);
   const currentWeek = Math.min(20, Math.floor(daysSinceStart / 7) + 1);
 
@@ -336,12 +399,14 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     projectedCompletionDate
   };
 
+  // ── Import / Export ──────────────────────────────────────────────────────────
   const exportJSONString = (): string => {
     const data = {
       version: 3,
       progress,
       solveHistory,
       streak,
+      userProfile,
       lastDate: localStorage.getItem(KEY_LAST_DATE),
       exportedAt: new Date().toISOString()
     };
@@ -354,7 +419,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leetcode_planner_backup_${format(new Date(), 'yyyy-MM-dd')}.json`;
+    const safeName = (userProfile?.name || 'user').toLowerCase().replace(/\s+/g, '_');
+    a.download = `dsa_planner_${safeName}_${format(new Date(), 'yyyy-MM-dd')}.json`;
     a.click();
     toast.success("Progress backup downloaded! 💾");
   };
@@ -366,6 +432,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setProgress(parsed.progress);
         if (parsed.solveHistory) setSolveHistory(parsed.solveHistory);
         if (parsed.lastDate) localStorage.setItem(KEY_LAST_DATE, parsed.lastDate);
+        // Restore profile if present in backup
+        if (parsed.userProfile && typeof parsed.userProfile === 'object') {
+          setUserProfile(parsed.userProfile);
+        }
         toast.success("Progress restored successfully! 🔄");
         return true;
       }
@@ -382,8 +452,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.removeItem(KEY_SOLVE_HISTORY);
     localStorage.removeItem(KEY_STREAK);
     localStorage.removeItem(KEY_LAST_DATE);
+    localStorage.removeItem(KEY_USER_PROFILE);
     setProgress({});
     setSolveHistory({});
+    setUserProfile(null as unknown as UserProfile);
     toast.error("All progress wiped.", { id: 'reset-toast' });
   };
 
@@ -395,6 +467,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         streak,
         dailySolveLog,
         stats,
+        userProfile: userProfile ?? DEFAULT_PROFILE,
+        isOnboarded,
+        updateProfile,
+        resumeFromDay,
         toggleProblem,
         markDayComplete,
         isDayComplete,
