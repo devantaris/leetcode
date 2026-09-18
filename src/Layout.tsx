@@ -5,7 +5,7 @@ import { Modals } from './components/Modals';
 import { CommandPalette } from './components/CommandPalette';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { useProgress } from './context/ProgressContext';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 export const Layout: React.FC = () => {
   const { importJSON, isOnboarded, userProfile } = useProgress();
@@ -44,29 +44,16 @@ export const Layout: React.FC = () => {
       }
       if (fileInputRef.current) fileInputRef.current.value = '';
     };
+    reader.onerror = () => {
+      toast.error("Failed to read file.");
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
     reader.readAsText(file);
   };
 
   // Show onboarding gate for first-time users
   if (!isOnboarded) {
-    return (
-      <>
-        <OnboardingPage />
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: '#101018',
-              color: '#fff',
-              border: '1px solid #2e2e46',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontFamily: 'JetBrains Mono, monospace'
-            }
-          }}
-        />
-      </>
-    );
+    return <OnboardingPage />;
   }
 
   return (
