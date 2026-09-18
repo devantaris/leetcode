@@ -41,7 +41,7 @@ export const DailyFocusTimer: React.FC = () => {
     sessionStorage.setItem(STORAGE_KEY_TOTAL, totalSeconds.toString());
     sessionStorage.setItem(STORAGE_KEY_ACTIVE, isActive.toString());
     if (isActive) {
-      const ts = startedAtRef.current ?? Date.now();
+      const ts = Date.now();
       startedAtRef.current = ts;
       sessionStorage.setItem(STORAGE_KEY_STARTED_AT, ts.toString());
     } else {
@@ -50,25 +50,28 @@ export const DailyFocusTimer: React.FC = () => {
     }
   }, [secondsLeft, isActive, totalSeconds]);
 
+  const prevSecondsRef = useRef<number>(secondsLeft);
+
+  useEffect(() => {
+    if (isActive && secondsLeft !== prevSecondsRef.current) {
+      if (secondsLeft === 0) {
+        setIsActive(false);
+        sounds.playVictorySound();
+        toast.success("🏆 Focus Session Completed! Take a breather.", { duration: 5000 });
+      } else if (secondsLeft % 300 === 0) {
+        sounds.playTickSound();
+      }
+    }
+    prevSecondsRef.current = secondsLeft;
+  }, [secondsLeft, isActive]);
+
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
     if (isActive) {
       startedAtRef.current = Date.now();
       interval = setInterval(() => {
-        setSecondsLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval!);
-            setIsActive(false);
-            sounds.playVictorySound();
-            toast.success("🏆 Focus Session Completed! Take a breather.", { duration: 5000 });
-            return 0;
-          }
-          if (prev % 300 === 0) {
-            sounds.playTickSound();
-          }
-          return prev - 1;
-        });
+        setSecondsLeft((prev) => Math.max(0, prev - 1));
       }, 1000);
     } else if (interval) {
       clearInterval(interval);
