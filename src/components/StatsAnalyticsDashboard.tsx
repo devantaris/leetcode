@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { CheckCircle2, Flame, Clock, TrendingUp, Target, Skull } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
@@ -8,53 +8,55 @@ import { AnimatedCounter } from './AnimatedCounter';
 export const StatsAnalyticsDashboard: React.FC = () => {
   const { stats, progress, userProfile } = useProgress();
 
-  // Difficulty breakdown data for Pie chart
-  let easySolved = 0, easyTotal = 0;
-  let medSolved = 0, medTotal = 0;
-  let hardSolved = 0, hardTotal = 0;
+  const { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap } = useMemo(() => {
+    let easySolved = 0, easyTotal = 0;
+    let medSolved = 0, medTotal = 0;
+    let hardSolved = 0, hardTotal = 0;
+    const topicDataMap: { [topic: string]: { total: number; solved: number } } = {};
 
-  // Topic breakdown data for Bar chart
-  const topicDataMap: { [topic: string]: { total: number; solved: number } } = {};
+    PLAN_DATA.forEach((w) => {
+      if (!topicDataMap[w.topic]) {
+        topicDataMap[w.topic] = { total: 0, solved: 0 };
+      }
 
-  PLAN_DATA.forEach((w) => {
-    if (!topicDataMap[w.topic]) {
-      topicDataMap[w.topic] = { total: 0, solved: 0 };
-    }
+      w.days.forEach((d) => {
+        d.problems.forEach((p) => {
+          topicDataMap[w.topic].total++;
+          if (p.difficulty === 'Easy') {
+            easyTotal++;
+            if (progress[p.id]) easySolved++;
+          } else if (p.difficulty === 'Medium') {
+            medTotal++;
+            if (progress[p.id]) medSolved++;
+          } else if (p.difficulty === 'Hard') {
+            hardTotal++;
+            if (progress[p.id]) hardSolved++;
+          }
 
-    w.days.forEach((d) => {
-      d.problems.forEach((p) => {
-        topicDataMap[w.topic].total++;
-        if (p.difficulty === 'Easy') {
-          easyTotal++;
-          if (progress[p.id]) easySolved++;
-        } else if (p.difficulty === 'Medium') {
-          medTotal++;
-          if (progress[p.id]) medSolved++;
-        } else if (p.difficulty === 'Hard') {
-          hardTotal++;
-          if (progress[p.id]) hardSolved++;
-        }
-
-        if (progress[p.id]) {
-          topicDataMap[w.topic].solved++;
-        }
+          if (progress[p.id]) {
+            topicDataMap[w.topic].solved++;
+          }
+        });
       });
     });
-  });
+    return { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap };
+  }, [progress]);
 
-  const diffChartData = [
+  const diffChartData = useMemo(() => [
     { name: 'Easy', solved: easySolved, total: easyTotal, color: '#34c759' },
     { name: 'Medium', solved: medSolved, total: medTotal, color: '#ff9500' },
     { name: 'Hard', solved: hardSolved, total: hardTotal, color: '#ff3b30' }
-  ];
+  ], [easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal]);
 
-  const topicChartData = Object.keys(topicDataMap)
-    .map((topic) => ({
-      name: topic.length > 12 ? topic.substring(0, 10) + '...' : topic,
-      Solved: topicDataMap[topic].solved,
-      Remaining: topicDataMap[topic].total - topicDataMap[topic].solved
-    }))
-    .slice(0, 8);
+  const topicChartData = useMemo(() => {
+    return Object.keys(topicDataMap)
+      .map((topic) => ({
+        name: topic.length > 12 ? topic.substring(0, 10) + '...' : topic,
+        Solved: topicDataMap[topic].solved,
+        Remaining: topicDataMap[topic].total - topicDataMap[topic].solved
+      }))
+      .slice(0, 8);
+  }, [topicDataMap]);
 
   const solvedPct = Math.round((stats.solvedCount / (stats.totalProblems || 1)) * 100);
 

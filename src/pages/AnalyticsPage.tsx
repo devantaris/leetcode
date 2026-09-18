@@ -1,74 +1,76 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { motion } from 'framer-motion';
 import { Target, TrendingUp, Calendar } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
+import { format } from 'date-fns';
 
 export const AnalyticsPage: React.FC = () => {
-  const { stats, progress, dailySolveLog } = useProgress();
+  const { stats, progress, dailySolveLog, userProfile } = useProgress();
 
-  // Difficulty breakdown data for Pie chart
-  let easySolved = 0, easyTotal = 0;
-  let medSolved = 0, medTotal = 0;
-  let hardSolved = 0, hardTotal = 0;
+  // Difficulty breakdown data
+  const { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap } = useMemo(() => {
+    let easySolved = 0, easyTotal = 0;
+    let medSolved = 0, medTotal = 0;
+    let hardSolved = 0, hardTotal = 0;
+    const topicDataMap: { [topic: string]: { total: number; solved: number } } = {};
 
-  const topicDataMap: { [topic: string]: { total: number; solved: number } } = {};
+    PLAN_DATA.forEach((w) => {
+      if (!topicDataMap[w.topic]) {
+        topicDataMap[w.topic] = { total: 0, solved: 0 };
+      }
 
-  PLAN_DATA.forEach((w) => {
-    if (!topicDataMap[w.topic]) {
-      topicDataMap[w.topic] = { total: 0, solved: 0 };
-    }
+      w.days.forEach((d) => {
+        d.problems.forEach((p) => {
+          topicDataMap[w.topic].total++;
+          if (p.difficulty === 'Easy') {
+            easyTotal++;
+            if (progress[p.id]) easySolved++;
+          } else if (p.difficulty === 'Medium') {
+            medTotal++;
+            if (progress[p.id]) medSolved++;
+          } else if (p.difficulty === 'Hard') {
+            hardTotal++;
+            if (progress[p.id]) hardSolved++;
+          }
 
-    w.days.forEach((d) => {
-      d.problems.forEach((p) => {
-        topicDataMap[w.topic].total++;
-        if (p.difficulty === 'Easy') {
-          easyTotal++;
-          if (progress[p.id]) easySolved++;
-        } else if (p.difficulty === 'Medium') {
-          medTotal++;
-          if (progress[p.id]) medSolved++;
-        } else if (p.difficulty === 'Hard') {
-          hardTotal++;
-          if (progress[p.id]) hardSolved++;
-        }
-
-        if (progress[p.id]) {
-          topicDataMap[w.topic].solved++;
-        }
+          if (progress[p.id]) {
+            topicDataMap[w.topic].solved++;
+          }
+        });
       });
     });
-  });
+    
+    return { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap };
+  }, [progress]);
 
-  const diffChartData = [
-    { name: 'Easy', solved: easySolved, total: easyTotal, color: '#34c759' },
-    { name: 'Medium', solved: medSolved, total: medTotal, color: '#ff9500' },
-    { name: 'Hard', solved: hardSolved, total: hardTotal, color: '#ff3b30' }
-  ];
-
-  const topicChartData = Object.keys(topicDataMap).map((topic) => ({
-    name: topic,
-    Solved: topicDataMap[topic].solved,
-    Remaining: topicDataMap[topic].total - topicDataMap[topic].solved
-  }));
+  const topicChartData = useMemo(() => {
+    return Object.keys(topicDataMap).map((topic) => ({
+      name: topic,
+      Solved: topicDataMap[topic].solved,
+      Remaining: topicDataMap[topic].total - topicDataMap[topic].solved
+    }));
+  }, [topicDataMap]);
 
   // Weekly progress trajectory data
-  const weekTrajectoryData = PLAN_DATA.map((w) => {
-    let weekTotal = 0;
-    let weekSolved = 0;
-    w.days.forEach((d) => {
-      d.problems.forEach((p) => {
-        weekTotal++;
-        if (progress[p.id]) weekSolved++;
+  const weekTrajectoryData = useMemo(() => {
+    return PLAN_DATA.map((w) => {
+      let weekTotal = 0;
+      let weekSolved = 0;
+      w.days.forEach((d) => {
+        d.problems.forEach((p) => {
+          weekTotal++;
+          if (progress[p.id]) weekSolved++;
+        });
       });
+      return {
+        week: `W${w.week}`,
+        Solved: weekSolved,
+        Target: weekTotal
+      };
     });
-    return {
-      week: `W${w.week}`,
-      Solved: weekSolved,
-      Target: weekTotal
-    };
-  });
+  }, [progress]);
 
   return (
     <motion.div
@@ -88,7 +90,7 @@ export const AnalyticsPage: React.FC = () => {
             </span>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            Data-driven evaluation of your DSA grinding velocity and estimated readiness for Jan 2027 placements.
+            Data-driven evaluation of your DSA grinding velocity and estimated readiness for {userProfile?.targetDate ? format(new Date(userProfile.targetDate), 'MMM yyyy') : 'Jan 2027'} placements.
           </p>
         </div>
 
