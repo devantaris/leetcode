@@ -90,7 +90,14 @@ export const Layout: React.FC = () => {
 
       {/* FOOTER */}
       <footer className="w-full text-center py-6 text-xs text-gray-500 font-mono border-t border-gray-800/40 bg-[#08080c]">
-        {APP_CONFIG.name} • {userProfile.name} • Target: {format(parseISO(userProfile.targetDate), 'MMM yyyy')}
+        {APP_CONFIG.name} • {userProfile?.name || 'User'} • Target:{' '}
+        {(() => {
+          try {
+            return userProfile?.targetDate ? format(parseISO(userProfile.targetDate), 'MMM yyyy') : 'Upcoming';
+          } catch {
+            return 'Upcoming';
+          }
+        })()}
       </footer>
 
       {/* MODALS */}

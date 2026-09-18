@@ -56,7 +56,13 @@ export const BrutalityBanner: React.FC = () => {
               <p className="text-xs sm:text-sm text-gray-300 font-medium mt-0.5 leading-snug">
                 {isStreakHigh
                   ? `You're on a ${stats.streak}-day streak! Keep up the momentum to master key interview patterns before your target date.`
-                  : `Target: ${CURRICULUM.dailyTarget} curated problems daily. Consistency keeps you on track for ${format(new Date(userProfile.targetDate), 'MMM d, yyyy')} interview readiness!`}
+                  : `Target: ${CURRICULUM.dailyTarget} curated problems daily. Consistency keeps you on track for ${(() => {
+                      try {
+                        return userProfile?.targetDate ? format(new Date(userProfile.targetDate), 'MMM d, yyyy') : 'your target date';
+                      } catch {
+                        return 'your target date';
+                      }
+                    })()} interview readiness!`}
               </p>
             </div>
           </div>

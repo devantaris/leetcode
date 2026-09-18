@@ -34,23 +34,29 @@ const LEGACY_KEY_MAP: [string, string][] = [
 ];
 
 export function migrateLegacyStorageKeys(): void {
-  for (const [oldKey, newKey] of LEGACY_KEY_MAP) {
-    const oldData = localStorage.getItem(oldKey);
-    const newData = localStorage.getItem(newKey);
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
 
-    // Only migrate if old data exists AND new key is empty
-    // (don't overwrite if user already has new-format data)
-    if (oldData && !newData) {
-      localStorage.setItem(newKey, oldData);
-      console.info(`[GrindOS] Migrated storage: ${oldKey} → ${newKey}`);
+    for (const [oldKey, newKey] of LEGACY_KEY_MAP) {
+      const oldData = localStorage.getItem(oldKey);
+      const newData = localStorage.getItem(newKey);
+
+      // Only migrate if old data exists AND new key is empty
+      // (don't overwrite if user already has new-format data)
+      if (oldData && !newData) {
+        localStorage.setItem(newKey, oldData);
+        console.info(`[GrindOS] Migrated storage: ${oldKey} → ${newKey}`);
+      }
+
+      // Clean up old key after migration (regardless)
+      if (oldData) {
+        localStorage.removeItem(oldKey);
+      }
     }
 
-    // Clean up old key after migration (regardless)
-    if (oldData) {
-      localStorage.removeItem(oldKey);
-    }
+    // Also clean up the dead KEY_LAST_DATE that was removed earlier
+    localStorage.removeItem('dsa_last_date_v2');
+  } catch (err) {
+    console.warn('[GrindOS] Storage migration safely skipped:', err);
   }
-
-  // Also clean up the dead KEY_LAST_DATE that was removed earlier
-  localStorage.removeItem('dsa_last_date_v2');
 }

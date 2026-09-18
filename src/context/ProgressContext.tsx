@@ -31,6 +31,24 @@ const DEFAULT_PROFILE: UserProfile = {
   secondarySkill: 'project',
 };
 
+export function normalizeUserProfile(raw: any): UserProfile | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const now = new Date();
+  const startDate = (raw.startDate && typeof raw.startDate === 'string') ? raw.startDate : format(now, 'yyyy-MM-dd');
+  const targetDate = (raw.targetDate && typeof raw.targetDate === 'string')
+    ? raw.targetDate
+    : format(addDays(now, APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd');
+
+  return {
+    name: (raw.name && typeof raw.name === 'string') ? raw.name : 'User',
+    tagline: (raw.tagline && typeof raw.tagline === 'string') ? raw.tagline : APP_CONFIG.defaults.defaultTagline,
+    startDate,
+    targetDate,
+    restDay: (raw.restDay === 'saturday' || raw.restDay === 'sunday' || raw.restDay === 'none') ? raw.restDay : 'sunday',
+    secondarySkill: (raw.secondarySkill && typeof raw.secondarySkill === 'string') ? raw.secondarySkill : 'project',
+  };
+}
+
 // ─── Solve Log Types ───────────────────────────────────────────────────────────
 export interface DailySolveItem {
   problemId: string;
@@ -190,7 +208,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.userProfile);
-      return saved ? JSON.parse(saved) : null;
+      return saved ? normalizeUserProfile(JSON.parse(saved)) : null;
     } catch {
       return null;
     }
@@ -252,8 +270,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // ── Profile Actions ──────────────────────────────────────────────────────────
   const updateProfile = useCallback((profile: UserProfile) => {
-    setUserProfile(profile);
-    toast.success(`Profile updated! Welcome, ${profile.name} 👋`, { id: 'profile-update' });
+    const normalized = normalizeUserProfile(profile) || DEFAULT_PROFILE;
+    setUserProfile(normalized);
+    toast.success(`Profile updated! Welcome, ${normalized.name} 👋`, { id: 'profile-update' });
   }, []);
 
   /**
@@ -369,11 +388,17 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const now = new Date();
 
     // Use the user's chosen start date, falling back to today if not onboarded yet
-    const programStartDate = userProfile
-      ? parseISO(userProfile.startDate)
-      : now;
+    let programStartDate = now;
+    try {
+      if (userProfile?.startDate) {
+        const d = parseISO(userProfile.startDate);
+        if (!isNaN(d.getTime())) programStartDate = d;
+      }
+    } catch {
+      programStartDate = now;
+    }
 
-    const daysSinceStart = Math.max(0, differenceInCalendarDays(now, programStartDate));
+    const daysSinceStart = Math.max(0, differenceInCalendarDays(now, programStartDate) || 0);
     const currentDay = Math.min(CURRICULUM.totalDays, daysSinceStart + 1);
     const currentWeek = Math.min(CURRICULUM.totalWeeks, Math.floor(daysSinceStart / 7) + 1);
 
@@ -387,11 +412,17 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
     });
 
-    const targetDate = userProfile
-      ? parseISO(userProfile.targetDate)
-      : addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays);
+    let targetDate = addDays(now, APP_CONFIG.defaults.targetDateOffsetDays);
+    try {
+      if (userProfile?.targetDate) {
+        const d = parseISO(userProfile.targetDate);
+        if (!isNaN(d.getTime())) targetDate = d;
+      }
+    } catch {
+      targetDate = addDays(now, APP_CONFIG.defaults.targetDateOffsetDays);
+    }
     const diffTime = targetDate.getTime() - now.getTime();
-    const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 0);
 
     // Odds formula: Base 15% + (Progress %) * 60% + Streak bonus (max 10% for 20 days)
     const oddsPercentage = Math.min(
