@@ -27,10 +27,10 @@ export const StrategyModal: React.FC<StrategyModalProps> = ({ isOpen, onClose })
             <strong className="text-red-400">Phase 3 (Weeks 10-13): Dynamic Programming & Bits</strong> — 1D & 2D DP, Knapsack, String DP, Greedy Intervals & Bitwise tricks.
           </div>
           <div className="p-3 rounded-xl bg-gray-900 border border-gray-800">
-            <strong className="text-purple-400">Phase 4 (Week 14): System Design Shift</strong> — Reading DDIA, designing TinyURL, Rate Limiters with Redis.
+            <strong className="text-purple-400">Phase 4 (Week 14): System Design Shift</strong> — Distributed systems fundamentals — URL shorteners, rate limiters, notification systems.
           </div>
           <div className="p-3 rounded-xl bg-gray-900 border border-gray-800">
-            <strong className="text-green-400">Phase 5 (Weeks 15-20): FAANG & FinTech Sprint</strong> — Company-specific grinding (Razorpay, PhonePe, Google) & Mock Interviews.
+            <strong className="text-green-400">Phase 5 (Weeks 15-20): Top Tier Sprint — Target company patterns & mock interviews</strong>
           </div>
         </div>
       </div>

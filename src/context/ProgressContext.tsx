@@ -5,11 +5,9 @@ import { sounds } from '../utils/audio';
 import confetti from 'canvas-confetti';
 import toast from 'react-hot-toast';
 import { differenceInCalendarDays, parseISO, format, addDays } from 'date-fns';
-
-const KEY_PROGRESS = "dsa_progress_v2";
-const KEY_STREAK = "dsa_streak_v2";
-const KEY_SOLVE_HISTORY = "dsa_solve_history_v2";
-const KEY_USER_PROFILE = "dsa_user_profile_v1";
+import { APP_CONFIG } from '../config/appConfig';
+import { STORAGE_KEYS } from '../config/storageKeys';
+import { CURRICULUM } from '../data/curriculumStats';
 
 // ─── User Profile ─────────────────────────────────────────────────────────────
 export interface UserProfile {
@@ -23,9 +21,9 @@ export interface UserProfile {
 
 const DEFAULT_PROFILE: UserProfile = {
   name: 'User',
-  tagline: 'LeetCode Planner',
+  tagline: APP_CONFIG.defaults.defaultTagline,
   startDate: format(new Date(), 'yyyy-MM-dd'),
-  targetDate: '2027-01-15',
+  targetDate: format(addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'),
   restDay: 'sunday',
   secondarySkill: 'project',
 };
@@ -188,7 +186,7 @@ function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { d
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     try {
-      const saved = localStorage.getItem(KEY_USER_PROFILE);
+      const saved = localStorage.getItem(STORAGE_KEYS.userProfile);
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
@@ -199,7 +197,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [progress, setProgress] = useState<UserProgressMap>(() => {
     try {
-      const saved = localStorage.getItem(KEY_PROGRESS);
+      const saved = localStorage.getItem(STORAGE_KEYS.progress);
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -208,7 +206,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [solveHistory, setSolveHistory] = useState<SolveRecordMap>(() => {
     try {
-      const saved = localStorage.getItem(KEY_SOLVE_HISTORY);
+      const saved = localStorage.getItem(STORAGE_KEYS.solveHistory);
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
@@ -232,20 +230,20 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const setStatusFilter = useCallback((filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150') => _setStatusFilter(filter), []);
 
   useEffect(() => {
-    localStorage.setItem(KEY_PROGRESS, JSON.stringify(progress));
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(progress));
   }, [progress]);
 
   useEffect(() => {
-    localStorage.setItem(KEY_SOLVE_HISTORY, JSON.stringify(solveHistory));
+    localStorage.setItem(STORAGE_KEYS.solveHistory, JSON.stringify(solveHistory));
   }, [solveHistory]);
 
   useEffect(() => {
-    localStorage.setItem(KEY_STREAK, streak.toString());
+    localStorage.setItem(STORAGE_KEYS.streak, streak.toString());
   }, [streak]);
 
   useEffect(() => {
     if (userProfile !== null) {
-      localStorage.setItem(KEY_USER_PROFILE, JSON.stringify(userProfile));
+      localStorage.setItem(STORAGE_KEYS.userProfile, JSON.stringify(userProfile));
     }
   }, [userProfile]);
 
@@ -263,7 +261,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resumeFromDay = useCallback((newStartDate: string) => {
     setUserProfile((prev) => {
       const updated = { ...(prev ?? DEFAULT_PROFILE), startDate: newStartDate };
-      localStorage.setItem(KEY_USER_PROFILE, JSON.stringify(updated));
+      localStorage.setItem(STORAGE_KEYS.userProfile, JSON.stringify(updated));
       return updated;
     });
     toast.success('Program date adjusted! Picking up from where you left off 🎯', { id: 'resume-toast' });
@@ -373,8 +371,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       : now;
 
     const daysSinceStart = Math.max(0, differenceInCalendarDays(now, programStartDate));
-    const currentDay = Math.min(140, daysSinceStart + 1);
-    const currentWeek = Math.min(20, Math.floor(daysSinceStart / 7) + 1);
+    const currentDay = Math.min(CURRICULUM.totalDays, daysSinceStart + 1);
+    const currentWeek = Math.min(CURRICULUM.totalWeeks, Math.floor(daysSinceStart / 7) + 1);
 
     let missedDaysCount = 0;
     PLAN_DATA.forEach((w) => {
@@ -388,10 +386,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const targetDate = userProfile
       ? parseISO(userProfile.targetDate)
-      : new Date('2027-01-15');
+      : addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays);
     const diffTime = targetDate.getTime() - now.getTime();
     const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
+    // Odds formula: Base 15% + (Progress %) * 60% + Streak bonus (max 10% for 20 days)
     const oddsPercentage = Math.min(
       85,
       Math.round(15 + (solvedCount / (totalProblems || 1)) * 60 + Math.min(streak, 20) * 0.5)
@@ -439,7 +438,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const a = document.createElement("a");
     a.href = url;
     const safeName = (userProfile?.name || 'user').toLowerCase().replace(/\s+/g, '_');
-    a.download = `dsa_planner_${safeName}_${format(new Date(), 'yyyy-MM-dd')}.json`;
+    a.download = `${APP_CONFIG.exports.filenamePrefix}${safeName}_${format(new Date(), 'yyyy-MM-dd')}.json`;
     a.click();
     toast.success("Progress backup downloaded! 💾");
   }, [exportJSONString, userProfile]);
@@ -466,10 +465,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const resetAll = useCallback(() => {
-    localStorage.removeItem(KEY_PROGRESS);
-    localStorage.removeItem(KEY_SOLVE_HISTORY);
-    localStorage.removeItem(KEY_STREAK);
-    localStorage.removeItem(KEY_USER_PROFILE);
+    localStorage.removeItem(STORAGE_KEYS.progress);
+    localStorage.removeItem(STORAGE_KEYS.solveHistory);
+    localStorage.removeItem(STORAGE_KEYS.streak);
+    localStorage.removeItem(STORAGE_KEYS.userProfile);
     setProgress({});
     setSolveHistory({});
     setUserProfile(null);

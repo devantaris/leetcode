@@ -5,6 +5,7 @@ import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { Trophy } from 'lucide-react';
 import { AnimatedCounter } from './AnimatedCounter';
 import { useNavigate } from 'react-router-dom';
+import { APP_CONFIG } from '../config/appConfig';
 
 // Gather all unique Top 150 problems in the plan (by lcNumber, skip reviews)
 const top150ProblemsMap = new Map<number, { id: string; difficulty: string }>();
@@ -74,7 +75,7 @@ export const Top150Card: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-yellow-400" />
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-indigo-300">
-                  LeetCode Top Interview 150
+                  {APP_CONFIG.tracks.primary}
                 </span>
               </div>
               <button

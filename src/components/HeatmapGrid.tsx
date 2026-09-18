@@ -1,6 +1,7 @@
 import React from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
+import { CURRICULUM } from '../data/curriculumStats';
 import { useNavigate } from 'react-router-dom';
 
 export const HeatmapGrid: React.FC = () => {
@@ -17,7 +18,7 @@ export const HeatmapGrid: React.FC = () => {
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div>
           <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">
-            140-DAY CURRICULUM MATRIX
+            {`${CURRICULUM.totalDays}-DAY CURRICULUM MATRIX`}
           </h3>
           <p className="text-xs text-gray-400">Click any week column to jump directly into its curriculum</p>
         </div>

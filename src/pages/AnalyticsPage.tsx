@@ -4,10 +4,10 @@ import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { motion } from 'framer-motion';
 import { Target, TrendingUp, Calendar } from 'lucide-react';
 import { ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
-import { format } from 'date-fns';
+import { CURRICULUM } from '../data/curriculumStats';
 
 export const AnalyticsPage: React.FC = () => {
-  const { stats, progress, dailySolveLog, userProfile } = useProgress();
+  const { stats, progress, dailySolveLog } = useProgress();
 
   // Difficulty breakdown data
   const { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap } = useMemo(() => {
@@ -84,13 +84,13 @@ export const AnalyticsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#101018] border border-gray-800 shadow-xl">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-extrabold text-white">INTERNSHIP READINESS & ANALYTICS</h2>
+            <h2 className="text-2xl font-extrabold text-white">INTERVIEW READINESS & ANALYTICS</h2>
             <span className="text-xs font-mono font-bold bg-orange-500/20 text-orange-400 px-2.5 py-0.5 rounded border border-orange-500/30">
               PRO INSIGHTS
             </span>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            Data-driven evaluation of your DSA grinding velocity and estimated readiness for {userProfile?.targetDate ? format(new Date(userProfile.targetDate), 'MMM yyyy') : 'Jan 2027'} placements.
+            Data-driven evaluation of your DSA grinding velocity and estimated readiness for upcoming technical interviews.
           </p>
         </div>
 
@@ -118,9 +118,9 @@ export const AnalyticsPage: React.FC = () => {
         <div className="p-4 rounded-2xl bg-[#101018] border border-gray-800 shadow-lg">
           <span className="text-[10px] font-mono font-bold text-gray-500 uppercase">PACE STATUS</span>
           <span className={`text-xl font-extrabold font-mono block mt-1 ${stats.isOnTrack ? 'text-green-400' : 'text-orange-400'}`}>
-            {stats.isOnTrack ? '✅ ON TRACK' : '⚠️ SPEED UP'}
+            {stats.isOnTrack ? '✅ On Track' : '⚠️ Behind Schedule'}
           </span>
-          <span className="text-[10px] text-gray-400 mt-1 block">Targeting ~3 problems/day</span>
+          <span className="text-[10px] text-gray-400 mt-1 block">Targeting ~{CURRICULUM.dailyTarget} problems/day</span>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#101018] border border-gray-800 shadow-lg">
@@ -149,7 +149,7 @@ export const AnalyticsPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-orange-400" />
-              20-Week Completion Trajectory
+              {CURRICULUM.totalWeeks}-Week Completion Trajectory
             </h3>
             <span className="text-xs font-mono text-gray-400">Solved vs Target</span>
           </div>
@@ -209,7 +209,7 @@ export const AnalyticsPage: React.FC = () => {
       <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">
-            All 20 Topics Completion Breakdown
+            All {CURRICULUM.totalTopics} Topics Completion Breakdown
           </h3>
           <span className="text-xs font-mono text-gray-400">Solved vs Remaining per topic</span>
         </div>

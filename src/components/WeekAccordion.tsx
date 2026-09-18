@@ -197,7 +197,7 @@ export const WeekAccordion: React.FC = () => {
                           {d.type === 'rest' ? (
                             <div className="py-3 text-xs text-gray-400 font-medium italic flex items-center gap-2">
                               <Coffee className="w-4 h-4 text-orange-400" />
-                              Rest day — time for {restActivity}. Zero DSA guilt today!
+                              Rest day — time for {restActivity}. Enjoy your rest day.
                             </div>
                           ) : (
                             <div className="flex flex-col gap-2.5 mt-2">

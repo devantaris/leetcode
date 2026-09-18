@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { CheckCircle2, Flame, Clock, TrendingUp, Target, Skull } from 'lucide-react';
+import { CheckCircle2, Flame, Clock, TrendingUp, Target, CalendarX } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { AnimatedCounter } from './AnimatedCounter';
@@ -101,7 +101,7 @@ export const StatsAnalyticsDashboard: React.FC = () => {
             </span>
           </div>
           <p className="text-[11px] text-gray-400 mt-3">
-            1 missed day resets momentum!
+            Consistency drives long-term retention.
           </p>
         </div>
 
@@ -118,14 +118,14 @@ export const StatsAnalyticsDashboard: React.FC = () => {
             <span className="font-mono text-xs text-gray-400">days left</span>
           </div>
           <span className="text-[11px] font-mono text-blue-400 mt-3 block">
-            {userProfile.targetDate ? new Date(userProfile.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Jan 15, 2027'} — Target
+            {userProfile.targetDate ? new Date(userProfile.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'your target date'} — Target
           </span>
         </div>
 
         {/* CARD 4: TOP INTERNSHIP ODDS */}
         <div className="relative overflow-hidden rounded-2xl bg-[#101018] border border-gray-800 p-5 shadow-xl">
           <div className="flex items-center justify-between text-gray-400 mb-3">
-            <span className="text-xs font-bold font-mono tracking-wider uppercase">INTERNSHIP ODDS</span>
+            <span className="text-xs font-bold font-mono tracking-wider uppercase">READINESS SCORE</span>
             <TrendingUp className="w-5 h-5 text-yellow-400" />
           </div>
           <div className="flex items-baseline gap-2">
@@ -144,8 +144,8 @@ export const StatsAnalyticsDashboard: React.FC = () => {
         {/* CARD 5: MISSED DAYS */}
         <div className="relative overflow-hidden rounded-2xl bg-[#101018] border border-gray-800 p-5 shadow-xl">
           <div className="flex items-center justify-between text-gray-400 mb-3">
-            <span className="text-xs font-bold font-mono tracking-wider uppercase">MISSED DAYS</span>
-            <Skull className="w-5 h-5 text-red-500" />
+            <span className="text-xs font-bold font-mono tracking-wider uppercase">DAYS OFF TRACK</span>
+            <CalendarX className="w-5 h-5 text-red-500" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-3xl font-extrabold text-red-400">
@@ -154,7 +154,7 @@ export const StatsAnalyticsDashboard: React.FC = () => {
             <span className="font-mono text-xs text-gray-400">days</span>
           </div>
           <span className="text-[11px] font-mono text-red-400/80 mt-3 block">
-            {stats.missedDaysCount === 0 ? 'Zero missed days! 🔥' : `${stats.missedDaysCount} days skipped`}
+            {stats.missedDaysCount === 0 ? 'Perfect consistency! 🔥' : `${stats.missedDaysCount} days off track`}
           </span>
         </div>
 

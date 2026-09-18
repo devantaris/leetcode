@@ -6,6 +6,8 @@ import { CommandPalette } from './components/CommandPalette';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { useProgress } from './context/ProgressContext';
 import toast, { Toaster } from 'react-hot-toast';
+import { format, parseISO } from 'date-fns';
+import { APP_CONFIG } from './config/appConfig';
 
 export const Layout: React.FC = () => {
   const { importJSON, isOnboarded, userProfile } = useProgress();
@@ -88,7 +90,7 @@ export const Layout: React.FC = () => {
 
       {/* FOOTER */}
       <footer className="w-full text-center py-6 text-xs text-gray-500 font-mono border-t border-gray-800/40 bg-[#08080c]">
-        LeetCode 150 • 20-Week DSA Planner • {userProfile.name} • Target: Jan 2027 Placements
+        {APP_CONFIG.name} • {userProfile.name} • Target: {format(parseISO(userProfile.targetDate), 'MMM yyyy')}
       </footer>
 
       {/* MODALS */}

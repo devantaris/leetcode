@@ -34,7 +34,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 6, weekday: "Sat", topic: "LeetCode Weekly Contest", type: "contest", problems: [
         { id: "p16", name: "LeetCode Live Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Solve 2-3 problems under live timer!" }
       ]},
-      { day: 7, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 7, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -70,7 +70,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 13, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p32", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Push for Q1 and Q2 speed!" }
       ]},
-      { day: 14, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 14, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -106,7 +106,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 20, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p48", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Solve Q1+Q2!" }
       ]},
-      { day: 21, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 21, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -142,7 +142,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 27, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p64", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Maintain momentum!" }
       ]},
-      { day: 28, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 28, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -178,7 +178,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 34, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p80", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Tree problems in contest!" }
       ]},
-      { day: 35, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 35, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -214,7 +214,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 41, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p96", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Solve 2+ problems!" }
       ]},
-      { day: 42, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 42, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -250,7 +250,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 48, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p112", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Time pressure test!" }
       ]},
-      { day: 49, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 49, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -286,7 +286,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 55, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p128", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Graph problems test!" }
       ]},
-      { day: 56, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 56, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -322,7 +322,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 62, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p144", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "2 months mark!" }
       ]},
-      { day: 63, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 63, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -358,7 +358,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 69, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p160", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Identify DP problems live!" }
       ]},
-      { day: 70, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 70, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -394,7 +394,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 76, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p176", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "DP confidence test!" }
       ]},
-      { day: 77, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 77, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -430,7 +430,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 83, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p192", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Greedy contest speed!" }
       ]},
-      { day: 84, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 84, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -466,7 +466,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 90, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p208", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "All foundational topics complete!" }
       ]},
-      { day: 91, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 91, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -484,7 +484,7 @@ export const PLAN_DATA: WeekPlan[] = [
         { id: "sd3", name: "System Design: Pastebin", lcNumber: 0, difficulty: "Medium", url: "https://github.com/donnemartin/system-design-primer", note: "Object storage (S3) + TTL keys." }
       ]},
       { day: 95, weekday: "Thu", topic: "Design Rate Limiter (Redis)", type: "review", problems: [
-        { id: "sd4", name: "System Design: Rate Limiter", lcNumber: 0, difficulty: "Medium", url: "https://github.com/donnemartin/system-design-primer", note: "Token bucket & sliding window in Redis (Relevant to MARI!)." }
+        { id: "sd4", name: "System Design: Rate Limiter", lcNumber: 0, difficulty: "Medium", url: "https://github.com/donnemartin/system-design-primer", note: "Token bucket & sliding window algorithms using Redis." }
       ]},
       { day: 96, weekday: "Fri", topic: "Design Notification Service", type: "regular", problems: [
         { id: "sd5", name: "System Design: Notification System", lcNumber: 0, difficulty: "Medium", url: "https://github.com/donnemartin/system-design-primer", note: "Message queues & worker fan-out." }
@@ -492,7 +492,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 97, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p209", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Keep coding speed alive!" }
       ]},
-      { day: 98, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 98, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -501,8 +501,8 @@ export const PLAN_DATA: WeekPlan[] = [
     topic: "Company Patterns",
     days: [
       { day: 99, weekday: "Mon", topic: "LRU & String Formatting", type: "regular", problems: [
-        { id: "p210", name: "LRU Cache", lcNumber: 146, difficulty: "Medium", url: "https://leetcode.com/problems/lru-cache/", note: "#1 FAANG question — Hashmap + Doubly Linked List." },
-        { id: "p211", name: "String to Integer (atoi)", lcNumber: 8, difficulty: "Medium", url: "https://leetcode.com/problems/string-to-integer-atoi/", note: "Microsoft favorite string parsing edge cases." },
+        { id: "p210", name: "LRU Cache", lcNumber: 146, difficulty: "Medium", url: "https://leetcode.com/problems/lru-cache/", note: "Top-tier interview classic — Hashmap + Doubly Linked List." },
+        { id: "p211", name: "String to Integer (atoi)", lcNumber: 8, difficulty: "Medium", url: "https://leetcode.com/problems/string-to-integer-atoi/", note: "High-frequency string parsing edge cases." },
         { id: "p212", name: "Zigzag Conversion", lcNumber: 6, difficulty: "Medium", url: "https://leetcode.com/problems/zigzag-conversion/", note: "Row tracking array string simulation." }
       ]},
       { day: 100, weekday: "Tue", topic: "Design Data Structures", type: "regular", problems: [
@@ -510,7 +510,7 @@ export const PLAN_DATA: WeekPlan[] = [
         { id: "p214", name: "Snapshot Array", lcNumber: 1146, difficulty: "Medium", url: "https://leetcode.com/problems/snapshot-array/", note: "Binary search on historical snap IDs." },
         { id: "p215", name: "Time Based Key-Value Store", lcNumber: 981, difficulty: "Medium", url: "https://leetcode.com/problems/time-based-key-value-store/", note: "Map + binary search timestamps." }
       ]},
-      { day: 101, weekday: "Wed", topic: "Classic FAANG", type: "regular", problems: [
+      { day: 101, weekday: "Wed", topic: "Top Tier Interview Classics", type: "regular", problems: [
         { id: "p216", name: "Add Two Numbers", lcNumber: 2, difficulty: "Medium", url: "https://leetcode.com/problems/add-two-numbers/", note: "Linked list carry addition." },
         { id: "p217", name: "Reverse Integer", lcNumber: 7, difficulty: "Medium", url: "https://leetcode.com/problems/reverse-integer/", note: "Integer overflow detection logic." },
         { id: "p218", name: "Integer to Roman", lcNumber: 12, difficulty: "Medium", url: "https://leetcode.com/problems/integer-to-roman/", note: "Greedy value map array lookup." }
@@ -520,15 +520,15 @@ export const PLAN_DATA: WeekPlan[] = [
         { id: "p220", name: "Add Two Numbers (BLIND RE-SOLVE)", lcNumber: 2, difficulty: "Medium", url: "https://leetcode.com/problems/add-two-numbers/", note: "Re-solve with dummy head.", isReview: true },
         { id: "p221", name: "Design Twitter", lcNumber: 355, difficulty: "Medium", url: "https://leetcode.com/problems/design-twitter/", note: "Newsfeed k-way heap merge." }
       ]},
-      { day: 103, weekday: "Fri", topic: "FinTech Stock Patterns", type: "regular", problems: [
-        { id: "p222", name: "Best Time to Buy & Sell Stock Cooldown", lcNumber: 309, difficulty: "Medium", url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/", note: "Razorpay / PhonePe favorite state machine DP." },
+      { day: 103, weekday: "Fri", topic: "State Machine & Stock Patterns", type: "regular", problems: [
+        { id: "p222", name: "Best Time to Buy & Sell Stock Cooldown", lcNumber: 309, difficulty: "Medium", url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/", note: "FinTech favorite state machine DP." },
         { id: "p223", name: "Best Time to Buy & Sell Stock Fee", lcNumber: 714, difficulty: "Medium", url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/", note: "Fee deduction greedy/DP." },
         { id: "p224", name: "Maximum Profit in Job Scheduling", lcNumber: 1235, difficulty: "Hard", url: "https://leetcode.com/problems/maximum-profit-in-job-scheduling/", note: "DP + binary search weighted scheduling." }
       ]},
       { day: 104, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p225", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Push hard!" }
       ]},
-      { day: 105, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 105, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -537,7 +537,7 @@ export const PLAN_DATA: WeekPlan[] = [
     topic: "Hard Company Problems",
     days: [
       { day: 106, weekday: "Mon", topic: "Hard String & Array Tricks", type: "regular", problems: [
-        { id: "p226", name: "Text Justification", lcNumber: 68, difficulty: "Hard", url: "https://leetcode.com/problems/text-justification/", note: "Google line space packing." },
+        { id: "p226", name: "Text Justification", lcNumber: 68, difficulty: "Hard", url: "https://leetcode.com/problems/text-justification/", note: "Classic string alignment simulation." },
         { id: "p227", name: "First Missing Positive", lcNumber: 41, difficulty: "Hard", url: "https://leetcode.com/problems/first-missing-positive/", note: "In-place cyclic sort index mapping." },
         { id: "p228", name: "Candy", lcNumber: 135, difficulty: "Hard", url: "https://leetcode.com/problems/candy/", note: "Left-to-right & right-to-left greedy pass." }
       ]},
@@ -564,7 +564,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 111, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p241", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Aim for Q3 solve!" }
       ]},
-      { day: 112, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 112, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -600,7 +600,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 118, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p257", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Timed performance test." }
       ]},
-      { day: 119, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 119, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -634,9 +634,9 @@ export const PLAN_DATA: WeekPlan[] = [
         { id: "p272", name: "Maximum Frequency Stack", lcNumber: 895, difficulty: "Hard", url: "https://leetcode.com/problems/maximum-frequency-stack/", note: "Frequency stacks map data structure." }
       ]},
       { day: 125, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
-        { id: "p273", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "November Sprint ending!" }
+        { id: "p273", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Penultimate sprint checkpoint!" }
       ]},
-      { day: 126, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 126, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -672,7 +672,7 @@ export const PLAN_DATA: WeekPlan[] = [
       { day: 132, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
         { id: "p289", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Sprint speed check!" }
       ]},
-      { day: 133, weekday: "Sun", topic: "Rest Day & Personal Project", type: "rest", problems: [] }
+      { day: 133, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
     ]
   },
   {
@@ -700,15 +700,210 @@ export const PLAN_DATA: WeekPlan[] = [
         { id: "p300", name: "Min Cost Hire K Workers (BLIND)", lcNumber: 857, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-cost-to-hire-k-workers/", note: "Re-solve heap trim.", isReview: true },
         { id: "p301", name: "Recover Binary Search Tree", lcNumber: 99, difficulty: "Medium", url: "https://leetcode.com/problems/recover-binary-search-tree/", note: "Inorder pointer swap repair." }
       ]},
-      { day: 138, weekday: "Fri", topic: "THE FINAL SPRINT DAY 🏁", type: "regular", problems: [
+      { day: 138, weekday: "Fri", topic: "Final Sprint Day 🏁", type: "regular", problems: [
+        { id: "p213", name: "Basic Calculator II", lcNumber: 227, difficulty: "Medium", url: "https://leetcode.com/problems/basic-calculator-ii/", note: "Stack precedence operator evaluation." },
+        { id: "p214", name: "Snapshot Array", lcNumber: 1146, difficulty: "Medium", url: "https://leetcode.com/problems/snapshot-array/", note: "Binary search on historical snap IDs." },
+        { id: "p215", name: "Time Based Key-Value Store", lcNumber: 981, difficulty: "Medium", url: "https://leetcode.com/problems/time-based-key-value-store/", note: "Map + binary search timestamps." }
+      ]},
+      { day: 101, weekday: "Wed", topic: "Top Tier Interview Classics", type: "regular", problems: [
+        { id: "p216", name: "Add Two Numbers", lcNumber: 2, difficulty: "Medium", url: "https://leetcode.com/problems/add-two-numbers/", note: "Linked list carry addition." },
+        { id: "p217", name: "Reverse Integer", lcNumber: 7, difficulty: "Medium", url: "https://leetcode.com/problems/reverse-integer/", note: "Integer overflow detection logic." },
+        { id: "p218", name: "Integer to Roman", lcNumber: 12, difficulty: "Medium", url: "https://leetcode.com/problems/integer-to-roman/", note: "Greedy value map array lookup." }
+      ]},
+      { day: 102, weekday: "Thu", topic: "Review & Twitter Design", type: "review", problems: [
+        { id: "p219", name: "LRU Cache (BLIND RE-SOLVE)", lcNumber: 146, difficulty: "Medium", url: "https://leetcode.com/problems/lru-cache/", note: "Write DLL + Map in under 15 minutes!", isReview: true },
+        { id: "p220", name: "Add Two Numbers (BLIND RE-SOLVE)", lcNumber: 2, difficulty: "Medium", url: "https://leetcode.com/problems/add-two-numbers/", note: "Re-solve with dummy head.", isReview: true },
+        { id: "p221", name: "Design Twitter", lcNumber: 355, difficulty: "Medium", url: "https://leetcode.com/problems/design-twitter/", note: "Newsfeed k-way heap merge." }
+      ]},
+      { day: 103, weekday: "Fri", topic: "State Machine & Stock Patterns", type: "regular", problems: [
+        { id: "p222", name: "Best Time to Buy & Sell Stock Cooldown", lcNumber: 309, difficulty: "Medium", url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/", note: "FinTech favorite state machine DP." },
+        { id: "p223", name: "Best Time to Buy & Sell Stock Fee", lcNumber: 714, difficulty: "Medium", url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/", note: "Fee deduction greedy/DP." },
+        { id: "p224", name: "Maximum Profit in Job Scheduling", lcNumber: 1235, difficulty: "Hard", url: "https://leetcode.com/problems/maximum-profit-in-job-scheduling/", note: "DP + binary search weighted scheduling." }
+      ]},
+      { day: 104, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
+        { id: "p225", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Push hard!" }
+      ]},
+      { day: 105, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
+    ]
+  },
+  {
+    week: 16,
+    title: "Company-Specific Grinding — Part 2",
+    topic: "Hard Company Problems",
+    days: [
+      { day: 106, weekday: "Mon", topic: "Hard String & Array Tricks", type: "regular", problems: [
+        { id: "p226", name: "Text Justification", lcNumber: 68, difficulty: "Hard", url: "https://leetcode.com/problems/text-justification/", note: "Classic string alignment simulation." },
+        { id: "p227", name: "First Missing Positive", lcNumber: 41, difficulty: "Hard", url: "https://leetcode.com/problems/first-missing-positive/", note: "In-place cyclic sort index mapping." },
+        { id: "p228", name: "Candy", lcNumber: 135, difficulty: "Hard", url: "https://leetcode.com/problems/candy/", note: "Left-to-right & right-to-left greedy pass." }
+      ]},
+      { day: 107, weekday: "Tue", topic: "Advanced Data Structure Hard", type: "regular", problems: [
+        { id: "p229", name: "Count of Smaller Numbers After Self", lcNumber: 315, difficulty: "Hard", url: "https://leetcode.com/problems/count-of-smaller-numbers-after-self/", note: "Merge sort counting / Fenwick tree." },
+        { id: "p230", name: "Sliding Window Maximum", lcNumber: 239, difficulty: "Hard", url: "https://leetcode.com/problems/sliding-window-maximum/", note: "Monotonic deque window tracker." },
+        { id: "p231", name: "The Skyline Problem", lcNumber: 218, difficulty: "Hard", url: "https://leetcode.com/problems/the-skyline-problem/", note: "Sweep line + max heap events." }
+      ]},
+      { day: 108, weekday: "Wed", topic: "Hard String Match & DP", type: "regular", problems: [
+        { id: "p232", name: "Wildcard Matching", lcNumber: 44, difficulty: "Hard", url: "https://leetcode.com/problems/wildcard-matching/", note: "DP matching for ? and *." },
+        { id: "p233", name: "Minimum Cost to Merge Stones", lcNumber: 1000, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-cost-to-merge-stones/", note: "K-step interval DP." },
+        { id: "p234", name: "Dungeon Game", lcNumber: 174, difficulty: "Hard", url: "https://leetcode.com/problems/dungeon-game/", note: "Bottom-right reverse HP DP." }
+      ]},
+      { day: 109, weekday: "Thu", topic: "Review & Envelopes", type: "review", problems: [
+        { id: "p235", name: "Job Scheduling (BLIND RE-SOLVE)", lcNumber: 1235, difficulty: "Hard", url: "https://leetcode.com/problems/maximum-profit-in-job-scheduling/", note: "Re-solve binary search DP.", isReview: true },
+        { id: "p236", name: "Sliding Window Maximum (BLIND)", lcNumber: 239, difficulty: "Hard", url: "https://leetcode.com/problems/sliding-window-maximum/", note: "Re-solve monotonic deque.", isReview: true },
+        { id: "p237", name: "Russian Doll Envelopes", lcNumber: 354, difficulty: "Hard", url: "https://leetcode.com/problems/russian-doll-envelopes/", note: "2D sorting + 1D LIS patience sort." }
+      ]},
+      { day: 110, weekday: "Fri", topic: "3D Grid & Histogram Hard", type: "regular", problems: [
+        { id: "p238", name: "Trapping Rain Water II", lcNumber: 407, difficulty: "Hard", url: "https://leetcode.com/problems/trapping-rain-water-ii/", note: "Min heap BFS from 3D boundary." },
+        { id: "p239", name: "Smallest Range Covering K Lists", lcNumber: 632, difficulty: "Hard", url: "https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/", note: "Heap min pointer window tracking." },
+        { id: "p240", name: "Maximal Rectangle", lcNumber: 85, difficulty: "Hard", url: "https://leetcode.com/problems/maximal-rectangle/", note: "Row-by-row histogram stack." }
+      ]},
+      { day: 111, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
+        { id: "p241", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Aim for Q3 solve!" }
+      ]},
+      { day: 112, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
+    ]
+  },
+  {
+    week: 17,
+    title: "Mock Interviews & Weak Topics — P1",
+    topic: "Mock Revision",
+    days: [
+      { day: 113, weekday: "Mon", topic: "Array Revisit", type: "regular", problems: [
+        { id: "p242", name: "4Sum", lcNumber: 18, difficulty: "Medium", url: "https://leetcode.com/problems/4sum/", note: "N-sum recursion reduction." },
+        { id: "p243", name: "Next Permutation", lcNumber: 31, difficulty: "Medium", url: "https://leetcode.com/problems/next-permutation/", note: "Rightmost pivot search & reverse suffix." },
+        { id: "p244", name: "Spiral Matrix II", lcNumber: 59, difficulty: "Medium", url: "https://leetcode.com/problems/spiral-matrix-ii/", note: "Grid generation matrix." }
+      ]},
+      { day: 114, weekday: "Tue", topic: "Tree & Graph Revisit", type: "regular", problems: [
+        { id: "p245", name: "Binary Tree Zigzag Level Order", lcNumber: 103, difficulty: "Medium", url: "https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/", note: "BFS alternating queue." },
+        { id: "p246", name: "All Nodes Distance K in Binary Tree", lcNumber: 863, difficulty: "Medium", url: "https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/", note: "Tree to undirected graph BFS." },
+        { id: "p247", name: "Shortest Bridge", lcNumber: 934, difficulty: "Medium", url: "https://leetcode.com/problems/shortest-bridge/", note: "Island DFS + boundary expanding BFS." }
+      ]},
+      { day: 115, weekday: "Wed", topic: "Mock Session 1", type: "regular", problems: [
+        { id: "p248", name: "Random Pick with Weight", lcNumber: 528, difficulty: "Medium", url: "https://leetcode.com/problems/random-pick-with-weight/", note: "Prefix sums + binary search pick." },
+        { id: "p249", name: "Design Underground System", lcNumber: 1396, difficulty: "Medium", url: "https://leetcode.com/problems/design-underground-system/", note: "Check-in/out average trip hashmap." },
+        { id: "p250", name: "Decode String", lcNumber: 394, difficulty: "Medium", url: "https://leetcode.com/problems/decode-string/", note: "Nested bracket expression stack." }
+      ]},
+      { day: 116, weekday: "Thu", topic: "Review & Graph Rank", type: "review", problems: [
+        { id: "p251", name: "Next Permutation (BLIND RE-SOLVE)", lcNumber: 31, difficulty: "Medium", url: "https://leetcode.com/problems/next-permutation/", note: "Re-solve with zero hints.", isReview: true },
+        { id: "p252", name: "Decode String (BLIND RE-SOLVE)", lcNumber: 394, difficulty: "Medium", url: "https://leetcode.com/problems/decode-string/", note: "Re-solve stack parser.", isReview: true },
+        { id: "p253", name: "Maximal Network Rank", lcNumber: 1615, difficulty: "Medium", url: "https://leetcode.com/problems/maximal-network-rank/", note: "Pairwise degree counting graph." }
+      ]},
+      { day: 117, weekday: "Fri", topic: "Mock Session 2", type: "regular", problems: [
+        { id: "p254", name: "Design Circular Queue", lcNumber: 622, difficulty: "Medium", url: "https://leetcode.com/problems/design-circular-queue/", note: "Ring buffer array pointer math." },
+        { id: "p255", name: "Evaluate Division", lcNumber: 399, difficulty: "Medium", url: "https://leetcode.com/problems/evaluate-division/", note: "Weighted graph path product DFS." },
+        { id: "p256", name: "Remove K Digits", lcNumber: 402, difficulty: "Medium", url: "https://leetcode.com/problems/remove-k-digits/", note: "Monotonic increasing stack greedy." }
+      ]},
+      { day: 118, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
+        { id: "p257", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Timed performance test." }
+      ]},
+      { day: 119, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
+    ]
+  },
+  {
+    week: 18,
+    title: "Mock Interviews & Weak Topics — P2",
+    topic: "Mock Hard Revision",
+    days: [
+      { day: 120, weekday: "Mon", topic: "DP Revision", type: "regular", problems: [
+        { id: "p258", name: "Coin Change II", lcNumber: 518, difficulty: "Medium", url: "https://leetcode.com/problems/coin-change-ii/", note: "Unbounded knapsack combinations count." },
+        { id: "p259", name: "Best Time to Buy & Sell Stock III", lcNumber: 123, difficulty: "Hard", url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/", note: "At most 2 transactions state DP." },
+        { id: "p260", name: "Minimum Score Triangulation", lcNumber: 1039, difficulty: "Medium", url: "https://leetcode.com/problems/minimum-score-triangulation-of-polygon/", note: "Polygon interval MCM DP." }
+      ]},
+      { day: 121, weekday: "Tue", topic: "Greedy & Stack Revision", type: "regular", problems: [
+        { id: "p261", name: "Valid Parenthesis String", lcNumber: 678, difficulty: "Medium", url: "https://leetcode.com/problems/valid-parenthesis-string/", note: "Min/Max open count tracking." },
+        { id: "p262", name: "Car Fleet", lcNumber: 853, difficulty: "Medium", url: "https://leetcode.com/problems/car-fleet/", note: "Sort position + arrival time stack." },
+        { id: "p263", name: "Minimum Number of Refueling Stops", lcNumber: 871, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-number-of-refueling-stops/", note: "Max heap station fuel greedy." }
+      ]},
+      { day: 122, weekday: "Wed", topic: "Mock Session 3", type: "regular", problems: [
+        { id: "p264", name: "Number of LIS", lcNumber: 673, difficulty: "Medium", url: "https://leetcode.com/problems/number-of-longest-increasing-subsequence/", note: "Length + count DP tracking." },
+        { id: "p265", name: "Shortest Path Visiting All Nodes", lcNumber: 847, difficulty: "Hard", url: "https://leetcode.com/problems/shortest-path-visiting-all-nodes/", note: "BFS + Bitmask state graph." },
+        { id: "p266", name: "Word Ladder II", lcNumber: 126, difficulty: "Hard", url: "https://leetcode.com/problems/word-ladder-ii/", note: "BFS shortest path + DFS backtrack paths." }
+      ]},
+      { day: 123, weekday: "Thu", topic: "Review & Sweepline", type: "review", problems: [
+        { id: "p267", name: "Coin Change II (BLIND RE-SOLVE)", lcNumber: 518, difficulty: "Medium", url: "https://leetcode.com/problems/coin-change-ii/", note: "Re-solve outer coin loop logic.", isReview: true },
+        { id: "p268", name: "Evaluate Division (BLIND RE-SOLVE)", lcNumber: 399, difficulty: "Medium", url: "https://leetcode.com/problems/evaluate-division/", note: "Re-solve weighted DFS.", isReview: true },
+        { id: "p269", name: "Minimum Interval Each Query", lcNumber: 1851, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-interval-to-include-each-query/", note: "Sweep line + Min heap queries." }
+      ]},
+      { day: 124, weekday: "Fri", topic: "Mock Session 4", type: "regular", problems: [
+        { id: "p270", name: "Snakes and Ladders", lcNumber: 909, difficulty: "Medium", url: "https://leetcode.com/problems/snakes-and-ladders/", note: "Grid flatten BFS traversal." },
+        { id: "p271", name: "Online Stock Span", lcNumber: 901, difficulty: "Medium", url: "https://leetcode.com/problems/online-stock-span/", note: "Streaming monotonic stack." },
+        { id: "p272", name: "Maximum Frequency Stack", lcNumber: 895, difficulty: "Hard", url: "https://leetcode.com/problems/maximum-frequency-stack/", note: "Frequency stacks map data structure." }
+      ]},
+      { day: 125, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
+        { id: "p273", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Penultimate sprint checkpoint!" }
+      ]},
+      { day: 126, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
+    ]
+  },
+  {
+    week: 19,
+    title: "Final Sprint — Part 1",
+    topic: "Sprint P1",
+    days: [
+      { day: 127, weekday: "Mon", topic: "Hard DP Sprint", type: "regular", problems: [
+        { id: "p274", name: "Cherry Pickup", lcNumber: 741, difficulty: "Hard", url: "https://leetcode.com/problems/cherry-pickup/", note: "Dual path 3D grid DP." },
+        { id: "p275", name: "Frog Jump", lcNumber: 403, difficulty: "Hard", url: "https://leetcode.com/problems/frog-jump/", note: "DP + Set jump size state." },
+        { id: "p276", name: "Profitable Schemes", lcNumber: 879, difficulty: "Hard", url: "https://leetcode.com/problems/profitable-schemes/", note: "3D Knapsack member & profit constraints." }
+      ]},
+      { day: 128, weekday: "Tue", topic: "State Machines & Grid Keys", type: "regular", problems: [
+        { id: "p277", name: "Count Vowels Permutation", lcNumber: 1220, difficulty: "Medium", url: "https://leetcode.com/problems/count-vowels-permutation/", note: "Vowel transition state machine." },
+        { id: "p278", name: "Shortest Path to Get All Keys", lcNumber: 864, difficulty: "Hard", url: "https://leetcode.com/problems/shortest-path-to-get-all-keys/", note: "BFS grid + bitmask key states." },
+        { id: "p279", name: "Strange Printer", lcNumber: 664, difficulty: "Hard", url: "https://leetcode.com/problems/strange-printer/", note: "Interval DP printer transitions." }
+      ]},
+      { day: 129, weekday: "Wed", topic: "Binary Search & Subsequence", type: "regular", problems: [
+        { id: "p280", name: "Capacity To Ship Packages", lcNumber: 1011, difficulty: "Medium", url: "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/", note: "Binary search on min capacity." },
+        { id: "p281", name: "Max Number of Events Attended", lcNumber: 1353, difficulty: "Medium", url: "https://leetcode.com/problems/maximum-number-of-events-that-can-be-attended/", note: "Greedy min heap end day." },
+        { id: "p282", name: "Min Operations to Make Subsequence", lcNumber: 1713, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-operations-to-make-a-subsequence/", note: "LCS reduction to LIS log N." }
+      ]},
+      { day: 130, weekday: "Thu", topic: "Review & Split Array", type: "review", problems: [
+        { id: "p283", name: "Cherry Pickup (BLIND RE-SOLVE)", lcNumber: 741, difficulty: "Hard", url: "https://leetcode.com/problems/cherry-pickup/", note: "Re-solve 3D grid states.", isReview: true },
+        { id: "p284", name: "Capacity To Ship (BLIND RE-SOLVE)", lcNumber: 1011, difficulty: "Medium", url: "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/", note: "Re-solve feasibility check.", isReview: true },
+        { id: "p285", name: "Split Array Largest Sum", lcNumber: 410, difficulty: "Hard", url: "https://leetcode.com/problems/split-array-largest-sum/", note: "Binary search on max array split sum." }
+      ]},
+      { day: 131, weekday: "Fri", topic: "Graph Paths & Prime Factors", type: "regular", problems: [
+        { id: "p286", name: "Number of Ways to Arrive at Destination", lcNumber: 1976, difficulty: "Medium", url: "https://leetcode.com/problems/number-of-ways-to-arrive-at-destination/", note: "Dijkstra + shortest path counting." },
+        { id: "p287", name: "Largest Component Size by Factor", lcNumber: 952, difficulty: "Hard", url: "https://leetcode.com/problems/largest-component-size-by-common-factor/", note: "DSU + prime factor unioning." },
+        { id: "p288", name: "Minimum Difficulty of Job Schedule", lcNumber: 1335, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-difficulty-of-a-job-schedule/", note: "Partition 1D array into D days DP." }
+      ]},
+      { day: 132, weekday: "Sat", topic: "LeetCode Contest", type: "contest", problems: [
+        { id: "p289", name: "Weekly / Biweekly Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Sprint speed check!" }
+      ]},
+      { day: 133, weekday: "Sun", topic: "Rest & Recharge", type: "rest", problems: [] }
+    ]
+  },
+  {
+    week: 20,
+    title: "Final Sprint — Part 2 (THE FINISH LINE)",
+    topic: "Sprint P2",
+    days: [
+      { day: 134, weekday: "Mon", topic: "Sliding Window Medians", type: "regular", problems: [
+        { id: "p290", name: "Sliding Window Median", lcNumber: 480, difficulty: "Hard", url: "https://leetcode.com/problems/sliding-window-median/", note: "Dual heap lazy removal sliding window." },
+        { id: "p291", name: "Count of Range Sum", lcNumber: 327, difficulty: "Hard", url: "https://leetcode.com/problems/count-of-range-sum/", note: "Prefix sums merge sort counting." },
+        { id: "p292", name: "My Calendar I", lcNumber: 729, difficulty: "Medium", url: "https://leetcode.com/problems/my-calendar-i/", note: "Interval booking balanced tree." }
+      ]},
+      { day: 135, weekday: "Tue", topic: "Ratio Greedy & Race Cars", type: "regular", problems: [
+        { id: "p293", name: "Minimum Cost to Hire K Workers", lcNumber: 857, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-cost-to-hire-k-workers/", note: "Sort ratio + max heap quality total." },
+        { id: "p294", name: "Race Car", lcNumber: 818, difficulty: "Hard", url: "https://leetcode.com/problems/race-car/", note: "Position/speed state BFS." },
+        { id: "p295", name: "Find K-th Smallest Pair Distance", lcNumber: 719, difficulty: "Hard", url: "https://leetcode.com/problems/find-k-th-smallest-pair-distance/", note: "Binary search distance + two pointer count." }
+      ]},
+      { day: 136, weekday: "Wed", topic: "Interval Streams & Trie Hard", type: "regular", problems: [
+        { id: "p296", name: "Data Stream as Disjoint Intervals", lcNumber: 352, difficulty: "Hard", url: "https://leetcode.com/problems/data-stream-as-disjoint-intervals/", note: "Dynamic interval merging tree." },
+        { id: "p297", name: "Stamping The Sequence", lcNumber: 936, difficulty: "Hard", url: "https://leetcode.com/problems/stamping-the-sequence/", note: "Reverse stamp matching process." },
+        { id: "p298", name: "Prefix and Suffix Search", lcNumber: 745, difficulty: "Hard", url: "https://leetcode.com/problems/prefix-and-suffix-search/", note: "Suffix # prefix trie wrapping." }
+      ]},
+      { day: 137, weekday: "Thu", topic: "Final Review & Swapped BST", type: "review", problems: [
+        { id: "p299", name: "Split Array Largest Sum (BLIND)", lcNumber: 410, difficulty: "Hard", url: "https://leetcode.com/problems/split-array-largest-sum/", note: "Re-solve binary search check.", isReview: true },
+        { id: "p300", name: "Min Cost Hire K Workers (BLIND)", lcNumber: 857, difficulty: "Hard", url: "https://leetcode.com/problems/minimum-cost-to-hire-k-workers/", note: "Re-solve heap trim.", isReview: true },
+        { id: "p301", name: "Recover Binary Search Tree", lcNumber: 99, difficulty: "Medium", url: "https://leetcode.com/problems/recover-binary-search-tree/", note: "Inorder pointer swap repair." }
+      ]},
+      { day: 138, weekday: "Fri", topic: "Final Sprint Day 🏁", type: "regular", problems: [
         { id: "p302", name: "Subarrays with K Different Integers", lcNumber: 992, difficulty: "Hard", url: "https://leetcode.com/problems/subarrays-with-k-different-integers/", note: "exactly(K) = atMost(K) - atMost(K-1)." },
         { id: "p303", name: "Shortest Path Alternating Colors", lcNumber: 1129, difficulty: "Medium", url: "https://leetcode.com/problems/shortest-path-with-alternating-colors/", note: "Node + color state BFS." },
         { id: "p304", name: "Basic Calculator", lcNumber: 224, difficulty: "Hard", url: "https://leetcode.com/problems/basic-calculator/", note: "Full stack parenthesis sign evaluation." }
       ]},
-      { day: 139, weekday: "Sat", topic: "FINAL CONTEST DAY 🏆", type: "contest", problems: [
-        { id: "p305", name: "Final Live Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "THE ULTIMATE TEST. Solve 3 problems!" }
+      { day: 139, weekday: "Sat", topic: "Final Milestone Contest 🏆", type: "contest", problems: [
+        { id: "p305", name: "Final Live Contest", lcNumber: 0, difficulty: "Medium", url: "https://leetcode.com/contest/", note: "Ultimate Challenge. Solve 3 problems!" }
       ]},
-      { day: 140, weekday: "Sun", topic: "20 WEEKS COMPLETED — PLACEMENT READY! 🎉", type: "rest", problems: [] }
+      { day: 140, weekday: "Sun", topic: "20 WEEKS COMPLETED — INTERVIEW READY! 🎉", type: "rest", problems: [] }
     ]
   }
 ];

@@ -56,7 +56,7 @@ export const TodayMission: React.FC = () => {
           </h2>
 
           <p className="text-sm text-gray-300 font-medium leading-relaxed">
-            Today's Target: <strong className="text-white">{todayDayPlan.topic}</strong>. Complete these 3 curated problems to maintain your <strong className="text-orange-400">{stats.streak}-day streak</strong>!
+            Today's Target: <strong className="text-white">{todayDayPlan.topic}</strong>. Complete these {todayDayPlan.problems.length} curated problems to maintain your <strong className="text-orange-400">{stats.streak}-day streak</strong>!
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export const TodayMission: React.FC = () => {
             <Coffee className="w-5 h-5 text-orange-400 shrink-0" />
             <div>
               <h4 className="font-bold text-white mb-0.5">Rest Day</h4>
-              <p className="text-gray-400">Time for {restActivity}. Zero DSA guilt today — recharge and come back stronger!</p>
+              <p className="text-gray-400">Time for {restActivity}. Enjoy your scheduled rest day — recharge and come back focused.</p>
             </div>
           </div>
         ) : (

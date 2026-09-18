@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import type { UserProfile } from '../context/ProgressContext';
 import { Flame, Sparkles, ArrowRight, User, Calendar, Tag, CheckCircle2, Database, Zap, BookOpen, ChevronRight } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { APP_CONFIG } from '../config/appConfig';
+import { CURRICULUM } from '../data/curriculumStats';
 
 const SECONDARY_SKILL_OPTIONS = [
   { id: 'project', label: 'Personal / Side Project', emoji: '🚀' },
@@ -30,10 +32,16 @@ export const OnboardingPage: React.FC = () => {
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
   const [startDate, setStartDate] = useState(today);
-  const [targetDate, setTargetDate] = useState('2027-01-15');
+  const [targetDate, setTargetDate] = useState(format(addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'));
   const [restDay, setRestDay] = useState('sunday');
   const [secondarySkill, setSecondarySkill] = useState('project');
   const [nameError, setNameError] = useState('');
+
+  useEffect(() => {
+    if (startDate) {
+      setTargetDate(format(addDays(new Date(startDate), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'));
+    }
+  }, [startDate]);
 
   const goNext = () => setStep((s) => s + 1);
   const goBack = () => setStep((s) => s - 1);
@@ -41,9 +49,9 @@ export const OnboardingPage: React.FC = () => {
   const handleFinish = () => {
     const profile: UserProfile = {
       name: name.trim(),
-      tagline: tagline.trim() || 'LeetCode Planner',
+      tagline: tagline.trim() || APP_CONFIG.defaults.defaultTagline,
       startDate: startDate || today,
-      targetDate: targetDate || '2027-01-15',
+      targetDate: targetDate || format(addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'),
       restDay: restDay,
       secondarySkill: secondarySkill,
     };
@@ -69,7 +77,7 @@ export const OnboardingPage: React.FC = () => {
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 flex items-center justify-center font-black text-black shadow-2xl shadow-orange-500/30 text-lg tracking-wider font-mono">
-            LC
+            {APP_CONFIG.shortName}
           </div>
         </div>
 
@@ -95,10 +103,10 @@ export const OnboardingPage: React.FC = () => {
               <div className="bg-[#101018] border border-gray-800 rounded-2xl p-8 shadow-2xl flex flex-col gap-6">
                 <div>
                   <h1 className="text-2xl font-extrabold text-white tracking-tight mb-1 flex items-center gap-2">
-                    DSA Planner <Flame className="w-6 h-6 text-orange-400 fill-orange-500" />
+                    {APP_CONFIG.name} <Flame className="w-6 h-6 text-orange-400 fill-orange-500" />
                   </h1>
                   <p className="text-sm text-gray-400 leading-relaxed">
-                    A structured <strong className="text-white">20-week, 140-day</strong> LeetCode grinding tracker built around the <strong className="text-white">Top 150 Interview Problems</strong>. Made for anyone targeting placements, internships, or just getting good.
+                    A structured <strong className="text-white">{CURRICULUM.totalWeeks}-week, {CURRICULUM.totalDays}-day</strong> interview prep system built around the <strong className="text-white">Top 150 Interview Problems</strong>. Built for software engineers, students, and professionals preparing for technical interviews.
                   </p>
                 </div>
 
@@ -108,7 +116,7 @@ export const OnboardingPage: React.FC = () => {
                     <Flame className="w-4 h-4 text-orange-400 shrink-0 mt-0.5 fill-orange-500" />
                     <div>
                       <p className="text-xs font-bold text-white">Streak Tracking</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">Solves 3 problems/day Mon–Sat. Sunday is rest. Miss a day → streak resets. Consecutive days build momentum.</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">{CURRICULUM.dailyTarget} curated problems per practice day. One rest day per week. Miss a day → streak resets. Consecutive days build momentum.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-800/50 border border-gray-800">
@@ -122,14 +130,14 @@ export const OnboardingPage: React.FC = () => {
                     <Zap className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-xs font-bold text-white">Fully Personalized</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">Set your own start date, rest day, placement deadline, and secondary skill. Works for anyone — not just one person.</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Set your own start date, rest day, target deadline, and secondary skill. Works for anyone — not just one person.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-800/50 border border-gray-800">
                     <BookOpen className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-xs font-bold text-white">Structured Curriculum</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">Arrays → Trees → Graphs → DP → System Design. 5 phases, 20 weeks, 247 curated problems + LeetCode Top 150 overlap.</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Arrays → Trees → Graphs → DP → System Design. 5 phases, {CURRICULUM.totalWeeks} weeks, {CURRICULUM.totalProblems} curated problems with {APP_CONFIG.tracks.primary} coverage.</p>
                     </div>
                   </div>
                 </div>
@@ -164,7 +172,7 @@ export const OnboardingPage: React.FC = () => {
                       value={name}
                       onChange={(e) => { setName(e.target.value); setNameError(''); }}
                       onKeyDown={(e) => e.key === 'Enter' && name.trim() && goNext()}
-                      placeholder="e.g. Rahul, Priya, Alex..."
+                      placeholder="e.g. Alex, Jordan, Sam..."
                       autoFocus
                       className={`w-full bg-[#0c0c14] border rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none transition ${nameError ? 'border-red-500' : 'border-gray-800 focus:border-orange-500'}`}
                     />
@@ -180,7 +188,7 @@ export const OnboardingPage: React.FC = () => {
                       value={tagline}
                       onChange={(e) => setTagline(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && name.trim() && goNext()}
-                      placeholder="e.g. IIT Delhi CSE • SDE Intern • BITS Pilani"
+                      placeholder="e.g. Software Engineer • CS Student • Full-Stack Dev"
                       className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
                     />
                   </div>
@@ -291,7 +299,7 @@ export const OnboardingPage: React.FC = () => {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-yellow-400" /> Placement / Interview Deadline
+                      <Calendar className="w-3.5 h-3.5 text-yellow-400" /> Target / Interview Deadline
                     </label>
                     <input
                       type="date"
@@ -319,7 +327,7 @@ export const OnboardingPage: React.FC = () => {
                     className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-sm transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4 text-yellow-300" />
-                    Start Grinding!
+                    Launch My Plan
                   </button>
                 </div>
               </div>

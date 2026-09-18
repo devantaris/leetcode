@@ -24,11 +24,11 @@ export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Nuclear Reset">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Reset All Data">
       <div>
         <div className="flex items-center gap-2 text-red-500 font-extrabold text-lg mb-2">
           <AlertTriangle className="w-5 h-5" />
-          <span>NUCLEAR RESET OPTION</span>
+          <span>DATA RESET</span>
         </div>
 
         <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/30 text-xs text-red-300 mb-4">

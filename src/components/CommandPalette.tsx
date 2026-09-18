@@ -4,6 +4,7 @@ import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { Search, X, ExternalLink, Command, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Problem } from '../types';
+import { CURRICULUM } from '../data/curriculumStats';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
           {!query.trim() ? (
             <div className="py-6 text-center text-xs text-gray-500 font-mono flex flex-col items-center gap-2">
               <Command className="w-8 h-8 text-gray-700" />
-              <span>Type to search across all 247 LeetCode problems & 20 topics</span>
+              <span>Type to search across {CURRICULUM.totalProblems} problems across {CURRICULUM.totalTopics} topics</span>
               <div className="flex items-center gap-2 mt-2">
                 <span className="px-2 py-1 rounded bg-gray-900 border border-gray-800 text-[10px]">Ctrl + K to toggle</span>
                 <span className="px-2 py-1 rounded bg-gray-900 border border-gray-800 text-[10px]">ESC to close</span>

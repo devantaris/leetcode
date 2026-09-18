@@ -2,19 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Timer } from 'lucide-react';
 import { sounds } from '../utils/audio';
 import toast from 'react-hot-toast';
-
-const STORAGE_KEY_SECONDS = 'dsa_timer_seconds';
-const STORAGE_KEY_TOTAL = 'dsa_timer_total';
-const STORAGE_KEY_ACTIVE = 'dsa_timer_active';
-const STORAGE_KEY_STARTED_AT = 'dsa_timer_started_at';
+import { STORAGE_KEYS } from '../config/storageKeys';
 
 function loadTimerState(): { secondsLeft: number; totalSeconds: number; isActive: boolean; startedAt: number | null } {
   try {
-    const total = parseInt(sessionStorage.getItem(STORAGE_KEY_TOTAL) || '') || 45 * 60;
-    const active = sessionStorage.getItem(STORAGE_KEY_ACTIVE) === 'true';
-    const startedAt = parseInt(sessionStorage.getItem(STORAGE_KEY_STARTED_AT) || '') || null;
+    const total = parseInt(sessionStorage.getItem(STORAGE_KEYS.timerTotal) || '') || 45 * 60;
+    const active = sessionStorage.getItem(STORAGE_KEYS.timerActive) === 'true';
+    const startedAt = parseInt(sessionStorage.getItem(STORAGE_KEYS.timerStartedAt) || '') || null;
 
-    let secondsLeft = parseInt(sessionStorage.getItem(STORAGE_KEY_SECONDS) || '') || total;
+    let secondsLeft = parseInt(sessionStorage.getItem(STORAGE_KEYS.timerSeconds) || '') || total;
 
     // If timer was running while navigating away, compute elapsed time
     if (active && startedAt) {
@@ -37,15 +33,15 @@ export const DailyFocusTimer: React.FC = () => {
 
   // Persist state to sessionStorage whenever it changes
   useEffect(() => {
-    sessionStorage.setItem(STORAGE_KEY_SECONDS, secondsLeft.toString());
-    sessionStorage.setItem(STORAGE_KEY_TOTAL, totalSeconds.toString());
-    sessionStorage.setItem(STORAGE_KEY_ACTIVE, isActive.toString());
+    sessionStorage.setItem(STORAGE_KEYS.timerSeconds, secondsLeft.toString());
+    sessionStorage.setItem(STORAGE_KEYS.timerTotal, totalSeconds.toString());
+    sessionStorage.setItem(STORAGE_KEYS.timerActive, isActive.toString());
     if (isActive) {
       const ts = Date.now();
       startedAtRef.current = ts;
-      sessionStorage.setItem(STORAGE_KEY_STARTED_AT, ts.toString());
+      sessionStorage.setItem(STORAGE_KEYS.timerStartedAt, ts.toString());
     } else {
-      sessionStorage.removeItem(STORAGE_KEY_STARTED_AT);
+      sessionStorage.removeItem(STORAGE_KEYS.timerStartedAt);
       startedAtRef.current = null;
     }
   }, [secondsLeft, isActive, totalSeconds]);
@@ -88,7 +84,7 @@ export const DailyFocusTimer: React.FC = () => {
     setIsActive(false);
     setTotalSeconds(minutes * 60);
     setSecondsLeft(minutes * 60);
-    sessionStorage.removeItem(STORAGE_KEY_STARTED_AT);
+    sessionStorage.removeItem(STORAGE_KEYS.timerStartedAt);
   };
 
   const minutes = Math.floor(secondsLeft / 60);

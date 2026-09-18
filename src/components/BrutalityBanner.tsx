@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { AlertTriangle, Flame, Skull, X, Sparkles } from 'lucide-react';
+import { AlertTriangle, Flame, AlertCircle, X, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
+import { STORAGE_KEYS } from '../config/storageKeys';
+import { CURRICULUM } from '../data/curriculumStats';
 
 export const BrutalityBanner: React.FC = () => {
   const { stats, userProfile } = useProgress();
   const [dismissed, setDismissed] = useState<boolean>(() => {
-    return sessionStorage.getItem('dsa_banner_dismissed') === 'true';
+    return sessionStorage.getItem(STORAGE_KEYS.bannerDismissed) === 'true';
   });
 
   if (dismissed) return null;
 
   const handleDismiss = () => {
-    sessionStorage.setItem('dsa_banner_dismissed', 'true');
+    sessionStorage.setItem(STORAGE_KEYS.bannerDismissed, 'true');
     setDismissed(true);
   };
 
@@ -53,15 +55,15 @@ export const BrutalityBanner: React.FC = () => {
               </h3>
               <p className="text-xs sm:text-sm text-gray-300 font-medium mt-0.5 leading-snug">
                 {isStreakHigh
-                  ? `You're on a ${stats.streak}-day streak! Keep up the momentum to master the Top 150 problems before placement season.`
-                  : `Target: 2 LeetCode Top 150 problems daily. Consistency keeps you on track for ${format(new Date(userProfile.targetDate), 'MMM d, yyyy')} placement readiness!`}
+                  ? `You're on a ${stats.streak}-day streak! Keep up the momentum to master key interview patterns before your target date.`
+                  : `Target: ${CURRICULUM.dailyTarget} curated problems daily. Consistency keeps you on track for ${format(new Date(userProfile.targetDate), 'MMM d, yyyy')} interview readiness!`}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-4 shrink-0 font-mono text-xs border-t sm:border-t-0 sm:border-l border-gray-800 pt-2 sm:pt-0 sm:pl-4 w-full sm:w-auto justify-between sm:justify-start">
             <div className="flex items-center gap-1.5 text-gray-400">
-              <Skull className="w-4 h-4 text-red-500" />
+              <AlertCircle className="w-4 h-4 text-red-500" />
               <span>Missed: <strong className="text-red-400">{stats.missedDaysCount}</strong></span>
             </div>
             <div className="flex items-center gap-1 text-orange-400 font-bold">

@@ -5,6 +5,9 @@ import type { UserProfile } from '../../context/ProgressContext';
 import { ModalWrapper } from './ModalWrapper';
 import toast from 'react-hot-toast';
 
+import { format, addDays } from 'date-fns';
+import { APP_CONFIG } from '../../config/appConfig';
+
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -16,9 +19,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const [editName, setEditName] = useState<string>(userProfile.name);
   const [editTagline, setEditTagline] = useState<string>(userProfile.tagline);
   const [editStartDate, setEditStartDate] = useState<string>(userProfile.startDate);
-  const [editTargetDate, setEditTargetDate] = useState<string>(userProfile.targetDate || '2027-01-15');
-  const [editRestDay, setEditRestDay] = useState<string>(userProfile.restDay || 'Sunday');
-  const [editSecondarySkill, setEditSecondarySkill] = useState<string>(userProfile.secondarySkill || 'Personal Project');
+  const [editTargetDate, setEditTargetDate] = useState<string>(userProfile.targetDate || format(addDays(new Date(), 140), 'yyyy-MM-dd'));
+  const [editRestDay, setEditRestDay] = useState<string>(userProfile.restDay || 'sunday');
+  const [editSecondarySkill, setEditSecondarySkill] = useState<string>(userProfile.secondarySkill || 'project');
 
   const handleSaveProfile = () => {
     if (!editName.trim()) {
@@ -27,9 +30,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     }
     const profile: UserProfile = {
       name: editName.trim(),
-      tagline: editTagline.trim() || 'LeetCode Planner',
+      tagline: editTagline.trim() || APP_CONFIG.defaults.defaultTagline,
       startDate: editStartDate,
-      targetDate: editTargetDate || '2027-01-15',
+      targetDate: editTargetDate || format(addDays(new Date(), 140), 'yyyy-MM-dd'),
       restDay: editRestDay,
       secondarySkill: editSecondarySkill,
     };
@@ -71,7 +74,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               type="text"
               value={editTagline}
               onChange={(e) => setEditTagline(e.target.value)}
-              placeholder="e.g. IIT Delhi CSE"
+              placeholder="e.g. Software Engineer • CS Student"
               className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
             />
           </div>
@@ -79,7 +82,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-yellow-400" />
-              Placement / Goal Deadline
+              Target / Goal Deadline
             </label>
             <input
               type="date"

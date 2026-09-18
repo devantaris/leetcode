@@ -44,7 +44,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onTri
         </div>
 
         <p className="text-xs text-gray-400 mb-4 leading-relaxed">
-          Your progress is saved locally in browser <strong className="text-white">localStorage</strong> (<code className="text-orange-400 font-mono">dsa_progress_v2</code>). You can backup your progress as a file or text string to sync between devices.
+          Your progress is saved locally in browser <strong className="text-white">localStorage</strong>. You can backup your progress data as a file or text string to sync between devices.
         </p>
 
         <div className="space-y-4">
