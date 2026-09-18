@@ -20,7 +20,7 @@ const REST_DAY_OPTIONS = [
   { id: 'none', label: 'No fixed rest day', desc: 'I\'ll decide as I go' },
 ];
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 export const OnboardingPage: React.FC = () => {
   const { updateProfile } = useProgress();
@@ -80,7 +80,7 @@ export const OnboardingPage: React.FC = () => {
               <div
                 key={i}
                 className={`rounded-full transition-all duration-300 ${
-                  i < step ? 'w-5 h-1.5 bg-orange-500' : i === step - 1 ? 'w-5 h-1.5 bg-orange-500' : 'w-1.5 h-1.5 bg-gray-700'
+                  i < step ? 'w-5 h-1.5 bg-orange-500' : 'w-1.5 h-1.5 bg-gray-700'
                 }`}
               />
             ))}
