@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { AlertTriangle, Flame, Skull, X, Sparkles } from 'lucide-react';
+import { format } from 'date-fns';
 
 export const BrutalityBanner: React.FC = () => {
-  const { stats } = useProgress();
+  const { stats, userProfile } = useProgress();
   const [dismissed, setDismissed] = useState<boolean>(() => {
     return sessionStorage.getItem('dsa_banner_dismissed') === 'true';
   });
@@ -53,7 +54,7 @@ export const BrutalityBanner: React.FC = () => {
               <p className="text-xs sm:text-sm text-gray-300 font-medium mt-0.5 leading-snug">
                 {isStreakHigh
                   ? `You're on a ${stats.streak}-day streak! Keep up the momentum to master the Top 150 problems before placement season.`
-                  : 'Target: 2 LeetCode Top 150 problems daily. Consistency keeps you on track for Jan 15, 2027 placement readiness!'}
+                  : `Target: 2 LeetCode Top 150 problems daily. Consistency keeps you on track for ${format(new Date(userProfile.targetDate), 'MMM d, yyyy')} placement readiness!`}
               </p>
             </div>
           </div>

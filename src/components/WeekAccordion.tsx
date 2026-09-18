@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { ChevronDown, ExternalLink, CheckCircle2, RefreshCw, Trophy, Coffee, Sparkles } from 'lucide-react';
@@ -31,15 +31,6 @@ export const WeekAccordion: React.FC = () => {
 
   const [openDays, setOpenDays] = useState<{ [dayKey: string]: boolean }>({});
 
-  // Auto-scroll to the current active week on first render
-  useEffect(() => {
-    const el = document.getElementById(`week-anchor-${activeWeek}`);
-    if (el) {
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 150);
-    }
-  }, [activeWeek]);
 
   const toggleDayOpen = (dayKey: string) => {
     setOpenDays((prev) => ({ ...prev, [dayKey]: !prev[dayKey] }));
