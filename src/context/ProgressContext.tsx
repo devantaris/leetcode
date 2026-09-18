@@ -6,7 +6,10 @@ import confetti from 'canvas-confetti';
 import toast from 'react-hot-toast';
 import { differenceInCalendarDays, parseISO, format, addDays } from 'date-fns';
 import { APP_CONFIG } from '../config/appConfig';
-import { STORAGE_KEYS } from '../config/storageKeys';
+import { STORAGE_KEYS, migrateLegacyStorageKeys } from '../config/storageKeys';
+
+// Migrate old 'dsa_*' keys to 'go_*' BEFORE any state initialization reads localStorage
+migrateLegacyStorageKeys();
 import { CURRICULUM } from '../data/curriculumStats';
 
 // ─── User Profile ─────────────────────────────────────────────────────────────

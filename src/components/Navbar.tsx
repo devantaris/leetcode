@@ -87,13 +87,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500" />
               <span>{stats.streak}d</span>
             </div>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                className="p-1.5 rounded-lg bg-gray-800/60 border border-gray-700 text-gray-300"
+                title="Settings"
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* NAVIGATION LINKS */}
         <div className="flex items-center gap-1 bg-[#12121c] p-1 rounded-xl border border-gray-800">
           <NavLink
-            to="/"
+            to="/dashboard"
             end
             className={({ isActive }) =>
               `px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${

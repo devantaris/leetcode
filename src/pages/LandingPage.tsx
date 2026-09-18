@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, Timer, Flame, Trophy, Command, ArrowRight, 
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { APP_CONFIG } from '../config/appConfig';
 import { CURRICULUM } from '../data/curriculumStats';
+import { useProgress } from '../context/ProgressContext';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -18,6 +19,13 @@ const stagger = {
 };
 
 export const LandingPage = () => {
+  const { isOnboarded } = useProgress();
+
+  // Returning users skip the marketing page
+  if (isOnboarded) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-[#060609] text-gray-100 font-sans selection:bg-orange-500/30 overflow-x-hidden">
       

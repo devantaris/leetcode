@@ -22,3 +22,35 @@ export const STORAGE_KEYS = {
 } as const;
 
 export type StorageKeys = typeof STORAGE_KEYS;
+
+// --- Data Migration ---
+// Migrate old 'dsa_' prefixed keys to new 'go_' prefix.
+// Runs once on app load. Safe to call multiple times (idempotent).
+const LEGACY_KEY_MAP: [string, string][] = [
+  ['dsa_progress_v2', STORAGE_KEYS.progress],
+  ['dsa_streak_v2', STORAGE_KEYS.streak],
+  ['dsa_solve_history_v2', STORAGE_KEYS.solveHistory],
+  ['dsa_user_profile_v1', STORAGE_KEYS.userProfile],
+];
+
+export function migrateLegacyStorageKeys(): void {
+  for (const [oldKey, newKey] of LEGACY_KEY_MAP) {
+    const oldData = localStorage.getItem(oldKey);
+    const newData = localStorage.getItem(newKey);
+
+    // Only migrate if old data exists AND new key is empty
+    // (don't overwrite if user already has new-format data)
+    if (oldData && !newData) {
+      localStorage.setItem(newKey, oldData);
+      console.info(`[GrindOS] Migrated storage: ${oldKey} → ${newKey}`);
+    }
+
+    // Clean up old key after migration (regardless)
+    if (oldData) {
+      localStorage.removeItem(oldKey);
+    }
+  }
+
+  // Also clean up the dead KEY_LAST_DATE that was removed earlier
+  localStorage.removeItem('dsa_last_date_v2');
+}
