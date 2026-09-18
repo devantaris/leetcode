@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock, ExternalLink } from 'lucide-react';
+import { NavLink, Link } from 'react-router-dom';
 import { APP_CONFIG } from '../config/appConfig';
 
 interface NavbarProps {
@@ -55,13 +55,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* BRAND & USER PROFILE */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 flex items-center justify-center font-black text-black shadow-lg shadow-orange-500/20 text-xs tracking-wider font-mono">
+          <Link to="/" title="Go to GrindOS Landing Page" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 flex items-center justify-center font-black text-black shadow-lg shadow-orange-500/20 text-xs tracking-wider font-mono group-hover:scale-105 transition-transform">
               {APP_CONFIG.shortName}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+                <h1 className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent group-hover:text-orange-400 transition-colors">
                   {APP_CONFIG.name}
                 </h1>
                 <span className="text-[10px] font-mono font-bold bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/30">
@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {userProfile.name} • {userProfile.tagline}
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* MOBILE CONTROLS */}
           <div className="flex items-center gap-2 md:hidden">
@@ -223,6 +223,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <CalendarClock className="w-3.5 h-3.5 text-yellow-400" />
                   <span>Adjust Start Date</span>
                 </button>
+
+                {/* Landing Page */}
+                <Link
+                  to="/"
+                  onClick={() => setShowSettingsMenu(false)}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 text-orange-300 flex items-center gap-2 transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Landing Page & Pricing</span>
+                </Link>
 
                 <div className="border-t border-gray-800/60 my-1" />
 

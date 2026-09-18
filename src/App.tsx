@@ -15,6 +15,7 @@ export default function App() {
         <Suspense fallback={<div className='flex items-center justify-center min-h-screen bg-[#060609] text-gray-400'>Loading...</div>}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route element={<Layout />}>
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="curriculum" element={<CurriculumPage />} />
