@@ -17,9 +17,10 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   backgroundColor = '#1e1e2e',
   children
 }) => {
-  const normalizedRadius = radius - stroke * 2;
+  const normalizedRadius = radius - stroke / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const clampedProgress = Math.min(100, Math.max(0, progress));
+  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
 
   return (
     <div className="relative inline-flex items-center justify-center">

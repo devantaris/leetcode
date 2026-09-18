@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
@@ -24,6 +24,29 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { stats, exportJSON, soundEnabled, toggleSound, userProfile } = useProgress();
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showSettingsMenu) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowSettingsMenu(false);
+      }
+    };
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowSettingsMenu(false);
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showSettingsMenu]);
 
   return (
     <nav className="glass-nav sticky top-0 z-50 px-4 py-3 border-b border-gray-800 bg-[#08080c]/90 backdrop-blur-md">
@@ -156,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* SETTINGS DROPDOWN MENU */}
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowSettingsMenu(!showSettingsMenu)}
               className="p-2 rounded-lg bg-gray-800/60 border border-gray-700 text-gray-300 hover:text-white transition"

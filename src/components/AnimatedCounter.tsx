@@ -14,9 +14,9 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   prefix = '',
   className = ''
 }) => {
-  const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
+  const spring = useSpring(value, { mass: 0.8, stiffness: 75, damping: 15 });
   const displayValue = useTransform(spring, (current) => Math.round(current));
-  const [rendered, setRendered] = useState<number>(0);
+  const [rendered, setRendered] = useState<number>(value);
 
   useEffect(() => {
     spring.set(value);

@@ -63,7 +63,7 @@ export const SearchAndFilter: React.FC = () => {
           {/* STATUS FILTER DROPDOWN */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'solved' | 'unsolved' | 'review' | 'top150')}
             className="bg-[#181824] border border-gray-800 rounded-xl px-3 py-2 text-xs font-mono text-gray-200 focus:outline-none focus:border-orange-500 cursor-pointer"
           >
             <option value="all">All Statuses</option>

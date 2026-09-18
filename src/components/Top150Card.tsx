@@ -4,23 +4,31 @@ import { MERGED_PLAN_DATA } from '../data/mergedPlanData';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { Trophy } from 'lucide-react';
 import { AnimatedCounter } from './AnimatedCounter';
+import { useNavigate } from 'react-router-dom';
 
-export const Top150Card: React.FC = () => {
-  const { progress, setStatusFilter } = useProgress();
+// Gather all unique Top 150 problems in the plan (by lcNumber, skip reviews)
+const top150ProblemsMap = new Map<number, { id: string; difficulty: string }>();
+let easyTotal = 0, medTotal = 0, hardTotal = 0;
 
-  // Gather all unique Top 150 problems in the plan (by lcNumber, skip reviews)
-  const top150ProblemsMap = new Map<number, { id: string; difficulty: string }>();
-  for (const week of MERGED_PLAN_DATA) {
-    for (const day of week.days) {
-      for (const p of day.problems) {
-        if (TOP_150_LC_NUMBERS.has(p.lcNumber) && p.lcNumber !== 0 && !p.isReview) {
-          if (!top150ProblemsMap.has(p.lcNumber)) {
-            top150ProblemsMap.set(p.lcNumber, { id: p.id, difficulty: p.difficulty });
-          }
+for (const week of MERGED_PLAN_DATA) {
+  for (const day of week.days) {
+    for (const p of day.problems) {
+      if (TOP_150_LC_NUMBERS.has(p.lcNumber) && p.lcNumber !== 0 && !p.isReview) {
+        if (!top150ProblemsMap.has(p.lcNumber)) {
+          top150ProblemsMap.set(p.lcNumber, { id: p.id, difficulty: p.difficulty });
+          if (p.difficulty === 'Easy') easyTotal++;
+          else if (p.difficulty === 'Medium') medTotal++;
+          else hardTotal++;
         }
       }
     }
   }
+}
+const totalTop150 = top150ProblemsMap.size;
+
+export const Top150Card: React.FC = () => {
+  const { progress, setStatusFilter } = useProgress();
+  const navigate = useNavigate();
 
   // Build a map: lcNumber → solved (check ALL problem IDs with that lcNumber)
   const solvedByLc = new Set<number>();
@@ -34,26 +42,20 @@ export const Top150Card: React.FC = () => {
     }
   }
 
-  const totalTop150 = top150ProblemsMap.size;
   const solvedTop150 = solvedByLc.size;
   const pct = Math.round((solvedTop150 / Math.max(1, totalTop150)) * 100);
 
   // Difficulty breakdown
-  let easySolved = 0, easyTotal = 0;
-  let medSolved = 0, medTotal = 0;
-  let hardSolved = 0, hardTotal = 0;
+  let easySolved = 0;
+  let medSolved = 0;
+  let hardSolved = 0;
 
-  for (const [lcNum, info] of top150ProblemsMap) {
-    const isSolved = solvedByLc.has(lcNum);
-    if (info.difficulty === 'Easy') {
-      easyTotal++;
-      if (isSolved) easySolved++;
-    } else if (info.difficulty === 'Medium') {
-      medTotal++;
-      if (isSolved) medSolved++;
-    } else {
-      hardTotal++;
-      if (isSolved) hardSolved++;
+  for (const lcNum of solvedByLc) {
+    const info = top150ProblemsMap.get(lcNum);
+    if (info) {
+      if (info.difficulty === 'Easy') easySolved++;
+      else if (info.difficulty === 'Medium') medSolved++;
+      else hardSolved++;
     }
   }
 
@@ -75,13 +77,15 @@ export const Top150Card: React.FC = () => {
                   LeetCode Top Interview 150
                 </span>
               </div>
-              <a
-                href="#/curriculum"
-                onClick={() => setStatusFilter('top150')}
+              <button
+                onClick={() => {
+                  setStatusFilter('top150');
+                  navigate('/curriculum');
+                }}
                 className="text-[11px] font-mono text-indigo-400 hover:text-indigo-300 underline font-semibold transition"
               >
                 View Top 150 List →
-              </a>
+              </button>
             </div>
 
             <div className="flex items-baseline gap-2">

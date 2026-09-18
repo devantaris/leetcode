@@ -31,6 +31,12 @@
   background: var(--text-muted);
 }
 
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1e1e2e transparent;
+}
+
 /* Heatmap Grid template column utility */
 .grid-cols-20 {
   grid-template-columns: repeat(20, minmax(0, 1fr));
