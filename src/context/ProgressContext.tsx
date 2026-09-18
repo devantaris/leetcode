@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import type { UserProgressMap, SolveRecordMap, AppStats } from '../types';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { sounds } from '../utils/audio';
@@ -8,7 +8,6 @@ import { differenceInCalendarDays, parseISO, format, addDays } from 'date-fns';
 
 const KEY_PROGRESS = "dsa_progress_v2";
 const KEY_STREAK = "dsa_streak_v2";
-const KEY_LAST_DATE = "dsa_last_date_v2";
 const KEY_SOLVE_HISTORY = "dsa_solve_history_v2";
 const KEY_USER_PROFILE = "dsa_user_profile_v1";
 
@@ -97,7 +96,7 @@ const problemLookupMap = (() => {
 })();
 
 // ─── Streak + Log Computation ──────────────────────────────────────────────────
-function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: DailySolveGroup[]; streak: number } {
+function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { dailySolveLog: DailySolveGroup[]; streak: number } {
   const groupMap: { [dateStr: string]: DailySolveItem[] } = {};
 
   Object.entries(solveHistory).forEach(([problemId, isoTimestamp]) => {
@@ -144,6 +143,7 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
     return { dailySolveLog, streak: 0 };
   }
 
+  const restDayNum = restDay === 'sunday' ? 0 : restDay === 'saturday' ? 6 : -1;
   const now = new Date();
   const todayStr = format(now, 'yyyy-MM-dd');
   const yesterday = addDays(now, -1);
@@ -154,11 +154,11 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
     currentCheckDate = now;
   } else if (activeDatesSet.has(yesterdayStr)) {
     currentCheckDate = yesterday;
-  } else if (yesterday.getDay() === 0) {
-    const sat = addDays(now, -2);
-    const satStr = format(sat, 'yyyy-MM-dd');
-    if (activeDatesSet.has(satStr)) {
-      currentCheckDate = sat;
+  } else if (yesterday.getDay() === restDayNum) {
+    const prevDay = addDays(now, -2);
+    const prevDayStr = format(prevDay, 'yyyy-MM-dd');
+    if (activeDatesSet.has(prevDayStr)) {
+      currentCheckDate = prevDay;
     } else {
       return { dailySolveLog, streak: 0 };
     }
@@ -173,8 +173,8 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
     const dStr = format(iterDate, 'yyyy-MM-dd');
     if (activeDatesSet.has(dStr)) {
       calculatedStreak++;
-    } else if (iterDate.getDay() === 0) {
-      // Sunday rest day: skip without breaking
+    } else if (iterDate.getDay() === restDayNum) {
+      // Rest day: skip without breaking
     } else {
       break;
     }
@@ -186,7 +186,7 @@ function computeLogAndStreak(solveHistory: SolveRecordMap): { dailySolveLog: Dai
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem(KEY_USER_PROFILE);
       return saved ? JSON.parse(saved) : null;
@@ -215,13 +215,21 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   });
 
-  const { dailySolveLog, streak } = computeLogAndStreak(solveHistory);
+  const { dailySolveLog, streak } = useMemo(
+    () => computeLogAndStreak(solveHistory, userProfile?.restDay || 'sunday'),
+    [solveHistory, userProfile?.restDay]
+  );
 
-  const [activeWeek, setActiveWeek] = useState<number>(1);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('All');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review' | 'top150'>('all');
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [activeWeek, _setActiveWeek] = useState<number>(1);
+  const [searchQuery, _setSearchQuery] = useState<string>('');
+  const [selectedDifficulty, _setSelectedDifficulty] = useState<string>('All');
+  const [statusFilter, _setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review' | 'top150'>('all');
+  const [soundEnabled, _setSoundEnabled] = useState<boolean>(true);
+
+  const setActiveWeek = useCallback((week: number) => _setActiveWeek(week), []);
+  const setSearchQuery = useCallback((query: string) => _setSearchQuery(query), []);
+  const setSelectedDifficulty = useCallback((diff: string) => _setSelectedDifficulty(diff), []);
+  const setStatusFilter = useCallback((filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150') => _setStatusFilter(filter), []);
 
   useEffect(() => {
     localStorage.setItem(KEY_PROGRESS, JSON.stringify(progress));
@@ -242,35 +250,37 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [userProfile]);
 
   // ── Profile Actions ──────────────────────────────────────────────────────────
-  const updateProfile = (profile: UserProfile) => {
+  const updateProfile = useCallback((profile: UserProfile) => {
     setUserProfile(profile);
     toast.success(`Profile updated! Welcome, ${profile.name} 👋`, { id: 'profile-update' });
-  };
+  }, []);
 
   /**
    * Shift the program start date forward to recover from a travel gap.
    * All solved problems are preserved; only the origin date changes.
    * This makes today's day/week counters pick up from where you left off.
    */
-  const resumeFromDay = (newStartDate: string) => {
+  const resumeFromDay = useCallback((newStartDate: string) => {
     setUserProfile((prev) => {
       const updated = { ...(prev ?? DEFAULT_PROFILE), startDate: newStartDate };
       localStorage.setItem(KEY_USER_PROFILE, JSON.stringify(updated));
       return updated;
     });
     toast.success('Program date adjusted! Picking up from where you left off 🎯', { id: 'resume-toast' });
-  };
+  }, []);
 
   // ── Sound ────────────────────────────────────────────────────────────────────
-  const toggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    sounds.setEnabled(next);
-    toast.success(next ? "Sound Enabled 🔊" : "Sound Muted 🔇", { id: 'sound-toggle' });
-  };
+  const toggleSound = useCallback(() => {
+    _setSoundEnabled((prev) => {
+      const next = !prev;
+      sounds.setEnabled(next);
+      toast.success(next ? "Sound Enabled 🔊" : "Sound Muted 🔇", { id: 'sound-toggle' });
+      return next;
+    });
+  }, []);
 
   // ── Problem Toggle ───────────────────────────────────────────────────────────
-  const toggleProblem = (problemId: string) => {
+  const toggleProblem = useCallback((problemId: string) => {
     const nextState = !progress[problemId];
     const nowIso = new Date().toISOString();
 
@@ -291,18 +301,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
       return updated;
     });
-  };
+  }, [progress]);
 
   // ── Day Completion ───────────────────────────────────────────────────────────
-  const isDayComplete = (weekNum: number, dayNum: number): boolean => {
+  const isDayComplete = useCallback((weekNum: number, dayNum: number): boolean => {
     const week = PLAN_DATA.find((w) => w.week === weekNum);
     if (!week) return false;
     const day = week.days.find((d) => d.day === dayNum);
     if (!day || day.problems.length === 0) return false;
     return day.problems.every((p) => progress[p.id]);
-  };
+  }, [progress]);
 
-  const markDayComplete = (weekNum: number, dayNum: number) => {
+  const markDayComplete = useCallback((weekNum: number, dayNum: number) => {
     const week = PLAN_DATA.find((w) => w.week === weekNum);
     if (!week) return;
     const day = week.days.find((d) => d.day === dayNum);
@@ -332,96 +342,97 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     toast.success(`Day ${dayNum} (${day.topic}) Fully Completed! 🚀`, {
       duration: 4000
     });
-  };
+  }, [progress, solveHistory]);
 
   // ── Stats ────────────────────────────────────────────────────────────────────
-  let totalProblems = 0;
-  let solvedCount = 0;
-  let completedDaysCount = 0;
+  const stats: AppStats = useMemo(() => {
+    let totalProblems = 0;
+    let solvedCount = 0;
+    let completedDaysCount = 0;
 
-  PLAN_DATA.forEach((w) => {
-    w.days.forEach((d) => {
-      let allSolved = d.problems.length > 0;
-      d.problems.forEach((p) => {
-        totalProblems++;
-        if (progress[p.id]) {
-          solvedCount++;
-        } else {
-          allSolved = false;
+    PLAN_DATA.forEach((w) => {
+      w.days.forEach((d) => {
+        let allSolved = d.problems.length > 0;
+        d.problems.forEach((p) => {
+          totalProblems++;
+          if (progress[p.id]) {
+            solvedCount++;
+          } else {
+            allSolved = false;
+          }
+        });
+        if (allSolved) completedDaysCount++;
+      });
+    });
+
+    const now = new Date();
+
+    // Use the user's chosen start date, falling back to today if not onboarded yet
+    const programStartDate = userProfile
+      ? parseISO(userProfile.startDate)
+      : now;
+
+    const daysSinceStart = Math.max(0, differenceInCalendarDays(now, programStartDate));
+    const currentDay = Math.min(140, daysSinceStart + 1);
+    const currentWeek = Math.min(20, Math.floor(daysSinceStart / 7) + 1);
+
+    let missedDaysCount = 0;
+    PLAN_DATA.forEach((w) => {
+      w.days.forEach((d) => {
+        if (d.day < currentDay && d.type !== 'rest') {
+          const dayDone = d.problems.length > 0 && d.problems.every((p) => progress[p.id]);
+          if (!dayDone) missedDaysCount++;
         }
       });
-      if (allSolved) completedDaysCount++;
     });
-  });
 
-  const now = new Date();
+    const targetDate = userProfile
+      ? parseISO(userProfile.targetDate)
+      : new Date('2027-01-15');
+    const diffTime = targetDate.getTime() - now.getTime();
+    const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
-  // Use the user's chosen start date, falling back to today if not onboarded yet
-  const programStartDate = userProfile
-    ? parseISO(userProfile.startDate)
-    : now;
+    const oddsPercentage = Math.min(
+      85,
+      Math.round(15 + (solvedCount / (totalProblems || 1)) * 60 + Math.min(streak, 20) * 0.5)
+    );
 
-  const daysSinceStart = Math.max(0, differenceInCalendarDays(now, programStartDate));
-  const currentDay = Math.min(140, daysSinceStart + 1);
-  const currentWeek = Math.min(20, Math.floor(daysSinceStart / 7) + 1);
+    const solvedRatePerDay = solvedCount > 0 ? solvedCount / Math.max(1, daysSinceStart) : 1.8;
+    const remainingProblems = totalProblems - solvedCount;
+    const projectedDaysNeeded = Math.ceil(remainingProblems / Math.max(0.5, solvedRatePerDay));
+    const projectedCompletionDate = format(addDays(now, projectedDaysNeeded), 'MMM dd, yyyy');
 
-  let missedDaysCount = 0;
-  PLAN_DATA.forEach((w) => {
-    w.days.forEach((d) => {
-      if (d.day < currentDay && d.type !== 'rest') {
-        const dayDone = d.problems.length > 0 && d.problems.every((p) => progress[p.id]);
-        if (!dayDone) missedDaysCount++;
-      }
-    });
-  });
+    const isOnTrack = missedDaysCount <= 3 && solvedCount >= Math.floor(currentDay * 1.5);
 
-  const targetDate = userProfile
-    ? parseISO(userProfile.targetDate)
-    : new Date('2027-01-15');
-  const diffTime = targetDate.getTime() - now.getTime();
-  const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-
-  const oddsPercentage = Math.min(
-    85,
-    Math.round(15 + (solvedCount / (totalProblems || 1)) * 60 + Math.min(streak, 20) * 0.5)
-  );
-
-  const solvedRatePerDay = solvedCount > 0 ? solvedCount / Math.max(1, daysSinceStart) : 1.8;
-  const remainingProblems = totalProblems - solvedCount;
-  const projectedDaysNeeded = Math.ceil(remainingProblems / Math.max(0.5, solvedRatePerDay));
-  const projectedCompletionDate = format(addDays(now, projectedDaysNeeded), 'MMM dd, yyyy');
-
-  const isOnTrack = missedDaysCount <= 3 && solvedCount >= Math.floor(currentDay * 1.5);
-
-  const stats: AppStats = {
-    solvedCount,
-    totalProblems,
-    streak,
-    daysLeft,
-    missedDaysCount,
-    oddsPercentage,
-    completedDaysCount,
-    currentWeek,
-    currentDay,
-    isOnTrack,
-    projectedCompletionDate
-  };
+    return {
+      solvedCount,
+      totalProblems,
+      streak,
+      daysLeft,
+      missedDaysCount,
+      oddsPercentage,
+      completedDaysCount,
+      currentWeek,
+      currentDay,
+      isOnTrack,
+      projectedCompletionDate
+    };
+  }, [progress, streak, userProfile]);
 
   // ── Import / Export ──────────────────────────────────────────────────────────
-  const exportJSONString = (): string => {
+  const exportJSONString = useCallback((): string => {
     const data = {
       version: 3,
       progress,
       solveHistory,
       streak,
       userProfile,
-      lastDate: localStorage.getItem(KEY_LAST_DATE),
       exportedAt: new Date().toISOString()
     };
     return JSON.stringify(data, null, 2);
-  };
+  }, [progress, solveHistory, streak, userProfile]);
 
-  const exportJSON = () => {
+  const exportJSON = useCallback(() => {
     const jsonStr = exportJSONString();
     const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -431,15 +442,14 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     a.download = `dsa_planner_${safeName}_${format(new Date(), 'yyyy-MM-dd')}.json`;
     a.click();
     toast.success("Progress backup downloaded! 💾");
-  };
+  }, [exportJSONString, userProfile]);
 
-  const importJSON = (jsonString: string): boolean => {
+  const importJSON = useCallback((jsonString: string): boolean => {
     try {
       const parsed = JSON.parse(jsonString);
       if (parsed && typeof parsed.progress === 'object') {
         setProgress(parsed.progress);
         if (parsed.solveHistory) setSolveHistory(parsed.solveHistory);
-        if (parsed.lastDate) localStorage.setItem(KEY_LAST_DATE, parsed.lastDate);
         // Restore profile if present in backup
         if (parsed.userProfile && typeof parsed.userProfile === 'object') {
           setUserProfile(parsed.userProfile);
@@ -453,51 +463,55 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       toast.error("Failed to parse JSON backup.");
       return false;
     }
-  };
+  }, []);
 
-  const resetAll = () => {
+  const resetAll = useCallback(() => {
     localStorage.removeItem(KEY_PROGRESS);
     localStorage.removeItem(KEY_SOLVE_HISTORY);
     localStorage.removeItem(KEY_STREAK);
-    localStorage.removeItem(KEY_LAST_DATE);
     localStorage.removeItem(KEY_USER_PROFILE);
     setProgress({});
     setSolveHistory({});
-    setUserProfile(null as unknown as UserProfile);
+    setUserProfile(null);
     toast.error("All progress wiped.", { id: 'reset-toast' });
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    progress,
+    solveHistory,
+    streak,
+    dailySolveLog,
+    stats,
+    userProfile: userProfile ?? DEFAULT_PROFILE,
+    isOnboarded,
+    updateProfile,
+    resumeFromDay,
+    toggleProblem,
+    markDayComplete,
+    isDayComplete,
+    activeWeek,
+    setActiveWeek,
+    searchQuery,
+    setSearchQuery,
+    selectedDifficulty,
+    setSelectedDifficulty,
+    statusFilter,
+    setStatusFilter,
+    exportJSON,
+    exportJSONString,
+    importJSON,
+    resetAll,
+    soundEnabled,
+    toggleSound
+  }), [
+    progress, solveHistory, streak, dailySolveLog, stats, userProfile, isOnboarded,
+    updateProfile, resumeFromDay, toggleProblem, markDayComplete, isDayComplete,
+    activeWeek, setActiveWeek, searchQuery, setSearchQuery, selectedDifficulty, setSelectedDifficulty,
+    statusFilter, setStatusFilter, exportJSON, exportJSONString, importJSON, resetAll, soundEnabled, toggleSound
+  ]);
 
   return (
-    <ProgressContext.Provider
-      value={{
-        progress,
-        solveHistory,
-        streak,
-        dailySolveLog,
-        stats,
-        userProfile: userProfile ?? DEFAULT_PROFILE,
-        isOnboarded,
-        updateProfile,
-        resumeFromDay,
-        toggleProblem,
-        markDayComplete,
-        isDayComplete,
-        activeWeek,
-        setActiveWeek,
-        searchQuery,
-        setSearchQuery,
-        selectedDifficulty,
-        setSelectedDifficulty,
-        statusFilter,
-        setStatusFilter,
-        exportJSON,
-        exportJSONString,
-        importJSON,
-        resetAll,
-        soundEnabled,
-        toggleSound
-      }}
-    >
+    <ProgressContext.Provider value={contextValue}>
       {children}
     </ProgressContext.Provider>
   );
