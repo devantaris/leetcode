@@ -8,11 +8,20 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
+// Wrap in try/catch — if the key format is wrong or the lib throws,
+// we degrade gracefully (leaderboard shows "not configured") instead of
+// crashing the entire app at module load time.
+let _supabase: SupabaseClient | null = null;
+try {
+  if (supabaseUrl && supabaseAnonKey) {
+    _supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+} catch (err) {
+  console.warn('[GrindOS] Supabase init failed — leaderboard disabled:', err);
+}
+
 // Export a null-safe client; callers must check for null before using
-export const supabase: SupabaseClient | null =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
+export const supabase: SupabaseClient | null = _supabase;
 
 export const isLeaderboardEnabled = !!supabase;
 
