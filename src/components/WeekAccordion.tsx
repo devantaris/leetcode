@@ -5,6 +5,19 @@ import { ChevronDown, ExternalLink, CheckCircle2, RefreshCw, Trophy, Coffee, Spa
 import type { Problem } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
+import { addDays, parseISO, format } from 'date-fns';
+
+// Compute the actual calendar weekday abbreviation for a given absolute day number.
+// d.day is 1-indexed (Day 1 = startDate, Day 2 = startDate + 1, etc.)
+function getActualWeekday(startDate: string, absoluteDay: number): string {
+  try {
+    const date = addDays(parseISO(startDate), absoluteDay - 1);
+    return format(date, 'EEE'); // 'Mon', 'Tue', 'Wed', etc.
+  } catch {
+    return '???';
+  }
+}
+
 
 export const WeekAccordion: React.FC = () => {
   const {
@@ -93,7 +106,8 @@ export const WeekAccordion: React.FC = () => {
             <div className="p-4 flex flex-col gap-3">
               {w.days.map((d) => {
                 const dayKey = `${w.week}-${d.day}`;
-                const isOpen = openDays[dayKey] ?? (w.week === activeWeek && d.weekday === 'Mon');
+                const actualWeekday = getActualWeekday(userProfile.startDate, d.day);
+                const isOpen = openDays[dayKey] ?? (w.week === activeWeek && d.day % 7 === 1);
                 const complete = isDayComplete(w.week, d.day);
 
                 // Filter problems inside day based on search query & dropdown filters
@@ -139,7 +153,7 @@ export const WeekAccordion: React.FC = () => {
                     >
                       <div className="flex items-center gap-3">
                         <span className="font-mono text-xs font-bold text-gray-400 min-w-[75px]">
-                          Day {d.day} ({d.weekday})
+                          Day {d.day} ({actualWeekday})
                         </span>
 
                         <span className="text-sm font-semibold text-gray-200">
