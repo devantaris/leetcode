@@ -5,6 +5,7 @@ import { Top150Card } from '../components/Top150Card';
 import { StatsAnalyticsDashboard } from '../components/StatsAnalyticsDashboard';
 import { HeatmapGrid } from '../components/HeatmapGrid';
 import { DailyFocusTimer } from '../components/DailyFocusTimer';
+import { LeaderboardOptInBanner } from '../components/LeaderboardOptInBanner';
 import { motion } from 'framer-motion';
 
 export const DashboardPage: React.FC = () => {
@@ -23,6 +24,10 @@ export const DashboardPage: React.FC = () => {
 
       {/* BRUTALITY BANNER */}
       <BrutalityBanner />
+
+      {/* LEADERBOARD OPT-IN NUDGE */}
+      <LeaderboardOptInBanner />
+
 
       {/* LEETCODE TOP 150 PROGRESS */}
       <Top150Card />

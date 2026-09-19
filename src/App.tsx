@@ -7,6 +7,8 @@ const LandingPage = React.lazy(() => import('./pages/LandingPage').then(m => ({ 
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const CurriculumPage = React.lazy(() => import('./pages/CurriculumPage').then(m => ({ default: m.CurriculumPage })));
 const AnalyticsPage = React.lazy(() => import('./pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
+const LeaderboardPage = React.lazy(() => import('./pages/LeaderboardPage').then(m => ({ default: m.LeaderboardPage })));
+
 
 export default function App() {
   return (
@@ -20,6 +22,7 @@ export default function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="curriculum" element={<CurriculumPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="leaderboard" element={<LeaderboardPage />} />
             </Route>
             <Route path='*' element={<Navigate to='/' replace />} />
           </Routes>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock, ExternalLink } from 'lucide-react';
+import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock, ExternalLink, Trophy } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import { APP_CONFIG } from '../config/appConfig';
 
@@ -142,6 +142,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <BarChart3 className="w-3.5 h-3.5" />
             <span>Analytics</span>
+          </NavLink>
+
+          <NavLink
+            to="/leaderboard"
+            className={({ isActive }) =>
+              `px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                isActive
+                  ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`
+            }
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            <span>Leaderboard</span>
           </NavLink>
         </div>
 

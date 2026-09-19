@@ -19,6 +19,11 @@ export const STORAGE_KEYS = {
 
   // UI state (sessionStorage)
   bannerDismissed: `${PREFIX}_banner_dismissed`,
+
+  // Leaderboard (localStorage)
+  leaderboardOptIn: `${PREFIX}_leaderboard_optin`,
+  leaderboardAnonymous: `${PREFIX}_leaderboard_anonymous`,
+  leaderboardUserId: `${PREFIX}_leaderboard_user_id`,
 } as const;
 
 export type StorageKeys = typeof STORAGE_KEYS;
