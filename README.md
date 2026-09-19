@@ -1,32 +1,111 @@
-# React + TypeScript + Vite
+# GrindOS 🔥
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**The operating system for interview prep.**
 
-Currently, two official plugins are available:
+A structured DSA interview prep system with spaced repetition, streak tracking, a 20-week phased curriculum, and a global leaderboard. Built for engineers who are serious about landing the job.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+🚀 **Live:** [leetcode-psi.vercel.app](https://leetcode-psi.vercel.app)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the Oxlint configuration
+- **20-Week Phased Curriculum** — 140 days of structured DSA problems, from Arrays to System Design
+- **Interview 150 Essentials Track** — curated subset of the most high-signal problems
+- **Streak & Consistency Tracking** — daily solve streaks, heatmap, and completeddays counter
+- **Interview Readiness Score** — dynamic odds formula based on progress, streak, and pace
+- **Global Leaderboard** — anonymous opt-in rankings by problems solved, streak, and readiness %
+- **Analytics Dashboard** — solve rate charts, difficulty breakdown, projected completion date
+- **Daily Focus Timer** — Pomodoro-style session timer with tick sounds
+- **Backup & Restore** — export/import full progress as JSON
+- **100% Local-First** — all data stored in `localStorage`, no account required
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+---
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Stack
+
+| Layer | Tech |
+|---|---|
+| Framework | React 19 + TypeScript |
+| Build | Vite 8 |
+| Styling | Tailwind CSS v4 |
+| Animation | Framer Motion |
+| Charts | Recharts |
+| Routing | React Router v7 |
+| Leaderboard Backend | Supabase (optional) |
+| Deployment | Vercel |
+
+---
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+
+## Leaderboard Setup (Optional)
+
+The leaderboard requires a Supabase project. Without it, the app works fully — the leaderboard just shows "Not Configured".
+
+**1. Create a free Supabase project** at [supabase.com](https://supabase.com)
+
+**2. Run the schema** — paste `supabase/schema.sql` into your Supabase SQL Editor and run it
+
+**3. Add env vars:**
+
+```bash
+# .env.local (gitignored)
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...   # Legacy anon key from Project Settings → API
+```
+
+**4. Set the same vars in Vercel** → Project Settings → Environment Variables
+
+---
+
+## Project Structure
+
+```
+src/
+├── config/          # App config, storage keys, Supabase client
+├── context/         # ProgressContext — central state + localStorage persistence
+├── components/      # UI components (Navbar, WeekAccordion, modals, etc.)
+├── pages/           # Route-level pages (Landing, Dashboard, Curriculum, Analytics, Leaderboard)
+├── hooks/           # useLeaderboard
+├── data/            # 20-week curriculum plan data + stats
+├── types/           # TypeScript interfaces
+└── utils/           # Audio, helpers
+```
+
+---
+
+## Data & Privacy
+
+- All solve progress, streaks, and profile data live in **your browser's localStorage** under `go_*` keys
+- The leaderboard is **opt-in only** — nothing is sent without your explicit action
+- Leaderboard entries are anonymous by default; you can also toggle "Show as Anonymous"
+- Opting out **permanently deletes** your row from the database
+
+---
+
+## Backup & Restore
+
+Export your full progress as JSON anytime via **Settings → Download JSON**.  
+Restore it on any device via **Settings → Restore JSON File**.
+
+Format: `grindos_backup_<name>_<date>.json`
+
+---
+
+## License
+
+MIT
