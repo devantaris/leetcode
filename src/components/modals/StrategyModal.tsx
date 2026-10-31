@@ -1,5 +1,4 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 import { ModalWrapper } from './ModalWrapper';
 
 interface StrategyModalProps {
@@ -9,29 +8,45 @@ interface StrategyModalProps {
 
 export const StrategyModal: React.FC<StrategyModalProps> = ({ isOpen, onClose }) => {
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Topic Progression Roadmap">
-      <div>
-        <div className="flex items-center gap-2 text-yellow-400 font-extrabold text-lg mb-4">
-          <Sparkles className="w-5 h-5" />
-          <span>TOPIC PROGRESSION ROADMAP</span>
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Curriculum Strategy">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px', color: 'var(--text-primary)' }}>
+            Topic Progression Strategy
+          </h2>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
+            Structured 5-phase algorithmic progression roadmap.
+          </p>
         </div>
 
-        <div className="space-y-3 text-xs text-gray-300 leading-relaxed">
-          <div className="p-3 rounded-xl bg-gray-900 border border-gray-800">
-            <strong className="text-orange-400">Phase 1 (Weeks 1-4): Linear Foundations & Search</strong> — Arrays, Two Pointers, Sliding Window, LL, Stack, Binary Search & Matrix.
-          </div>
-          <div className="p-3 rounded-xl bg-gray-900 border border-gray-800">
-            <strong className="text-blue-400">Phase 2 (Weeks 5-9): Tree & Graph Hierarchies</strong> — Trees, Heaps, Tries, Backtracking, BFS/DFS, Union Find, Dijkstra.
-          </div>
-          <div className="p-3 rounded-xl bg-gray-900 border border-gray-800">
-            <strong className="text-red-400">Phase 3 (Weeks 10-13): Dynamic Programming & Bits</strong> — 1D & 2D DP, Knapsack, String DP, Greedy Intervals & Bitwise tricks.
-          </div>
-          <div className="p-3 rounded-xl bg-gray-900 border border-gray-800">
-            <strong className="text-purple-400">Phase 4 (Week 14): System Design Shift</strong> — Distributed systems fundamentals — URL shorteners, rate limiters, notification systems.
-          </div>
-          <div className="p-3 rounded-xl bg-gray-900 border border-gray-800">
-            <strong className="text-green-400">Phase 5 (Weeks 15-20): Top Tier Sprint — Target company patterns & mock interviews</strong>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            { phase: 'Phase 1 (Weeks 1–4)', title: 'Linear Foundations', desc: 'Arrays, Two Pointers, Sliding Window, Linked Lists, Stack, Binary Search.' },
+            { phase: 'Phase 2 (Weeks 5–9)', title: 'Tree & Graph Hierarchies', desc: 'Trees, Heaps, Tries, Backtracking, BFS/DFS, Union-Find, Dijkstra.' },
+            { phase: 'Phase 3 (Weeks 10–13)', title: 'Dynamic Programming', desc: '1D & 2D DP, Knapsack, Subsequence DP, Matrix Chains, Greedy Intervals.' },
+            { phase: 'Phase 4 (Week 14)', title: 'System Design Shift', desc: 'Distributed systems fundamentals: caching, rate limiting, partitioning.' },
+            { phase: 'Phase 5 (Weeks 15–20)', title: 'Offer Sprint & Mocks', desc: 'High-frequency company tags, 45-minute timed mock speedruns.' },
+          ].map((item) => (
+            <div
+              key={item.phase}
+              style={{
+                padding: '10px 12px', background: 'var(--bg-elevated)',
+                border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{item.title}</span>
+                <span className="section-label" style={{ fontSize: 10 }}>{item.phase}</span>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+          <button onClick={onClose} className="btn btn-default">
+            Close
+          </button>
         </div>
       </div>
     </ModalWrapper>

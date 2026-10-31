@@ -14,74 +14,93 @@ export const HeatmapGrid: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <div>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
         <div>
-          <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">
-            {`${CURRICULUM.totalDays}-DAY CURRICULUM MATRIX`}
-          </h3>
-          <p className="text-xs text-gray-400">Click any week column to jump directly into its curriculum</p>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+            {CURRICULUM.totalDays}-Day Matrix
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            Click any week to jump to curriculum
+          </div>
         </div>
-
-        {/* LEGEND */}
-        <div className="flex items-center gap-3 text-[11px] text-gray-400 font-mono flex-wrap">
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded bg-green-500 shadow-sm shadow-green-500/50"></span>
-            <span>Done</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded bg-yellow-500/40 border border-yellow-500"></span>
-            <span>Review</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded bg-blue-500/40 border border-blue-500"></span>
-            <span>Contest</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded bg-gray-800"></span>
-            <span>Pending</span>
-          </div>
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          {[
+            { color: 'var(--color-success)', label: 'Done' },
+            { color: 'var(--color-warning)', opacity: 0.4, label: 'Review' },
+            { color: 'var(--color-info)', opacity: 0.4, label: 'Contest' },
+            { color: 'var(--border-default)', label: 'Pending' },
+          ].map(({ color, label }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{
+                width: 10, height: 10, borderRadius: 2,
+                background: color, flexShrink: 0
+              }} />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* HEATMAP MATRIX */}
-      <div className="overflow-x-auto pb-2">
-        <div className="inline-grid grid-cols-20 gap-2 min-w-[720px]">
+      {/* Grid */}
+      <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
+        <div className="inline-grid grid-cols-20" style={{ gap: 6, minWidth: 680 }}>
           {PLAN_DATA.map((w) => {
             const isCurrentWeek = w.week === stats.currentWeek;
             return (
               <div
                 key={w.week}
                 onClick={() => handleWeekClick(w.week)}
-                className={`flex flex-col gap-1.5 p-2 rounded-xl border cursor-pointer transition text-center group ${
-                  isCurrentWeek
-                    ? 'bg-orange-500/10 border-orange-500/50 shadow-lg shadow-orange-500/10'
-                    : 'bg-gray-900/60 hover:bg-gray-800/80 border-gray-800 hover:border-gray-700'
-                }`}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                  padding: '6px 4px',
+                  borderRadius: 6, cursor: 'pointer',
+                  border: `1px solid ${isCurrentWeek ? 'var(--border-focus)' : 'var(--border-subtle)'}`,
+                  background: isCurrentWeek ? 'var(--bg-hover)' : 'transparent',
+                  transition: 'all var(--transition-fast)',
+                }}
+                onMouseOver={e => !isCurrentWeek && (e.currentTarget.style.background = 'var(--bg-hover)')}
+                onMouseOut={e => !isCurrentWeek && (e.currentTarget.style.background = 'transparent')}
               >
-                <span className={`text-[10px] font-mono font-bold group-hover:text-orange-400 ${isCurrentWeek ? 'text-orange-400' : 'text-gray-400'}`}>
-                  W{w.week}
+                <span style={{
+                  fontSize: 9, fontWeight: 700, fontFamily: 'var(--font-mono)',
+                  color: isCurrentWeek ? 'var(--text-primary)' : 'var(--text-dimmed)',
+                  letterSpacing: '0.02em'
+                }}>
+                  {w.week}
                 </span>
 
                 {w.days.map((d) => {
                   const complete = isDayComplete(w.week, d.day);
-                  let bgClass = "bg-gray-800 border-gray-700/50";
+                  let bg = 'var(--bg-elevated)';
+                  let border = 'var(--border-subtle)';
 
                   if (complete) {
-                    bgClass = "bg-green-500 border-green-400 shadow-sm shadow-green-500/50";
+                    bg = 'var(--color-success)';
+                    border = 'var(--color-success)';
                   } else if (d.type === 'review') {
-                    bgClass = "bg-yellow-500/20 border-yellow-500/50";
+                    bg = 'rgba(217,119,6,0.25)';
+                    border = 'var(--color-warning)';
                   } else if (d.type === 'contest') {
-                    bgClass = "bg-blue-500/20 border-blue-500/50";
+                    bg = 'rgba(37,99,235,0.25)';
+                    border = 'var(--color-info)';
                   } else if (d.type === 'rest') {
-                    bgClass = "bg-gray-900 border-gray-850";
+                    bg = 'var(--bg-app)';
                   }
 
                   return (
                     <div
                       key={d.day}
-                      title={`Day ${d.day} (${d.weekday}) - ${d.topic} (${complete ? 'Completed' : 'Pending'})`}
-                      className={`w-full h-3.5 rounded border ${bgClass} transition-all hover:scale-110`}
+                      title={`Day ${d.day} (${d.weekday}) — ${d.topic} — ${complete ? 'Done' : 'Pending'}`}
+                      style={{
+                        width: '100%', height: 11, borderRadius: 2,
+                        background: bg, border: `1px solid ${border}`,
+                        transition: 'transform var(--transition-fast)',
+                      }}
+                      onMouseOver={e => (e.currentTarget.style.transform = 'scaleX(1.1)')}
+                      onMouseOut={e => (e.currentTarget.style.transform = 'scaleX(1)')}
                     />
                   );
                 })}

@@ -13,7 +13,6 @@ export const WeekPillNavigation: React.FC = () => {
       el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
-    // Scroll main curriculum container to active week anchor
     const weekAnchor = document.getElementById(`week-anchor-${activeWeek}`);
     if (weekAnchor) {
       weekAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -21,10 +20,19 @@ export const WeekPillNavigation: React.FC = () => {
   }, [activeWeek]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sticky top-[65px] z-40 bg-[#060609]/95 backdrop-blur-md py-3 border-b border-gray-800/60">
+    <div style={{
+      position: 'sticky', top: 0, zIndex: 20,
+      background: 'var(--bg-app)',
+      padding: '8px 0 12px',
+      borderBottom: '1px solid var(--border-default)',
+      marginBottom: 16
+    }}>
       <div
         ref={scrollRef}
-        className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 scroll-smooth"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          overflowX: 'auto', paddingBottom: 4
+        }}
       >
         {PLAN_DATA.map((w) => {
           const isActive = activeWeek === w.week;
@@ -35,19 +43,42 @@ export const WeekPillNavigation: React.FC = () => {
               key={w.week}
               id={`pill-w-${w.week}`}
               onClick={() => setActiveWeek(w.week)}
-              className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold shrink-0 border transition-all flex items-center gap-1.5 ${
-                isActive
-                  ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white border-orange-400 shadow-lg shadow-orange-500/25 scale-105'
+              style={{
+                padding: '5px 10px',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 12,
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 600,
+                border: `1px solid ${
+                  isActive
+                    ? 'var(--text-primary)'
+                    : isWeekComplete
+                    ? 'var(--color-success-border)'
+                    : 'var(--border-default)'
+                }`,
+                background: isActive
+                  ? 'var(--text-primary)'
                   : isWeekComplete
-                  ? 'bg-green-950/20 text-green-400 border-green-500/30 hover:bg-green-950/40'
-                  : 'bg-[#101018] text-gray-400 border-gray-800 hover:text-white hover:border-gray-700'
-              }`}
+                  ? 'var(--color-success-bg)'
+                  : 'var(--bg-card)',
+                color: isActive
+                  ? 'var(--text-inverse)'
+                  : isWeekComplete
+                  ? 'var(--color-success-text)'
+                  : 'var(--text-secondary)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                transition: 'all var(--transition-fast)'
+              }}
             >
               <span>W{w.week}</span>
               {isWeekComplete ? (
-                <Check className="w-3.5 h-3.5 text-green-400" />
+                <Check size={11} />
               ) : (
-                <span className="text-[10px] text-gray-500 font-normal">({w.topic})</span>
+                <span style={{ fontSize: 10, opacity: 0.7 }}>{w.topic.slice(0, 10)}</span>
               )}
             </button>
           );

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { User, Tag, Calendar } from 'lucide-react';
 import { useProgress } from '../../context/ProgressContext';
 import type { UserProfile } from '../../context/ProgressContext';
 import { ModalWrapper } from './ModalWrapper';
 import toast from 'react-hot-toast';
-
 import { format, addDays } from 'date-fns';
 import { APP_CONFIG } from '../../config/appConfig';
 
@@ -20,8 +18,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const [editTagline, setEditTagline] = useState<string>(userProfile.tagline);
   const [editStartDate, setEditStartDate] = useState<string>(userProfile.startDate);
   const [editTargetDate, setEditTargetDate] = useState<string>(userProfile.targetDate || format(addDays(new Date(), 140), 'yyyy-MM-dd'));
-  const [editRestDay, setEditRestDay] = useState<string>(userProfile.restDay || 'sunday');
-  const [editSecondarySkill, setEditSecondarySkill] = useState<string>(userProfile.secondarySkill || 'project');
+  const editRestDay = userProfile.restDay || 'sunday';
+  const editSecondarySkill = userProfile.secondarySkill || 'project';
 
   const handleSaveProfile = () => {
     if (!editName.trim()) {
@@ -42,109 +40,75 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
 
   return (
     <ModalWrapper isOpen={isOpen} onClose={onClose} title="Edit Profile">
-      <div>
-        <div className="flex items-center gap-2 text-orange-400 font-extrabold text-lg mb-2">
-          <User className="w-5 h-5" />
-          <span>EDIT PROFILE</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px', color: 'var(--text-primary)' }}>
+            User Profile
+          </h2>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
+            Update your display identity, target dates, and rest preferences.
+          </p>
         </div>
-        <p className="text-xs text-gray-400 mb-5 leading-relaxed">
-          Update your display name, tagline, or program start date.
-        </p>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-orange-400" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
               Your Name
             </label>
             <input
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 transition"
+              className="input"
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-gray-400" />
-              Tagline
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+              Tagline / Focus
             </label>
             <input
               type="text"
               value={editTagline}
               onChange={(e) => setEditTagline(e.target.value)}
-              placeholder="e.g. Software Engineer • CS Student"
-              className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
+              placeholder="e.g. SDE Candidate"
+              className="input"
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-yellow-400" />
-              Target / Goal Deadline
-            </label>
-            <input
-              type="date"
-              value={editTargetDate}
-              onChange={(e) => setEditTargetDate(e.target.value)}
-              className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-500 transition [color-scheme:dark]"
-            />
-          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={editStartDate}
+                onChange={(e) => setEditStartDate(e.target.value)}
+                className="input"
+              />
+            </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-orange-400" />
-              Program Start Date
-            </label>
-            <input
-              type="date"
-              value={editStartDate}
-              onChange={(e) => setEditStartDate(e.target.value)}
-              className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 transition [color-scheme:dark]"
-            />
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                Target Deadline
+              </label>
+              <input
+                type="date"
+                value={editTargetDate}
+                onChange={(e) => setEditTargetDate(e.target.value)}
+                className="input"
+              />
+            </div>
           </div>
+        </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-orange-400" />
-              Rest Day
-            </label>
-            <select
-              value={editRestDay}
-              onChange={(e) => setEditRestDay(e.target.value)}
-              className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 transition"
-            >
-              <option value="Sunday">Sunday</option>
-              <option value="Saturday">Saturday</option>
-              <option value="None">None</option>
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-gray-400" />
-              Secondary Skill
-            </label>
-            <select
-              value={editSecondarySkill}
-              onChange={(e) => setEditSecondarySkill(e.target.value)}
-              className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 transition"
-            >
-              <option value="Personal Project">Personal Project</option>
-              <option value="Research Paper">Research Paper</option>
-              <option value="Competitive Programming">Competitive Programming</option>
-              <option value="System Design">System Design</option>
-              <option value="Open Source">Open Source</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <button
-            onClick={handleSaveProfile}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-sm transition shadow-lg shadow-orange-500/20 mt-1"
-          >
-            Save Profile
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+          <button onClick={onClose} className="btn btn-default">
+            Cancel
+          </button>
+          <button onClick={handleSaveProfile} className="btn btn-primary">
+            Save Changes
           </button>
         </div>
       </div>

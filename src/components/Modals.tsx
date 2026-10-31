@@ -5,9 +5,10 @@ import { ResumeModal } from './modals/ResumeModal';
 import { RulesModal } from './modals/RulesModal';
 import { StrategyModal } from './modals/StrategyModal';
 import { ResetModal } from './modals/ResetModal';
+import { PlacementTrackerModal } from './modals/PlacementTrackerModal';
 
 interface ModalsProps {
-  activeModal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | null;
+  activeModal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | null;
   onClose: () => void;
   onTriggerImportFile?: () => void;
 }
@@ -21,6 +22,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
       <RulesModal isOpen={activeModal === 'rules'} onClose={onClose} />
       <StrategyModal isOpen={activeModal === 'strategy'} onClose={onClose} />
       <ResetModal isOpen={activeModal === 'reset'} onClose={onClose} />
+      <PlacementTrackerModal isOpen={activeModal === 'placements'} onClose={onClose} />
     </>
   );
 };

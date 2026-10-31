@@ -1,5 +1,4 @@
 import React from 'react';
-import { BookOpen } from 'lucide-react';
 import { ModalWrapper } from './ModalWrapper';
 import { useProgress } from '../../context/ProgressContext';
 import { CURRICULUM } from '../../data/curriculumStats';
@@ -31,38 +30,65 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
   const hasRestDay = userProfile.restDay !== 'none';
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="The 4 Core Rules">
-      <div>
-        <div className="flex items-center gap-2 text-orange-400 font-extrabold text-lg mb-4">
-          <BookOpen className="w-5 h-5" />
-          <span>THE 4 CORE RULES</span>
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Core Rules">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px', color: 'var(--text-primary)' }}>
+            The 4 Discipline Rules
+          </h2>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
+            Standard operating procedure to build retention and speed.
+          </p>
         </div>
 
-        <div className="space-y-4 text-xs text-gray-300 leading-relaxed">
-          <div className="p-3.5 rounded-xl bg-gray-900 border border-gray-800">
-            <h4 className="font-bold text-white mb-1">1. Daily Practice (45-60 min)</h4>
-            <p className="text-gray-400">{CURRICULUM.dailyTarget} curated problems every practice day. Set the built-in timer, eliminate distractions, and solve.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{
+            padding: '10px 12px', background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>1. Daily Practice (45–60 min)</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+              Solve {CURRICULUM.dailyTarget} curated problems every practice day. Set the built-in focus stopwatch and solve without distraction.
+            </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-yellow-950/20 border border-yellow-500/30">
-            <h4 className="font-bold text-yellow-300 mb-1">2. Weekly Blind Review</h4>
-            <p className="text-gray-400">Dedicate one day per week to review. Re-solve 2 previous problems BLIND without looking at past code. Finish with 1 new Medium.</p>
+          <div style={{
+            padding: '10px 12px', background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>2. Weekly Blind Re-solve</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+              Dedicate one day per week to re-solving 2 previous problems without checking prior notes or solution code.
+            </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/30">
-            <h4 className="font-bold text-blue-300 mb-1">3. Weekly Live Contest</h4>
-            <p className="text-gray-400">Join a weekly or biweekly contest. Target: Solve 2-3 problems under real-time pressure.</p>
+          <div style={{
+            padding: '10px 12px', background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>3. Live Weekly Contest</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+              Join regular contests to test unseen problems under time constraints and strict test-case evaluation.
+            </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-gray-900 border border-gray-800">
-            <h4 className="font-bold text-gray-200 mb-1">4. Scheduled Rest Day</h4>
-            <p className="text-gray-400">
+          <div style={{
+            padding: '10px 12px', background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>4. Scheduled Recovery Day</div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
               {hasRestDay
-                ? <>{restLabel} are for {skillLabel} or rest. Zero algorithms. Recharge your brain.</>
-                : <>No rest days configured — but remember to take breaks when needed. Burnout kills consistency.</>
-              }
-            </p>
+                ? `Take ${restLabel} completely off from DSA. Spend it on ${skillLabel} or rest.`
+                : 'Take regular rest days when needed to prevent burnout.'}
+            </div>
           </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+          <button onClick={onClose} className="btn btn-default">
+            Got It
+          </button>
         </div>
       </div>
     </ModalWrapper>

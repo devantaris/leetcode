@@ -1,9 +1,15 @@
 import React, { useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { CheckCircle2, Flame, Clock, TrendingUp, Target, CalendarX } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { AnimatedCounter } from './AnimatedCounter';
+
+const CARD_STYLE: React.CSSProperties = {
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border-default)',
+  borderRadius: 'var(--radius-lg)',
+  padding: '16px 18px',
+};
 
 export const StatsAnalyticsDashboard: React.FC = () => {
   const { stats, progress, userProfile } = useProgress();
@@ -15,27 +21,14 @@ export const StatsAnalyticsDashboard: React.FC = () => {
     const topicDataMap: { [topic: string]: { total: number; solved: number } } = {};
 
     PLAN_DATA.forEach((w) => {
-      if (!topicDataMap[w.topic]) {
-        topicDataMap[w.topic] = { total: 0, solved: 0 };
-      }
-
+      if (!topicDataMap[w.topic]) topicDataMap[w.topic] = { total: 0, solved: 0 };
       w.days.forEach((d) => {
         d.problems.forEach((p) => {
           topicDataMap[w.topic].total++;
-          if (p.difficulty === 'Easy') {
-            easyTotal++;
-            if (progress[p.id]) easySolved++;
-          } else if (p.difficulty === 'Medium') {
-            medTotal++;
-            if (progress[p.id]) medSolved++;
-          } else if (p.difficulty === 'Hard') {
-            hardTotal++;
-            if (progress[p.id]) hardSolved++;
-          }
-
-          if (progress[p.id]) {
-            topicDataMap[w.topic].solved++;
-          }
+          if (p.difficulty === 'Easy') { easyTotal++; if (progress[p.id]) easySolved++; }
+          else if (p.difficulty === 'Medium') { medTotal++; if (progress[p.id]) medSolved++; }
+          else if (p.difficulty === 'Hard') { hardTotal++; if (progress[p.id]) hardSolved++; }
+          if (progress[p.id]) topicDataMap[w.topic].solved++;
         });
       });
     });
@@ -43,210 +36,228 @@ export const StatsAnalyticsDashboard: React.FC = () => {
   }, [progress]);
 
   const diffChartData = useMemo(() => [
-    { name: 'Easy', solved: easySolved, total: easyTotal, color: '#34c759' },
-    { name: 'Medium', solved: medSolved, total: medTotal, color: '#ff9500' },
-    { name: 'Hard', solved: hardSolved, total: hardTotal, color: '#ff3b30' }
+    { name: 'Easy', solved: easySolved, total: easyTotal, color: 'var(--diff-easy)' },
+    { name: 'Medium', solved: medSolved, total: medTotal, color: 'var(--diff-medium)' },
+    { name: 'Hard', solved: hardSolved, total: hardTotal, color: 'var(--diff-hard)' },
   ], [easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal]);
 
   const topicChartData = useMemo(() => {
     return Object.keys(topicDataMap)
       .map((topic) => ({
-        name: topic.length > 12 ? topic.substring(0, 10) + '...' : topic,
+        name: topic.length > 12 ? topic.substring(0, 10) + '..' : topic,
         Solved: topicDataMap[topic].solved,
-        Remaining: topicDataMap[topic].total - topicDataMap[topic].solved
+        Remaining: topicDataMap[topic].total - topicDataMap[topic].solved,
       }))
       .slice(0, 8);
   }, [topicDataMap]);
 
   const solvedPct = Math.round((stats.solvedCount / (stats.totalProblems || 1)) * 100);
+  const targetStr = userProfile?.targetDate
+    ? new Date(userProfile.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Target Date';
+
+  const readinessColor = stats.oddsPercentage >= 75
+    ? 'var(--color-success-text)'
+    : stats.oddsPercentage >= 50
+    ? 'var(--color-warning-text)'
+    : 'var(--color-danger-text)';
+
+  const readinessLabel = stats.oddsPercentage >= 75 ? 'Placement Ready' : stats.oddsPercentage >= 50 ? 'On Track' : 'Building';
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 mt-6 flex flex-col gap-6">
-      
-      {/* 5 STAT CARDS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        
-        {/* CARD 1: PROBLEMS SOLVED */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#101018] border border-gray-800 p-5 shadow-xl">
-          <div className="flex items-center justify-between text-gray-400 mb-3">
-            <span className="text-xs font-bold font-mono tracking-wider uppercase">PROBLEMS SOLVED</span>
-            <CheckCircle2 className="w-5 h-5 text-green-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-extrabold text-white">
-              <AnimatedCounter value={stats.solvedCount} />
-            </span>
-            <span className="font-mono text-xs text-gray-400">/ {stats.totalProblems}</span>
-          </div>
-          <div className="w-full h-1.5 bg-gray-800 rounded-full mt-3 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-500"
-              style={{ width: `${solvedPct}%` }}
-            />
-          </div>
-          <span className="text-[11px] font-mono text-gray-400 mt-2 block">
-            {solvedPct}% of {stats.totalProblems} problems done
-          </span>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* CARD 2: CURRENT STREAK */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#101018] border border-gray-800 p-5 shadow-xl">
-          <div className="flex items-center justify-between text-gray-400 mb-3">
-            <span className="text-xs font-bold font-mono tracking-wider uppercase">CURRENT STREAK</span>
-            <Flame className="w-5 h-5 text-orange-400 animate-bounce" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-extrabold text-orange-400">
-              <AnimatedCounter value={stats.streak} suffix=" 🔥" />
-            </span>
-          </div>
-          <p className="text-[11px] text-gray-400 mt-3">
-            Consistency drives long-term retention.
-          </p>
-        </div>
-
-        {/* CARD 3: DAYS TO D-DAY */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#101018] border border-gray-800 p-5 shadow-xl">
-          <div className="flex items-center justify-between text-gray-400 mb-3">
-            <span className="text-xs font-bold font-mono tracking-wider uppercase">COUNTDOWN</span>
-            <Clock className="w-5 h-5 text-blue-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-extrabold text-white">
-              <AnimatedCounter value={stats.daysLeft} />
-            </span>
-            <span className="font-mono text-xs text-gray-400">days left</span>
-          </div>
-          <span className="text-[11px] font-mono text-blue-400 mt-3 block">
-            {userProfile.targetDate ? new Date(userProfile.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'your target date'} — Target
-          </span>
-        </div>
-
-        {/* CARD 4: TOP INTERNSHIP ODDS */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#101018] border border-gray-800 p-5 shadow-xl">
-          <div className="flex items-center justify-between text-gray-400 mb-3">
-            <span className="text-xs font-bold font-mono tracking-wider uppercase">READINESS SCORE</span>
-            <TrendingUp className="w-5 h-5 text-yellow-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-extrabold text-yellow-400">
-              <AnimatedCounter value={stats.oddsPercentage} suffix="%" />
-            </span>
-          </div>
-          <div className="w-full h-1.5 bg-gray-800 rounded-full mt-3 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-orange-500 to-yellow-400 transition-all duration-500"
-              style={{ width: `${stats.oddsPercentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* CARD 5: MISSED DAYS */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#101018] border border-gray-800 p-5 shadow-xl">
-          <div className="flex items-center justify-between text-gray-400 mb-3">
-            <span className="text-xs font-bold font-mono tracking-wider uppercase">DAYS OFF TRACK</span>
-            <CalendarX className="w-5 h-5 text-red-500" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-extrabold text-red-400">
-              <AnimatedCounter value={stats.missedDaysCount} />
-            </span>
-            <span className="font-mono text-xs text-gray-400">days</span>
-          </div>
-          <span className="text-[11px] font-mono text-red-400/80 mt-3 block">
-            {stats.missedDaysCount === 0 ? 'Perfect consistency! 🔥' : `${stats.missedDaysCount} days off track`}
-          </span>
-        </div>
-
+      {/* Section header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Analytics</h2>
+        <span className="section-label">Week {stats.currentWeek} · Day {stats.currentDay}</span>
       </div>
 
-      {/* CHARTS SECTION */}
+      {/* ── Stat cards row ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+        {/* Problems Solved */}
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 8 }}>Solved</div>
+          <div className="stat-number">
+            <AnimatedCounter value={stats.solvedCount} />
+            <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{stats.totalProblems}</span>
+          </div>
+          <div className="progress-track" style={{ marginTop: 10 }}>
+            <div className="progress-fill progress-fill-success" style={{ width: `${solvedPct}%` }} />
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{solvedPct}% complete</div>
+        </div>
+
+        {/* Streak */}
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 8 }}>Streak</div>
+          <div className="stat-number" style={{ color: stats.streak > 0 ? 'var(--color-warning-text)' : 'var(--text-primary)' }}>
+            <AnimatedCounter value={stats.streak} />
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            {stats.streak >= 7 ? 'Excellent consistency!' : 'consecutive days'}
+          </div>
+        </div>
+
+        {/* Countdown */}
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 8 }}>Countdown</div>
+          <div className="stat-number">
+            <AnimatedCounter value={stats.daysLeft} />
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            days to {targetStr}
+          </div>
+        </div>
+
+        {/* Readiness */}
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 8 }}>Readiness</div>
+          <div className="stat-number" style={{ color: readinessColor }}>
+            <AnimatedCounter value={stats.oddsPercentage} suffix="%" />
+          </div>
+          <div style={{ fontSize: 11, color: readinessColor, marginTop: 4 }}>
+            {readinessLabel}
+          </div>
+        </div>
+
+        {/* Missed */}
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 8 }}>Missed</div>
+          <div className="stat-number" style={{ color: stats.missedDaysCount === 0 ? 'var(--color-success-text)' : 'var(--color-danger-text)' }}>
+            <AnimatedCounter value={stats.missedDaysCount} />
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            {stats.missedDaysCount === 0 ? 'Perfect record!' : 'days off-track'}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Readiness breakdown ── */}
+      <div style={{
+        ...CARD_STYLE,
+        padding: '16px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+          <div>
+            <div className="section-label" style={{ marginBottom: 2 }}>Readiness Breakdown</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              Score: {stats.oddsPercentage}/100
+            </div>
+          </div>
+          <div style={{
+            fontSize: 12, color: 'var(--text-secondary)',
+            background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-md)', padding: '6px 10px', maxWidth: 320
+          }}>
+            {stats.readinessBreakdown.actionableAdvice}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
+          {[
+            { label: 'Coverage', score: stats.readinessBreakdown.coverageScore, max: 40, color: 'var(--color-success-text)' },
+            { label: 'Streak', score: stats.readinessBreakdown.streakScore, max: 25, color: 'var(--color-warning-text)' },
+            { label: 'Pace', score: stats.readinessBreakdown.paceScore, max: 25, color: 'var(--color-info-text)' },
+            { label: 'Breadth', score: stats.readinessBreakdown.breadthScore, max: 10, color: 'var(--text-secondary)' },
+          ].map(({ label, score, max, color }) => (
+            <div key={label} style={{
+              padding: '10px 12px',
+              background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-md)'
+            }}>
+              <div className="section-label" style={{ marginBottom: 4 }}>{label}</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 18, fontWeight: 700, color, lineHeight: 1 }}>{score}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/ {max}</span>
+              </div>
+              <div className="progress-track" style={{ marginTop: 6 }}>
+                <div style={{
+                  height: '100%', borderRadius: 99,
+                  background: color, width: `${(score / max) * 100}%`,
+                  transition: 'width 0.5s ease'
+                }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Charts ── */}
       {stats.solvedCount === 0 ? (
-        <div className="rounded-2xl border border-gray-800 bg-[#101018] p-10 flex flex-col items-center justify-center text-center gap-3">
-          <span className="text-4xl">🎯</span>
-          <h3 className="text-base font-bold text-white">No data yet — start solving!</h3>
-          <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
-            Check off your first problems on the Dashboard or Curriculum page. Your difficulty breakdown and topic charts will populate here automatically.
-          </p>
+        <div style={{
+          ...CARD_STYLE, padding: '40px 20px',
+          textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
+        }}>
+          <div style={{ fontSize: 32 }}>📊</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>No data yet</div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 300 }}>
+            Complete your first problems and charts will appear here automatically.
+          </div>
         </div>
       ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* CHART 1: DIFFICULTY BREAKDOWN */}
-        <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-              <Target className="w-4 h-4 text-green-400" />
-              Difficulty Mastery Breakdown
-            </h3>
-            <span className="text-xs font-mono text-gray-400">Easy / Med / Hard</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+          {/* Difficulty chart */}
+          <div style={CARD_STYLE}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Difficulty</div>
+              <span className="section-label">Easy / Med / Hard</span>
+            </div>
+            <div style={{ height: 180 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={diffChartData} cx="50%" cy="50%"
+                    innerRadius={48} outerRadius={72} paddingAngle={4} dataKey="solved">
+                    {diffChartData.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                    }}
+                    formatter={(value: any, name: any) => [`${value} solved`, name]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, paddingTop: 10, borderTop: '1px solid var(--border-default)', textAlign: 'center' }}>
+              {[
+                { label: 'Easy', s: easySolved, t: easyTotal, color: 'var(--diff-easy)' },
+                { label: 'Med', s: medSolved, t: medTotal, color: 'var(--diff-medium)' },
+                { label: 'Hard', s: hardSolved, t: hardTotal, color: 'var(--diff-hard)' },
+              ].map(({ label, s, t, color }) => (
+                <div key={label}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color }}>{s}/{t}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={diffChartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={75}
-                  paddingAngle={5}
-                  dataKey="solved"
-                >
-                  {diffChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#181824', borderColor: '#262636', borderRadius: '8px', color: '#fff' }}
-                  formatter={(value: any, name: any) => [`${value} solved`, name]}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono pt-2 border-t border-gray-800">
-            <div>
-              <span className="text-green-400 font-bold block">{easySolved} / {easyTotal}</span>
-              <span className="text-gray-400 text-[10px]">Easy</span>
-            </div>
-            <div>
-              <span className="text-orange-400 font-bold block">{medSolved} / {medTotal}</span>
-              <span className="text-gray-400 text-[10px]">Medium</span>
-            </div>
-            <div>
-              <span className="text-red-400 font-bold block">{hardSolved} / {hardTotal}</span>
-              <span className="text-gray-400 text-[10px]">Hard</span>
+          {/* Topic chart */}
+          <div style={CARD_STYLE}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Topics</div>
+            <div style={{ height: 210 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topicChartData} margin={{ top: 4, right: 4, left: -24, bottom: 20 }}>
+                  <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={9} angle={-30} textAnchor="end" />
+                  <YAxis stroke="var(--text-muted)" fontSize={10} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                    }}
+                  />
+                  <Bar dataKey="Solved" stackId="a" fill="var(--color-info)" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="Remaining" stackId="a" fill="var(--border-default)" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
-
-        {/* CHART 2: TOPIC PROGRESS BAR CHART */}
-        <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">
-              Topic Completion Distribution
-            </h3>
-            <span className="text-xs font-mono text-gray-400">Solved vs Remaining</span>
-          </div>
-
-          <div className="h-56 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topicChartData} margin={{ top: 5, right: 10, left: -20, bottom: 20 }}>
-                <XAxis dataKey="name" stroke="#636366" fontSize={10} angle={-25} textAnchor="end" />
-                <YAxis stroke="#636366" fontSize={10} />
-                <Tooltip contentStyle={{ backgroundColor: '#181824', borderColor: '#262636', borderRadius: '8px', color: '#fff' }} />
-                <Bar dataKey="Solved" stackId="a" fill="#ff9500" />
-                <Bar dataKey="Remaining" stackId="a" fill="#262636" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-      </div>
       )}
-
     </div>
   );
 };

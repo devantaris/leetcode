@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { Search, X, ExternalLink, Command, ArrowRight } from 'lucide-react';
+import { Search, X, ArrowRight, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Problem } from '../types';
 import { CURRICULUM } from '../data/curriculumStats';
@@ -16,10 +16,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
-
   if (!isOpen) return null;
 
-  // Flatten problems with week & day context
   const results: { problem: Problem; week: number; day: number; topic: string }[] = [];
   if (query.trim()) {
     const q = query.toLowerCase();
@@ -46,89 +44,127 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-[#101018] border border-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh]">
-        
-        {/* SEARCH INPUT */}
-        <div className="flex items-center px-4 py-3.5 border-b border-gray-800 gap-3">
-          <Search className="w-5 h-5 text-gray-400 shrink-0" />
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 110,
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        padding: '70px 16px 16px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)'
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          width: '100%', maxWidth: 580,
+          background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-lg)',
+          overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '70vh'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Search header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '12px 16px', borderBottom: '1px solid var(--border-default)'
+        }}>
+          <Search size={16} style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search problems by name, LC #, or topic (e.g. 'Two Sum', '53', 'DP')..."
-            className="w-full bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none font-mono"
+            placeholder="Type a problem name, LeetCode number, or topic..."
+            style={{
+              flex: 1, background: 'transparent', border: 'none',
+              outline: 'none', color: 'var(--text-primary)', fontSize: 13
+            }}
             autoFocus
           />
-          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800">
-            <X className="w-5 h-5" />
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-muted)', padding: 4, display: 'flex'
+            }}
+          >
+            <X size={15} />
           </button>
         </div>
 
-        {/* RESULTS LIST */}
-        <div className="p-4 overflow-y-auto flex flex-col gap-2">
+        {/* Results */}
+        <div style={{ padding: '8px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {!query.trim() ? (
-            <div className="py-6 text-center text-xs text-gray-500 font-mono flex flex-col items-center gap-2">
-              <Command className="w-8 h-8 text-gray-700" />
-              <span>Type to search across {CURRICULUM.totalProblems} problems across {CURRICULUM.totalTopics} topics</span>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="px-2 py-1 rounded bg-gray-900 border border-gray-800 text-[10px]">Ctrl + K to toggle</span>
-                <span className="px-2 py-1 rounded bg-gray-900 border border-gray-800 text-[10px]">ESC to close</span>
+            <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, marginBottom: 4 }}>
+                Search across {CURRICULUM.totalProblems} problems
               </div>
+              <div>Press <kbd style={{ padding: '2px 5px', borderRadius: 4, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)' }}>ESC</kbd> to dismiss</div>
             </div>
           ) : results.length === 0 ? (
-            <div className="py-8 text-center text-xs text-gray-400 font-mono">
-              No matching problems found for "{query}".
+            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+              No problems found matching "{query}"
             </div>
           ) : (
-            results.slice(0, 30).map(({ problem, week, day }) => {
+            results.slice(0, 25).map(({ problem, week, day }) => {
               const isChecked = !!progress[problem.id];
+              const diffColor = problem.difficulty === 'Easy'
+                ? 'var(--color-success-text)'
+                : problem.difficulty === 'Hard'
+                ? 'var(--color-danger-text)'
+                : 'var(--color-warning-text)';
+
               return (
                 <div
                   key={problem.id}
-                  className={`p-3 rounded-xl border transition flex items-center justify-between gap-3 ${
-                    isChecked
-                      ? 'bg-green-950/20 border-green-500/30'
-                      : 'bg-[#161622] border-gray-800 hover:border-gray-700'
-                  }`}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '8px 10px', borderRadius: 'var(--radius-md)',
+                    background: isChecked ? 'var(--color-success-bg)' : 'transparent',
+                    border: `1px solid ${isChecked ? 'var(--color-success-border)' : 'var(--border-subtle)'}`,
+                    gap: 10
+                  }}
                 >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => toggleProblem(problem.id)}
-                      className="w-4 h-4 accent-green-500 cursor-pointer"
-                    />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={problem.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-bold text-white hover:text-orange-400 transition flex items-center gap-1"
-                        >
-                          <span>{problem.name}</span>
-                          {problem.lcNumber > 0 && <span className="text-[10px] text-gray-500 font-mono">#{problem.lcNumber}</span>}
-                          <ExternalLink className="w-3 h-3 text-gray-500" />
-                        </a>
-                      </div>
-                      <p className="text-[11px] text-gray-400 italic line-clamp-1">{problem.note}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+                    <div
+                      className={`checkbox-done ${isChecked ? 'checked' : ''}`}
+                      onClick={() => toggleProblem(problem.id)}
+                    >
+                      {isChecked && <Check size={11} style={{ color: '#fff' }} />}
                     </div>
+
+                    <a
+                      href={problem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: 13, fontWeight: 500,
+                        color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)',
+                        textDecoration: isChecked ? 'line-through' : 'none',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {problem.name}
+                    </a>
+
+                    <span style={{ fontSize: 10, fontWeight: 600, color: diffColor }}>
+                      {problem.difficulty}
+                    </span>
                   </div>
 
                   <button
                     onClick={() => handleSelectWeek(week)}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 text-[10px] font-mono text-orange-400 shrink-0 flex items-center gap-1"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: 11, color: 'var(--text-muted)', padding: '2px 6px',
+                      borderRadius: 4
+                    }}
                   >
-                    <span>W{week} D{day}</span>
-                    <ArrowRight className="w-3 h-3" />
+                    W{week}D{day} <ArrowRight size={10} />
                   </button>
                 </div>
               );
             })
           )}
         </div>
-
       </div>
     </div>
   );

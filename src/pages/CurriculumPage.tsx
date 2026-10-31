@@ -1,26 +1,28 @@
 import React from 'react';
-import { WeekPillNavigation } from '../components/WeekPillNavigation';
 import { SearchAndFilter } from '../components/SearchAndFilter';
 import { WeekAccordion } from '../components/WeekAccordion';
-import { motion } from 'framer-motion';
 
 export const CurriculumPage: React.FC = () => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-      className="flex flex-col gap-2 pb-16"
-    >
-      {/* WEEK PILLS NAVIGATION */}
-      <WeekPillNavigation />
+    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Title */}
+      <div>
+        <h1 style={{
+          fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
+          letterSpacing: '-0.02em', margin: '0 0 4px'
+        }}>
+          Syllabus
+        </h1>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+          20-week chronological progression through foundational data structures and algorithms.
+        </p>
+      </div>
 
-      {/* SEARCH AND FILTER BAR */}
+      {/* Instant Search & Filter */}
       <SearchAndFilter />
 
-      {/* CURRICULUM ACCORDION */}
+      {/* Week-by-Week Accordion */}
       <WeekAccordion />
-    </motion.div>
+    </div>
   );
 };

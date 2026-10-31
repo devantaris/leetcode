@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import type { UserProfile } from '../context/ProgressContext';
-import { Flame, Sparkles, ArrowRight, User, Calendar, Tag, CheckCircle2, Database, Zap, BookOpen, ChevronRight } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '../config/appConfig';
 import { CURRICULUM } from '../data/curriculumStats';
 
 const SECONDARY_SKILL_OPTIONS = [
-  { id: 'project', label: 'Personal / Side Project', emoji: '🚀' },
-  { id: 'research', label: 'Research Paper / Thesis', emoji: '📄' },
-  { id: 'competitive', label: 'Competitive Programming', emoji: '🏆' },
-  { id: 'systemdesign', label: 'System Design Reading', emoji: '📐' },
-  { id: 'openSource', label: 'Open Source Contributions', emoji: '🌐' },
-  { id: 'other', label: 'Something else / Rest only', emoji: '☕' },
+  { id: 'project', label: 'Personal Project', desc: 'Full-stack / systems build' },
+  { id: 'research', label: 'Research Paper', desc: 'Thesis / ML research' },
+  { id: 'competitive', label: 'Competitive Programming', desc: 'Codeforces / contests' },
+  { id: 'systemdesign', label: 'System Design Reading', desc: 'DDIA / distributed systems' },
+  { id: 'openSource', label: 'Open Source', desc: 'GitHub contributions' },
+  { id: 'other', label: 'Rest & Recharge', desc: 'Break from screens' },
 ];
 
 const REST_DAY_OPTIONS = [
-  { id: 'sunday', label: 'Sunday', desc: 'Most common — Mon–Sat grind' },
-  { id: 'saturday', label: 'Saturday', desc: 'Weekend grind — Mon–Fri + rest Sat' },
-  { id: 'none', label: 'No fixed rest day', desc: 'I\'ll decide as I go' },
+  { id: 'sunday', label: 'Sunday', desc: 'Mon–Sat grind, Sunday rest' },
+  { id: 'saturday', label: 'Saturday', desc: 'Mon–Fri grind, Saturday rest' },
+  { id: 'none', label: 'Flexible', desc: 'Rest when needed' },
 ];
 
 const TOTAL_STEPS = 3;
@@ -59,285 +59,305 @@ export const OnboardingPage: React.FC = () => {
   };
 
   const variants = {
-    enter: { opacity: 0, x: 30 },
-    center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -30 },
+    enter: { opacity: 0, y: 10 },
+    center: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -10 },
   };
 
   return (
-    <div className="min-h-screen bg-[#060609] flex flex-col items-center justify-center p-4 selection:bg-orange-500 selection:text-black">
-      {/* Ambient glows */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 left-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-lg">
-
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 flex items-center justify-center font-black text-black shadow-2xl shadow-orange-500/30 text-lg tracking-wider font-mono">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 16px',
+      background: 'var(--bg-app)'
+    }}>
+      <div style={{ width: '100%', maxWidth: 460 }}>
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 20 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: 'var(--text-primary)', color: 'var(--text-inverse)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 800, fontSize: 13, fontFamily: 'var(--font-mono)'
+          }}>
             {APP_CONFIG.shortName}
           </div>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            {APP_CONFIG.name}
+          </span>
         </div>
 
-        {/* Progress dots — only shown after landing */}
+        {/* Step dots */}
         {step > 0 && (
-          <div className="flex items-center justify-center gap-1.5 mb-6">
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 20 }}>
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
               <div
                 key={i}
-                className={`rounded-full transition-all duration-300 ${
-                  i < step ? 'w-5 h-1.5 bg-orange-500' : 'w-1.5 h-1.5 bg-gray-700'
-                }`}
+                style={{
+                  height: 3, width: i < step ? 24 : 12, borderRadius: 99,
+                  background: i < step ? 'var(--text-primary)' : 'var(--border-strong)',
+                  transition: 'all 0.3s ease'
+                }}
               />
             ))}
           </div>
         )}
 
         <AnimatePresence mode="wait">
-
-          {/* ── STEP 0: Landing / What is this app ── */}
+          {/* STEP 0: Welcome / Mission */}
           {step === 0 && (
-            <motion.div key="step0" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }} className="flex flex-col gap-0">
-              <div className="bg-[#101018] border border-gray-800 rounded-2xl p-8 shadow-2xl flex flex-col gap-6">
+            <motion.div key="s0" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.18 }}>
+              <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-xl)', padding: '28px', display: 'flex', flexDirection: 'column', gap: 18,
+                boxShadow: 'var(--shadow-md)'
+              }}>
                 <div>
-                  <h1 className="text-2xl font-extrabold text-white tracking-tight mb-1 flex items-center gap-2">
-                    {APP_CONFIG.name} <Flame className="w-6 h-6 text-orange-400 fill-orange-500" />
+                  <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
+                    Placement Readiness System
                   </h1>
-                  <p className="text-sm text-gray-400 leading-relaxed">
-                    A structured <strong className="text-white">{CURRICULUM.totalWeeks}-week, {CURRICULUM.totalDays}-day</strong> interview prep system built around the <strong className="text-white">Top 150 Interview Problems</strong>. Built for software engineers, students, and professionals preparing for technical interviews.
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>
+                    A structured {CURRICULUM.totalWeeks}-week, {CURRICULUM.totalDays}-day curriculum covering {CURRICULUM.totalProblems} curated interview problems and patterns.
                   </p>
                 </div>
 
-                {/* Feature cards */}
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-orange-500/5 border border-orange-500/15">
-                    <Flame className="w-4 h-4 text-orange-400 shrink-0 mt-0.5 fill-orange-500" />
-                    <div>
-                      <p className="text-xs font-bold text-white">Streak Tracking</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{CURRICULUM.dailyTarget} curated problems per practice day. One rest day per week. Miss a day → streak resets. Consecutive days build momentum.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    { label: 'Structured Daily Cadence', desc: `${CURRICULUM.dailyTarget} curated problems per practice day with built-in rest.` },
+                    { label: 'Local-First Architecture', desc: 'Runs in your browser. Complete control over your progress data.' },
+                    { label: 'Placement Pipeline Tracker', desc: 'Log applications, interviews, OA results and track conversion.' },
+                  ].map((feat) => (
+                    <div key={feat.label} style={{
+                      padding: '10px 12px', background: 'var(--bg-elevated)',
+                      border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
+                    }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{feat.label}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{feat.desc}</div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-800/50 border border-gray-800">
-                    <Database className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-bold text-white">100% Local — Your Browser</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">All progress is stored in your browser's localStorage. Nothing is sent to any server. Export/import JSON to back up or sync across devices.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-800/50 border border-gray-800">
-                    <Zap className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-bold text-white">Fully Personalized</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">Set your own start date, rest day, target deadline, and secondary skill. Works for anyone — not just one person.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-800/50 border border-gray-800">
-                    <BookOpen className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-bold text-white">Structured Curriculum</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">Arrays → Trees → Graphs → DP → System Design. 5 phases, {CURRICULUM.totalWeeks} weeks, {CURRICULUM.totalProblems} curated problems with {APP_CONFIG.tracks.primary} coverage.</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
                 <button
                   onClick={goNext}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-sm transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2"
+                  className="btn btn-primary"
+                  style={{ width: '100%', padding: '10px 16px', fontSize: 13 }}
                 >
-                  <span>Let's Set It Up For You</span>
-                  <ArrowRight className="w-4 h-4" />
+                  Get Started <ArrowRight size={13} />
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* ── STEP 1: Name & Tagline ── */}
+          {/* STEP 1: Name & Tagline */}
           {step === 1 && (
-            <motion.div key="step1" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
-              <div className="bg-[#101018] border border-gray-800 rounded-2xl p-8 shadow-2xl flex flex-col gap-6">
+            <motion.div key="s1" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.18 }}>
+              <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-xl)', padding: '28px', display: 'flex', flexDirection: 'column', gap: 18,
+                boxShadow: 'var(--shadow-md)'
+              }}>
                 <div>
-                  <h2 className="text-xl font-extrabold text-white mb-1">Who are you?</h2>
-                  <p className="text-sm text-gray-400">Your name appears in the greeting and navbar.</p>
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                    What should we call you?
+                  </h2>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                    Your name will be used across greetings and reports.
+                  </p>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-orange-400" /> Your Name *
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                      Your Name *
                     </label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => { setName(e.target.value); setNameError(''); }}
                       onKeyDown={(e) => e.key === 'Enter' && name.trim() && goNext()}
-                      placeholder="e.g. Alex, Jordan, Sam..."
+                      placeholder="e.g. Alex"
                       autoFocus
-                      className={`w-full bg-[#0c0c14] border rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none transition ${nameError ? 'border-red-500' : 'border-gray-800 focus:border-orange-500'}`}
+                      className="input"
                     />
-                    {nameError && <p className="text-xs text-red-400">{nameError}</p>}
+                    {nameError && (
+                      <div style={{ fontSize: 11, color: 'var(--color-danger-text)', marginTop: 4 }}>{nameError}</div>
+                    )}
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-gray-400" /> Tagline <span className="text-gray-600 font-normal">(optional)</span>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                      Tagline / Target Role <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span>
                     </label>
                     <input
                       type="text"
                       value={tagline}
                       onChange={(e) => setTagline(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && name.trim() && goNext()}
-                      placeholder="e.g. Software Engineer • CS Student • Full-Stack Dev"
-                      className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
+                      placeholder="e.g. CS Student • Target: SDE-1"
+                      className="input"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <button onClick={goBack} className="px-4 py-3 rounded-xl border border-gray-800 text-gray-400 hover:text-white font-bold text-sm transition">Back</button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={goBack} className="btn btn-default" style={{ flex: 1 }}>Back</button>
                   <button
                     onClick={() => {
                       if (!name.trim()) { setNameError('Please enter your name.'); return; }
                       goNext();
                     }}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-sm transition shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2"
+                    className="btn btn-primary"
+                    style={{ flex: 2 }}
                   >
-                    Next <ChevronRight className="w-4 h-4" />
+                    Next <ChevronRight size={13} />
                   </button>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* ── STEP 2: Rest Day + Secondary Skill ── */}
+          {/* STEP 2: Rest & Focus */}
           {step === 2 && (
-            <motion.div key="step2" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
-              <div className="bg-[#101018] border border-gray-800 rounded-2xl p-8 shadow-2xl flex flex-col gap-6">
+            <motion.div key="s2" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.18 }}>
+              <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-xl)', padding: '28px', display: 'flex', flexDirection: 'column', gap: 18,
+                boxShadow: 'var(--shadow-md)'
+              }}>
                 <div>
-                  <h2 className="text-xl font-extrabold text-white mb-1">Your schedule</h2>
-                  <p className="text-sm text-gray-400">Pick your rest day and what you do on it.</p>
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                    Schedule & Cadence
+                  </h2>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                    Choose your weekly rest day to prevent burnout.
+                  </p>
                 </div>
 
-                {/* Rest day */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-gray-300">Rest Day</label>
-                  {REST_DAY_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.id}
-                      onClick={() => setRestDay(opt.id)}
-                      className={`flex items-center justify-between px-4 py-3 rounded-xl border text-left transition ${
-                        restDay === opt.id
-                          ? 'bg-orange-500/10 border-orange-500/50 text-white'
-                          : 'bg-[#0c0c14] border-gray-800 text-gray-300 hover:border-gray-700'
-                      }`}
-                    >
-                      <div>
-                        <p className="text-xs font-bold">{opt.label}</p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">{opt.desc}</p>
-                      </div>
-                      {restDay === opt.id && <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0" />}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Secondary skill */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-gray-300">What do you focus on during rest?</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {SECONDARY_SKILL_OPTIONS.map((opt) => (
+                <div>
+                  <div className="section-label" style={{ marginBottom: 6 }}>Rest Day</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {REST_DAY_OPTIONS.map((opt) => (
                       <button
                         key={opt.id}
-                        onClick={() => setSecondarySkill(opt.id)}
-                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-left transition ${
-                          secondarySkill === opt.id
-                            ? 'bg-orange-500/10 border-orange-500/50 text-white'
-                            : 'bg-[#0c0c14] border-gray-800 text-gray-400 hover:border-gray-700'
-                        }`}
+                        onClick={() => setRestDay(opt.id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '8px 12px', borderRadius: 'var(--radius-md)',
+                          border: `1px solid ${restDay === opt.id ? 'var(--text-primary)' : 'var(--border-default)'}`,
+                          background: restDay === opt.id ? 'var(--bg-elevated)' : 'transparent',
+                          cursor: 'pointer', textAlign: 'left'
+                        }}
                       >
-                        <span className="text-base">{opt.emoji}</span>
-                        <span className="text-[11px] font-semibold leading-tight">{opt.label}</span>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{opt.label}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{opt.desc}</div>
+                        </div>
+                        {restDay === opt.id && <Check size={13} style={{ color: 'var(--text-primary)' }} />}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <button onClick={goBack} className="px-4 py-3 rounded-xl border border-gray-800 text-gray-400 hover:text-white font-bold text-sm transition">Back</button>
-                  <button onClick={goNext} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-sm transition flex items-center justify-center gap-2">
-                    Next <ChevronRight className="w-4 h-4" />
+                <div>
+                  <div className="section-label" style={{ marginBottom: 6 }}>Rest Day Secondary Skill</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {SECONDARY_SKILL_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setSecondarySkill(opt.id)}
+                        style={{
+                          padding: '8px 10px', borderRadius: 'var(--radius-md)',
+                          border: `1px solid ${secondarySkill === opt.id ? 'var(--text-primary)' : 'var(--border-default)'}`,
+                          background: secondarySkill === opt.id ? 'var(--bg-elevated)' : 'transparent',
+                          cursor: 'pointer', textAlign: 'left'
+                        }}
+                      >
+                        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{opt.label}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{opt.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={goBack} className="btn btn-default" style={{ flex: 1 }}>Back</button>
+                  <button onClick={goNext} className="btn btn-primary" style={{ flex: 2 }}>
+                    Next <ChevronRight size={13} />
                   </button>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* ── STEP 3: Dates ── */}
+          {/* STEP 3: Timeline & Launch */}
           {step === 3 && (
-            <motion.div key="step3" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25 }}>
-              <div className="bg-[#101018] border border-gray-800 rounded-2xl p-8 shadow-2xl flex flex-col gap-6">
+            <motion.div key="s3" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.18 }}>
+              <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-xl)', padding: '28px', display: 'flex', flexDirection: 'column', gap: 18,
+                boxShadow: 'var(--shadow-md)'
+              }}>
                 <div>
-                  <h2 className="text-xl font-extrabold text-white mb-1">Set your timeline</h2>
-                  <p className="text-sm text-gray-400">
-                    Hey <strong className="text-white">{name}</strong>! When do you start, and what's your goal deadline?
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                    Set your timeline
+                  </h2>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
+                    Start date determines your Day 1. Target date drives your countdown.
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-orange-400" /> Program Start Date
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                      Start Date
                     </label>
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 transition [color-scheme:dark]"
+                      className="input"
                     />
-                    <p className="text-[11px] text-gray-500">Starting today? Leave it. Coming back after a break? Pick the date you first started.</p>
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-yellow-400" /> Target / Interview Deadline
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                      Target Interview Date
                     </label>
                     <input
                       type="date"
                       value={targetDate}
                       onChange={(e) => setTargetDate(e.target.value)}
-                      className="w-full bg-[#0c0c14] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-yellow-500 transition [color-scheme:dark]"
+                      className="input"
                     />
-                    <p className="text-[11px] text-gray-500">This drives the countdown clock on your dashboard.</p>
                   </div>
                 </div>
 
-                {/* Summary card */}
-                <div className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 space-y-1.5">
-                  <p className="font-bold text-white mb-2">Your Setup Summary</p>
-                  <p>👤 <strong>{name}</strong>{tagline ? ` · ${tagline}` : ''}</p>
-                  <p>🗓️ Rest day: <strong className="text-orange-400">{REST_DAY_OPTIONS.find(r => r.id === restDay)?.label}</strong></p>
-                  <p>💡 Rest activity: <strong className="text-orange-400">{SECONDARY_SKILL_OPTIONS.find(s => s.id === secondarySkill)?.label}</strong></p>
-                  <p>📅 Start: <strong>{startDate}</strong> → Target: <strong>{targetDate}</strong></p>
+                <div style={{
+                  padding: '12px', background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
+                  fontSize: 12, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 4
+                }}>
+                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{name}</div>
+                  <div>Rest: {REST_DAY_OPTIONS.find(r => r.id === restDay)?.label} ({SECONDARY_SKILL_OPTIONS.find(s => s.id === secondarySkill)?.label})</div>
+                  <div>Start: {startDate} → Target: {targetDate}</div>
                 </div>
 
-                <div className="flex gap-3">
-                  <button onClick={goBack} className="px-4 py-3 rounded-xl border border-gray-800 text-gray-400 hover:text-white font-bold text-sm transition">Back</button>
-                  <button
-                    onClick={handleFinish}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-sm transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4 text-yellow-300" />
-                    Launch My Plan
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={goBack} className="btn btn-default" style={{ flex: 1 }}>Back</button>
+                  <button onClick={handleFinish} className="btn btn-primary" style={{ flex: 2 }}>
+                    Launch Operating System
                   </button>
                 </div>
               </div>
             </motion.div>
           )}
-
         </AnimatePresence>
 
-        <p className="text-center text-[11px] text-gray-600 mt-4 font-mono">
-          All data stored locally in your browser · No account needed
+        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 16 }}>
+          100% local storage in your browser · No external accounts required
         </p>
       </div>
     </div>

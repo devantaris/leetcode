@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock, ExternalLink, Trophy } from 'lucide-react';
+import { Flame, Volume2, VolumeX, Download, Upload, RotateCcw, Sparkles, LayoutDashboard, BookOpen, BarChart3, Settings, Database, User, CalendarClock, ExternalLink, Trophy, Briefcase } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import { APP_CONFIG } from '../config/appConfig';
 
@@ -11,6 +11,7 @@ interface NavbarProps {
   onOpenBackup: () => void;
   onOpenProfile: () => void;
   onOpenResume: () => void;
+  onOpenPlacements?: () => void;
   onTriggerImport: () => void;
 }
 
@@ -21,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBackup,
   onOpenProfile,
   onOpenResume,
+  onOpenPlacements,
   onTriggerImport
 }) => {
   const { stats, exportJSON, soundEnabled, toggleSound, userProfile } = useProgress();
@@ -177,6 +179,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Backup & Sync</span>
           </button>
 
+          {/* PLACEMENT TRACKER BUTTON */}
+          {onOpenPlacements && (
+            <button
+              onClick={onOpenPlacements}
+              className="px-3 py-1.5 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-xs font-semibold text-orange-400 transition flex items-center gap-1.5"
+            >
+              <Briefcase className="w-3.5 h-3.5 text-orange-400" />
+              <span>Placements</span>
+            </button>
+          )}
+
           {/* RULES & STRATEGY */}
           <button
             onClick={onOpenRules}
@@ -214,6 +227,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {showSettingsMenu && (
               <div className="absolute right-0 mt-2 w-52 bg-[#101018] border border-gray-800 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1 text-xs">
+                {/* Placements */}
+                {onOpenPlacements && (
+                  <button
+                    onClick={() => {
+                      onOpenPlacements();
+                      setShowSettingsMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800 text-orange-400 flex items-center gap-2 transition"
+                  >
+                    <Briefcase className="w-3.5 h-3.5 text-orange-400" />
+                    <span>Placement Tracker</span>
+                  </button>
+                )}
+
                 {/* Profile */}
                 <button
                   onClick={() => {

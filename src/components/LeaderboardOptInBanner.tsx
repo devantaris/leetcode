@@ -1,17 +1,15 @@
 // GrindOS — LeaderboardOptInBanner
-// Floats on Dashboard after day 3, nudges user to join global leaderboard.
-// Dismissed permanently once closed.
+// Clean SaaS Minimalist
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, X, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Trophy, X, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useProgress } from '../context/ProgressContext';
 import { isLeaderboardEnabled } from '../config/supabaseClient';
 import { STORAGE_KEYS } from '../config/storageKeys';
 
 const BANNER_DISMISSED_KEY = 'go_leaderboard_banner_dismissed';
-const SHOW_AFTER_DAYS = 2; // show after user has been active for 2+ days
+const SHOW_AFTER_DAYS = 2;
 
 export function LeaderboardOptInBanner() {
   const { stats } = useProgress();
@@ -22,7 +20,6 @@ export function LeaderboardOptInBanner() {
 
   const isOptedIn = localStorage.getItem(STORAGE_KEYS.leaderboardOptIn) === 'true';
 
-  // Conditions to show: leaderboard configured, not dismissed, not opted in, active 2+ days
   const shouldShow =
     isLeaderboardEnabled &&
     !dismissed &&
@@ -34,40 +31,50 @@ export function LeaderboardOptInBanner() {
     localStorage.setItem(BANNER_DISMISSED_KEY, 'true');
   }
 
+  if (!shouldShow) return null;
+
   return (
-    <AnimatePresence>
-      {shouldShow && (
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          className="mx-4 mb-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-3"
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      gap: 12, padding: '12px 16px',
+      background: 'var(--bg-card)',
+      border: '1px solid var(--border-default)',
+      borderRadius: 'var(--radius-lg)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'var(--text-primary)', flexShrink: 0
+        }}>
+          <Trophy size={14} />
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+            Compare progress with peers
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+            You've solved {stats.solvedCount} problems. Join the peer leaderboard or private cohorts.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <Link to="/leaderboard" className="btn btn-default" style={{ fontSize: 12, padding: '5px 10px' }}>
+          Leaderboard <ArrowRight size={11} />
+        </Link>
+        <button
+          onClick={handleDismiss}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-muted)', padding: 4, display: 'flex'
+          }}
+          title="Dismiss"
         >
-          <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-            <Globe size={15} className="text-red-400" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white">You have {stats.solvedCount} problems solved — see how you rank</p>
-            <p className="text-xs text-gray-500">Join the global leaderboard anonymously. Opt out anytime.</p>
-          </div>
-
-          <Link
-            to="/leaderboard"
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-colors flex-shrink-0"
-          >
-            See Board <ArrowRight size={12} />
-          </Link>
-
-          <button
-            onClick={handleDismiss}
-            className="p-1 rounded-lg hover:bg-white/5 text-gray-600 hover:text-gray-400 transition-colors flex-shrink-0"
-            aria-label="Dismiss leaderboard banner"
-          >
-            <X size={14} />
-          </button>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <X size={14} />
+        </button>
+      </div>
+    </div>
   );
 }

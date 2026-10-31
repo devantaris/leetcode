@@ -1,23 +1,10 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { ChevronDown, ExternalLink, CheckCircle2, RefreshCw, Trophy, Coffee, Sparkles } from 'lucide-react';
+import { ChevronDown, ExternalLink, Check, Coffee } from 'lucide-react';
 import type { Problem } from '../types';
-import { motion, AnimatePresence } from 'framer-motion';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
-import { addDays, parseISO, format } from 'date-fns';
-
-// Compute the actual calendar weekday abbreviation for a given absolute day number.
-// d.day is 1-indexed (Day 1 = startDate, Day 2 = startDate + 1, etc.)
-function getActualWeekday(startDate: string, absoluteDay: number): string {
-  try {
-    const date = addDays(parseISO(startDate), absoluteDay - 1);
-    return format(date, 'EEE'); // 'Mon', 'Tue', 'Wed', etc.
-  } catch {
-    return '???';
-  }
-}
-
+import { COMPANY_LABELS } from '../data/companyMappings';
 
 export const WeekAccordion: React.FC = () => {
   const {
@@ -29,275 +16,242 @@ export const WeekAccordion: React.FC = () => {
     searchQuery,
     selectedDifficulty,
     statusFilter,
-    userProfile,
+    companyFilter,
   } = useProgress();
 
-  const SKILL_LABELS: Record<string, string> = {
-    project: 'your personal project',
-    research: 'your research paper or thesis',
-    competitive: 'competitive programming',
-    systemdesign: 'system design reading',
-    openSource: 'open source contributions',
-    other: 'rest and recharge',
-  };
-  const restActivity = SKILL_LABELS[userProfile?.secondarySkill] || 'your secondary focus';
+  const [openWeeks, setOpenWeeks] = useState<{ [weekNum: number]: boolean }>({
+    [activeWeek]: true,
+  });
 
-  const [openDays, setOpenDays] = useState<{ [dayKey: string]: boolean }>({});
-
-
-  const toggleDayOpen = (dayKey: string) => {
-    setOpenDays((prev) => ({ ...prev, [dayKey]: !prev[dayKey] }));
+  const toggleWeek = (weekNum: number) => {
+    setOpenWeeks(prev => ({ ...prev, [weekNum]: !prev[weekNum] }));
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 mt-6 flex flex-col gap-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {PLAN_DATA.map((w) => {
-        let totalWeekProblems = 0;
-        let solvedWeekProblems = 0;
+        let totalProblems = 0;
+        let solvedProblems = 0;
 
         w.days.forEach((d) => {
           d.problems.forEach((p) => {
-            totalWeekProblems++;
-            if (progress[p.id]) solvedWeekProblems++;
+            totalProblems++;
+            if (progress[p.id]) solvedProblems++;
           });
         });
 
-        const weekPct = totalWeekProblems > 0 ? Math.round((solvedWeekProblems / totalWeekProblems) * 100) : 100;
-        const isCurrentWeekActive = activeWeek === w.week;
+        const isWeekComplete = totalProblems > 0 && solvedProblems === totalProblems;
+        const isOpen = openWeeks[w.week] ?? (w.week === activeWeek || searchQuery.trim().length > 0);
 
         return (
           <div
             key={w.week}
             id={`week-anchor-${w.week}`}
-            className={`rounded-2xl border transition-all duration-300 ${
-              isCurrentWeekActive
-                ? 'bg-[#101018] border-orange-500/50 shadow-2xl shadow-orange-500/10'
-                : 'bg-[#0c0c12] border-gray-800'
-            }`}
+            style={{
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-card)',
+              overflow: 'hidden'
+            }}
           >
-            {/* WEEK HEADER */}
-            <div className="p-5 border-b border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-gray-800 text-orange-400 border border-gray-700">
-                  WEEK {w.week}
+            {/* Week Row Header */}
+            <div
+              onClick={() => toggleWeek(w.week)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 16px', cursor: 'pointer', userSelect: 'none',
+                background: isOpen ? 'var(--bg-elevated)' : 'transparent',
+                transition: 'background var(--transition-fast)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span className="badge-mono" style={{
+                  color: isWeekComplete ? 'var(--color-success-text)' : 'var(--text-primary)',
+                  borderColor: isWeekComplete ? 'var(--color-success-border)' : 'var(--border-default)'
+                }}>
+                  W{w.week}
                 </span>
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    {w.title}
-                  </h2>
-                  <span className="text-xs text-gray-400 font-mono">Topic: {w.topic}</span>
-                </div>
+
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {w.topic}
+                </span>
               </div>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                <span className="font-mono text-xs text-gray-400">
-                  {solvedWeekProblems} / {totalWeekProblems} Solved ({weekPct}%)
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                  {solvedProblems} / {totalProblems}
                 </span>
-                <div className="w-24 h-2 bg-gray-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-orange-500 to-green-400 transition-all"
-                    style={{ width: `${weekPct}%` }}
-                  />
-                </div>
+
+                <ChevronDown
+                  size={14}
+                  style={{
+                    color: 'var(--text-muted)',
+                    transform: isOpen ? 'rotate(180deg)' : 'none',
+                    transition: 'transform var(--transition-fast)'
+                  }}
+                />
               </div>
             </div>
 
-            {/* DAYS GRID */}
-            <div className="p-4 flex flex-col gap-3">
-              {w.days.map((d) => {
-                const dayKey = `${w.week}-${d.day}`;
-                const actualWeekday = getActualWeekday(userProfile.startDate, d.day);
-                const isOpen = openDays[dayKey] ?? (w.week === activeWeek && d.day % 7 === 1);
-                const complete = isDayComplete(w.week, d.day);
+            {/* Week Content */}
+            {isOpen && (
+              <div style={{ borderTop: '1px solid var(--border-default)' }}>
+                {w.days.map((d) => {
+                  const complete = isDayComplete(w.week, d.day);
 
-                // Filter problems inside day based on search query & dropdown filters
-                const filteredProblems = d.problems.filter((p: Problem) => {
-                  if (selectedDifficulty !== 'All' && p.difficulty !== selectedDifficulty) return false;
-                  if (statusFilter === 'top150' && (!TOP_150_LC_NUMBERS.has(p.lcNumber) || p.isReview)) return false;
-                  if (statusFilter === 'solved' && !progress[p.id]) return false;
-                  if (statusFilter === 'unsolved' && progress[p.id]) return false;
-                  if (statusFilter === 'review' && !p.isReview) return false;
-                  if (searchQuery.trim()) {
-                    const q = searchQuery.toLowerCase();
-                    const matchName = p.name.toLowerCase().includes(q);
-                    const matchNote = p.note.toLowerCase().includes(q);
-                    const matchLC = p.lcNumber.toString().includes(q);
-                    return matchName || matchNote || matchLC;
+                  const filteredProblems = d.problems.filter((p: Problem) => {
+                    if (selectedDifficulty !== 'All' && p.difficulty !== selectedDifficulty) return false;
+                    if (statusFilter === 'top150' && (!TOP_150_LC_NUMBERS.has(p.lcNumber) || p.isReview)) return false;
+                    if (statusFilter === 'solved' && !progress[p.id]) return false;
+                    if (statusFilter === 'unsolved' && progress[p.id]) return false;
+                    if (companyFilter !== 'all' && (!p.companyTags || !p.companyTags.includes(companyFilter))) return false;
+                    if (searchQuery.trim()) {
+                      const q = searchQuery.toLowerCase();
+                      return (
+                        p.name.toLowerCase().includes(q) ||
+                        p.note.toLowerCase().includes(q) ||
+                        p.lcNumber.toString().includes(q) ||
+                        d.topic.toLowerCase().includes(q)
+                      );
+                    }
+                    return true;
+                  });
+
+                  if (searchQuery.trim() && filteredProblems.length === 0 && d.type !== 'rest') {
+                    return null;
                   }
-                  return true;
-                });
 
-                if (searchQuery && filteredProblems.length === 0 && d.type !== 'rest') {
-                  return null;
-                }
-
-                return (
-                  <div
-                    key={d.day}
-                    className={`rounded-xl border transition-all overflow-hidden ${
-                      complete
-                        ? 'bg-green-950/10 border-green-500/30'
-                        : d.type === 'review'
-                        ? 'bg-yellow-950/10 border-yellow-500/30'
-                        : d.type === 'contest'
-                        ? 'bg-blue-950/10 border-blue-500/30'
-                        : d.type === 'rest'
-                        ? 'bg-gray-900/30 border-gray-850 opacity-60'
-                        : 'bg-[#14141f] border-gray-800/80 hover:border-gray-700'
-                    }`}
-                  >
-                    {/* DAY HEADER */}
+                  return (
                     <div
-                      onClick={() => toggleDayOpen(dayKey)}
-                      className="px-4 py-3 flex items-center justify-between cursor-pointer select-none hover:bg-white/[0.02] transition"
+                      key={d.day}
+                      style={{
+                        padding: '10px 16px',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        background: complete ? 'var(--color-success-bg)' : 'transparent'
+                      }}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-xs font-bold text-gray-400 min-w-[75px]">
-                          Day {d.day} ({actualWeekday})
-                        </span>
-
-                        <span className="text-sm font-semibold text-gray-200">
-                          {d.topic}
-                        </span>
-
-                        {d.type === 'review' && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
-                            <RefreshCw className="w-3 h-3" /> Blind Review
+                      {/* Day summary line */}
+                      <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        marginBottom: d.type === 'rest' ? 0 : 8, fontSize: 11
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontWeight: 600 }}>
+                            D{d.day} · {d.weekday}
                           </span>
-                        )}
-
-                        {d.type === 'contest' && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                            <Trophy className="w-3 h-3" /> Live Contest
+                          <span style={{ color: 'var(--text-secondary)' }}>
+                            {d.topic}
                           </span>
-                        )}
-
-                        {d.type === 'rest' && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-gray-800 text-gray-400">
-                            <Coffee className="w-3 h-3" /> Rest Day
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        {complete ? (
-                          <span className="text-green-400 flex items-center gap-1 text-xs font-mono font-bold">
-                            <CheckCircle2 className="w-4 h-4" /> Completed
-                          </span>
-                        ) : (
-                          <span className="text-gray-500 text-xs font-mono">
-                            {d.problems.filter(p => progress[p.id]).length}/{d.problems.length}
-                          </span>
-                        )}
-
-                        <ChevronDown
-                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                            isOpen ? 'rotate-180' : ''
-                          }`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* DAY BODY WITH FRAMER MOTION ANIMATION */}
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="px-4 pb-4 pt-1 border-t border-gray-800/40 bg-black/20"
-                        >
-                          {d.type === 'rest' ? (
-                            <div className="py-3 text-xs text-gray-400 font-medium italic flex items-center gap-2">
-                              <Coffee className="w-4 h-4 text-orange-400" />
-                              Rest day — time for {restActivity}. Enjoy your rest day.
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-2.5 mt-2">
-                              {filteredProblems.map((p) => {
-                                const isChecked = !!progress[p.id];
-                                let diffBadgeClass = "bg-orange-500/20 text-orange-400 border-orange-500/30";
-                                if (p.difficulty === 'Easy') diffBadgeClass = "bg-green-500/20 text-green-400 border-green-500/30";
-                                if (p.difficulty === 'Hard') diffBadgeClass = "bg-red-500/20 text-red-400 border-red-500/30";
-
-                                return (
-                                  <div
-                                    key={p.id}
-                                    className={`p-3 rounded-xl border transition flex flex-col gap-1.5 ${
-                                      isChecked
-                                        ? 'bg-green-950/20 border-green-500/30'
-                                        : 'bg-[#181824] border-gray-800 hover:border-gray-700'
-                                    }`}
-                                  >
-                                    <div className="flex items-center justify-between gap-3">
-                                      <div className="flex items-center gap-3">
-                                        <input
-                                          type="checkbox"
-                                          checked={isChecked}
-                                          onChange={() => toggleProblem(p.id)}
-                                          className="w-4 h-4 accent-green-500 rounded cursor-pointer"
-                                        />
-                                        <a
-                                          href={p.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-sm font-semibold text-white hover:text-orange-400 transition flex items-center gap-1.5 group"
-                                        >
-                                          <span className={`transition-all duration-300 ${isChecked ? 'line-through text-gray-500' : ''}`}>{p.name}</span>
-                                          {p.lcNumber > 0 && <span className="text-xs text-gray-500 font-mono">#{p.lcNumber}</span>}
-                                          <ExternalLink className="w-3.5 h-3.5 text-gray-500 group-hover:text-orange-400 transition" />
-                                        </a>
-                                      </div>
-
-                                      <div className="flex items-center gap-2">
-                                        {p.isReview && (
-                                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
-                                            Blind Re-solve
-                                          </span>
-                                        )}
-                                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${diffBadgeClass}`}>
-                                          {p.difficulty}
-                                        </span>
-                                        {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
-                                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
-                                            TOP 150
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    <p className="text-xs text-gray-400 pl-7 italic">
-                                      {p.note}
-                                    </p>
-                                  </div>
-                                );
-                              })}
-
-                              <div className="flex justify-end mt-2 pt-2 border-t border-gray-800/40">
-                                {complete ? (
-                                  <span className="px-4 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-xs font-semibold text-green-400 flex items-center gap-1.5">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> All Done!
-                                  </span>
-                                ) : (
-                                  <button
-                                    onClick={() => markDayComplete(w.week, d.day)}
-                                    className="px-4 py-1.5 rounded-lg bg-gray-800 hover:bg-green-500 hover:text-black border border-gray-700 text-xs font-semibold text-gray-200 transition flex items-center gap-1.5"
-                                  >
-                                    <Sparkles className="w-3.5 h-3.5" />
-                                    Mark Day Complete
-                                  </button>
-                                )}
-                              </div>
-                            </div>
+                          {d.type === 'rest' && (
+                            <span className="badge-mono">Rest</span>
                           )}
-                        </motion.div>
+                          {d.type === 'review' && (
+                            <span className="badge-mono" style={{ color: 'var(--color-warning-text)' }}>Review</span>
+                          )}
+                        </div>
+
+                        {!complete && d.type !== 'rest' && (
+                          <button
+                            onClick={() => markDayComplete(w.week, d.day)}
+                            className="btn btn-ghost"
+                            style={{ fontSize: 11, padding: '2px 6px', color: 'var(--text-muted)' }}
+                          >
+                            Mark Done
+                          </button>
+                        )}
+                        {complete && (
+                          <span style={{ color: 'var(--color-success-text)', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <Check size={11} /> Done
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Day Problems */}
+                      {d.type === 'rest' ? (
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, paddingTop: 4 }}>
+                          <Coffee size={12} /> Scheduled recovery day
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {filteredProblems.map((p) => {
+                            const isChecked = !!progress[p.id];
+                            const diffColor = p.difficulty === 'Easy'
+                              ? 'var(--color-success-text)'
+                              : p.difficulty === 'Hard'
+                              ? 'var(--color-danger-text)'
+                              : 'var(--color-warning-text)';
+
+                            return (
+                              <div
+                                key={p.id}
+                                onClick={() => toggleProblem(p.id)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                  padding: '5px 8px', borderRadius: 'var(--radius-sm)',
+                                  background: isChecked ? 'var(--color-success-bg)' : 'var(--bg-elevated)',
+                                  border: `1px solid ${isChecked ? 'var(--color-success-border)' : 'var(--border-subtle)'}`,
+                                  cursor: 'pointer', gap: 8
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+                                  <div className={`checkbox-minimal ${isChecked ? 'checked' : ''}`}>
+                                    {isChecked && <Check size={10} />}
+                                  </div>
+
+                                  <a
+                                    href={p.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{
+                                      fontSize: 12, fontWeight: 500,
+                                      color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)',
+                                      textDecoration: isChecked ? 'line-through' : 'none',
+                                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    {p.name}
+                                    <ExternalLink size={10} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                                  </a>
+
+                                  {p.lcNumber > 0 && (
+                                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                                      #{p.lcNumber}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                                  <span style={{ fontSize: 10, fontWeight: 600, color: diffColor }}>
+                                    {p.difficulty}
+                                  </span>
+
+                                  {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
+                                    <span className="badge-mono" style={{ color: 'var(--color-info-text)' }}>
+                                      Top 150
+                                    </span>
+                                  )}
+
+                                  {p.companyTags?.slice(0, 2).map((tag) => {
+                                    const meta = COMPANY_LABELS[tag];
+                                    return meta ? (
+                                      <span key={tag} className="badge-mono">
+                                        {meta.badge}
+                                      </span>
+                                    ) : null;
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })}

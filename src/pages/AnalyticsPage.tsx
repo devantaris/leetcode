@@ -1,15 +1,19 @@
 import React, { useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { motion } from 'framer-motion';
-import { Target, TrendingUp, Calendar } from 'lucide-react';
 import { ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
 import { CURRICULUM } from '../data/curriculumStats';
+
+const CARD_STYLE: React.CSSProperties = {
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border-default)',
+  borderRadius: 'var(--radius-lg)',
+  padding: '16px 18px',
+};
 
 export const AnalyticsPage: React.FC = () => {
   const { stats, progress, dailySolveLog } = useProgress();
 
-  // Difficulty breakdown data
   const { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap } = useMemo(() => {
     let easySolved = 0, easyTotal = 0;
     let medSolved = 0, medTotal = 0;
@@ -17,10 +21,7 @@ export const AnalyticsPage: React.FC = () => {
     const topicDataMap: { [topic: string]: { total: number; solved: number } } = {};
 
     PLAN_DATA.forEach((w) => {
-      if (!topicDataMap[w.topic]) {
-        topicDataMap[w.topic] = { total: 0, solved: 0 };
-      }
-
+      if (!topicDataMap[w.topic]) topicDataMap[w.topic] = { total: 0, solved: 0 };
       w.days.forEach((d) => {
         d.problems.forEach((p) => {
           topicDataMap[w.topic].total++;
@@ -34,26 +35,21 @@ export const AnalyticsPage: React.FC = () => {
             hardTotal++;
             if (progress[p.id]) hardSolved++;
           }
-
-          if (progress[p.id]) {
-            topicDataMap[w.topic].solved++;
-          }
+          if (progress[p.id]) topicDataMap[w.topic].solved++;
         });
       });
     });
-    
     return { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap };
   }, [progress]);
 
   const topicChartData = useMemo(() => {
     return Object.keys(topicDataMap).map((topic) => ({
-      name: topic,
+      name: topic.length > 14 ? topic.substring(0, 12) + '..' : topic,
       Solved: topicDataMap[topic].solved,
       Remaining: topicDataMap[topic].total - topicDataMap[topic].solved
     }));
   }, [topicDataMap]);
 
-  // Weekly progress trajectory data
   const weekTrajectoryData = useMemo(() => {
     return PLAN_DATA.map((w) => {
       let weekTotal = 0;
@@ -73,245 +69,268 @@ export const AnalyticsPage: React.FC = () => {
   }, [progress]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-      className="w-full max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6"
-    >
-      {/* ANALYTICS HEADER */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#101018] border border-gray-800 shadow-xl">
+    <div className="page-container" style={{ maxWidth: 960, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Title */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-extrabold text-white">INTERVIEW READINESS & ANALYTICS</h2>
-            <span className="text-xs font-mono font-bold bg-orange-500/20 text-orange-400 px-2.5 py-0.5 rounded border border-orange-500/30">
-              PRO INSIGHTS
-            </span>
-          </div>
-          <p className="text-xs text-gray-400 mt-1">
-            Data-driven evaluation of your DSA grinding velocity and estimated readiness for upcoming technical interviews.
+          <h1 style={{
+            fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
+            letterSpacing: '-0.02em', margin: '0 0 4px'
+          }}>
+            Analytics & Velocity
+          </h1>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+            Solve speed, category completion ratios, and historical consistency.
           </p>
         </div>
 
-        {/* PROJECTED COMPLETION DATE CARD */}
-        <div className="p-4 rounded-xl bg-gray-900 border border-gray-800 flex items-center gap-3 shrink-0">
-          <Calendar className="w-8 h-8 text-orange-400" />
-          <div>
-            <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider block">PROJECTED COMPLETION</span>
-            <span className="text-sm font-extrabold text-white font-mono">{stats.projectedCompletionDate}</span>
-          </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '6px 12px', background: 'var(--bg-card)',
+          border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
+          fontSize: 12, fontFamily: 'var(--font-mono)'
+        }}>
+          <span style={{ color: 'var(--text-muted)' }}>Projected Finish:</span>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{stats.projectedCompletionDate}</span>
         </div>
       </div>
 
-      {/* METRIC SUMMARY STRIP */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        
-        <div className="p-4 rounded-2xl bg-[#101018] border border-gray-800 shadow-lg">
-          <span className="text-[10px] font-mono font-bold text-gray-500 uppercase">SOLVE VELOCITY</span>
-          <span className="text-2xl font-extrabold text-white font-mono block mt-1">
-            {((stats.solvedCount / Math.max(1, stats.currentDay)) * 7).toFixed(1)} / wk
-          </span>
-          <span className="text-[10px] text-gray-400 mt-1 block">Problems solved per week</span>
+      {/* Metric summary strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Solve Velocity</div>
+          <div className="stat-number">
+            {((stats.solvedCount / Math.max(1, stats.currentDay)) * 7).toFixed(1)}
+            <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)' }}> / wk</span>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            Problems solved per 7 days
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#101018] border border-gray-800 shadow-lg">
-          <span className="text-[10px] font-mono font-bold text-gray-500 uppercase">PACE STATUS</span>
-          <span className={`text-xl font-extrabold font-mono block mt-1 ${stats.isOnTrack ? 'text-green-400' : 'text-orange-400'}`}>
-            {stats.isOnTrack ? '✅ On Track' : '⚠️ Behind Schedule'}
-          </span>
-          <span className="text-[10px] text-gray-400 mt-1 block">Targeting ~{CURRICULUM.dailyTarget} problems/day</span>
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Pace Status</div>
+          <div className="stat-number" style={{
+            color: stats.isOnTrack ? 'var(--color-success-text)' : 'var(--color-warning-text)',
+            fontSize: 20
+          }}>
+            {stats.isOnTrack ? 'On Schedule' : 'Behind Pace'}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            Target: ~{CURRICULUM.dailyTarget} problems / day
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#101018] border border-gray-800 shadow-lg">
-          <span className="text-[10px] font-mono font-bold text-gray-500 uppercase">EASY MASTERY</span>
-          <span className="text-2xl font-extrabold text-green-400 font-mono block mt-1">
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Easy Ratio</div>
+          <div className="stat-number" style={{ color: 'var(--diff-easy)' }}>
             {Math.round((easySolved / (easyTotal || 1)) * 100)}%
-          </span>
-          <span className="text-[10px] text-gray-400 mt-1 block">{easySolved} of {easyTotal} solved</span>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            {easySolved} of {easyTotal} problems
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#101018] border border-gray-800 shadow-lg">
-          <span className="text-[10px] font-mono font-bold text-gray-500 uppercase">MEDIUM / HARD MASTERY</span>
-          <span className="text-2xl font-extrabold text-orange-400 font-mono block mt-1">
+        <div style={CARD_STYLE}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Med & Hard Ratio</div>
+          <div className="stat-number" style={{ color: 'var(--diff-medium)' }}>
             {Math.round(((medSolved + hardSolved) / ((medTotal + hardTotal) || 1)) * 100)}%
-          </span>
-          <span className="text-[10px] text-gray-400 mt-1 block">{medSolved + hardSolved} of {medTotal + hardTotal} solved</span>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+            {medSolved + hardSolved} of {medTotal + hardTotal} problems
+          </div>
         </div>
-
       </div>
 
-      {/* CHARTS ROW 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* WEEKLY TRAJECTORY LINE CHART */}
-        <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-orange-400" />
-              {CURRICULUM.totalWeeks}-Week Completion Trajectory
-            </h3>
-            <span className="text-xs font-mono text-gray-400">Solved vs Target</span>
+      {/* Charts row 1: Weekly trajectory & daily velocity */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
+        {/* Trajectory */}
+        <div style={CARD_STYLE}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              20-Week Completion Trajectory
+            </span>
+            <span className="section-label">Target vs Solved</span>
           </div>
 
-          <div className="h-64 w-full">
+          <div style={{ height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weekTrajectoryData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f1f2e" />
-                <XAxis dataKey="week" stroke="#636366" fontSize={10} />
-                <YAxis stroke="#636366" fontSize={10} />
-                <Tooltip contentStyle={{ backgroundColor: '#181824', borderColor: '#262636', borderRadius: '8px', color: '#fff' }} />
-                <Line type="monotone" dataKey="Target" stroke="#3b3b54" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="Solved" stroke="#00e676" strokeWidth={3} dot={{ r: 4, fill: '#00e676' }} />
+              <LineChart data={weekTrajectoryData} margin={{ top: 5, right: 10, left: -24, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="2 2" stroke="var(--border-subtle)" />
+                <XAxis dataKey="week" stroke="var(--text-muted)" fontSize={9} />
+                <YAxis stroke="var(--text-muted)" fontSize={10} />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                    borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                  }}
+                />
+                <Line type="monotone" dataKey="Target" stroke="var(--border-strong)" strokeWidth={1.5} dot={false} />
+                <Line type="monotone" dataKey="Solved" stroke="var(--color-success)" strokeWidth={2} dot={{ r: 3, fill: 'var(--color-success)' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* DAILY SOLVE VELOCITY — unique chart not on Dashboard */}
-        <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-              <Target className="w-4 h-4 text-orange-400" />
-              Daily Solve Velocity
-            </h3>
-            <span className="text-xs font-mono text-gray-400">Problems / day (last 14 active days)</span>
+        {/* Daily Velocity */}
+        <div style={CARD_STYLE}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              Recent Solves Velocity
+            </span>
+            <span className="section-label">Last 14 days</span>
           </div>
 
           {dailySolveLog.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-500 text-xs font-mono">
+            <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
               No solves logged yet.
             </div>
           ) : (
-            <div className="h-64 w-full">
+            <div style={{ height: 220 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={[...dailySolveLog].reverse().slice(-14).map((g) => ({
-                    date: g.dateStr.slice(5), // MM-DD
+                    date: g.dateStr.slice(5),
                     Solved: g.items.length,
                   }))}
-                  margin={{ top: 5, right: 10, left: -20, bottom: 20 }}
+                  margin={{ top: 5, right: 10, left: -24, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1f1f2e" />
-                  <XAxis dataKey="date" stroke="#636366" fontSize={10} angle={-30} textAnchor="end" />
-                  <YAxis stroke="#636366" fontSize={10} allowDecimals={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#181824', borderColor: '#262636', borderRadius: '8px', color: '#fff' }} />
-                  <Bar dataKey="Solved" fill="#ff9500" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="2 2" stroke="var(--border-subtle)" />
+                  <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={9} />
+                  <YAxis stroke="var(--text-muted)" fontSize={10} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                    }}
+                  />
+                  <Bar dataKey="Solved" fill="var(--color-info)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           )}
         </div>
-
       </div>
 
-      {/* TOPIC DISTRIBUTION BAR CHART */}
-      <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">
-            All {CURRICULUM.totalTopics} Topics Completion Breakdown
-          </h3>
-          <span className="text-xs font-mono text-gray-400">Solved vs Remaining per topic</span>
+      {/* Topic breakdown */}
+      <div style={CARD_STYLE}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+            Topic Mastery Distribution
+          </span>
+          <span className="section-label">{CURRICULUM.totalTopics} Categories</span>
         </div>
 
-        <div className="h-72 w-full">
+        <div style={{ height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={topicChartData} margin={{ top: 5, right: 10, left: -20, bottom: 50 }}>
-              <XAxis dataKey="name" stroke="#636366" fontSize={10} angle={-35} textAnchor="end" />
-              <YAxis stroke="#636366" fontSize={10} />
-              <Tooltip contentStyle={{ backgroundColor: '#181824', borderColor: '#262636', borderRadius: '8px', color: '#fff' }} />
-              <Bar dataKey="Solved" stackId="a" fill="#00e676" />
-              <Bar dataKey="Remaining" stackId="a" fill="#242436" />
+            <BarChart data={topicChartData} margin={{ top: 5, right: 10, left: -20, bottom: 40 }}>
+              <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={9} angle={-30} textAnchor="end" />
+              <YAxis stroke="var(--text-muted)" fontSize={10} />
+              <Tooltip
+                contentStyle={{
+                  background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                  borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                }}
+              />
+              <Bar dataKey="Solved" stackId="a" fill="var(--color-success)" />
+              <Bar dataKey="Remaining" stackId="a" fill="var(--border-default)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* DATE-WISE ACTIVITY TIMELINE & SOLVE HISTORY */}
-      <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl mb-12">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-gray-800">
+      {/* Date-wise solve history */}
+      <div style={CARD_STYLE}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
           <div>
-            <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-orange-400" />
-              DATE-WISE SOLVE LOG & STREAK TIMELINE
-            </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Exact date and timestamp record of every solved problem. Consecutive active days determine your streak!
-            </p>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              Activity History
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              Log of solved problems by date and time
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold px-3 py-1 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/30">
-              🔥 {stats.streak}-Day Active Streak
-            </span>
-            <span className="text-xs font-mono font-bold px-3 py-1 rounded-lg bg-gray-800 text-gray-300 border border-gray-700">
-              {dailySolveLog.length} Active Days
-            </span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <span className="badge badge-warning">🔥 {stats.streak}d streak</span>
+            <span className="badge badge-neutral">{dailySolveLog.length} active days</span>
           </div>
         </div>
 
         {dailySolveLog.length === 0 ? (
-          <div className="p-8 text-center rounded-xl bg-gray-900/50 border border-gray-800 text-gray-400 text-xs font-mono">
-            No problem solves logged yet. Mark problems solved on the dashboard to build your date history!
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
+            No problem solves logged yet. Mark problems solved to begin recording your timeline.
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {dailySolveLog.map((group) => (
-              <div key={group.dateStr} className="rounded-xl border border-gray-800/90 bg-[#141420] p-4 flex flex-col gap-3">
-                
-                {/* DATE HEADER */}
-                <div className="flex items-center justify-between border-b border-gray-800/60 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-500/50"></span>
-                    <h4 className="text-xs font-bold font-mono text-white tracking-wide">
-                      {group.displayDate}
-                    </h4>
-                  </div>
-                  <span className="text-[11px] font-mono text-orange-400 font-bold bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20">
-                    {group.items.length} {group.items.length === 1 ? 'problem' : 'problems'} solved
+              <div
+                key={group.dateStr}
+                style={{
+                  background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
+                  borderRadius: 'var(--radius-md)', padding: '10px 12px'
+                }}
+              >
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--border-subtle)'
+                }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                    {group.displayDate}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {group.items.length} {group.items.length === 1 ? 'problem' : 'problems'}
                   </span>
                 </div>
 
-                {/* SOLVED PROBLEMS LIST FOR THIS DATE */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 6 }}>
                   {group.items.map((item) => {
-                    let badgeColor = "bg-orange-500/20 text-orange-400 border-orange-500/30";
-                    if (item.difficulty === 'Easy') badgeColor = "bg-green-500/20 text-green-400 border-green-500/30";
-                    if (item.difficulty === 'Hard') badgeColor = "bg-red-500/20 text-red-400 border-red-500/30";
+                    const diffColor = item.difficulty === 'Easy'
+                      ? 'var(--color-success-text)'
+                      : item.difficulty === 'Hard'
+                      ? 'var(--color-danger-text)'
+                      : 'var(--color-warning-text)';
 
                     return (
                       <div
                         key={`${group.dateStr}-${item.problemId}`}
-                        className="p-3 rounded-lg bg-[#181826] border border-gray-800 flex items-center justify-between gap-2 hover:border-gray-700 transition"
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '6px 8px', background: 'var(--bg-card)',
+                          border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)',
+                          fontSize: 12
+                        }}
                       >
-                        <div className="flex flex-col min-w-0">
+                        <div style={{ minWidth: 0, paddingRight: 6 }}>
                           <a
                             href={item.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs font-bold text-white hover:text-orange-400 transition truncate"
+                            style={{
+                              color: 'var(--text-primary)', textDecoration: 'none',
+                              fontWeight: 500, display: 'block', overflow: 'hidden',
+                              textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                            }}
                           >
                             {item.name}
                           </a>
-                          <span className="text-[10px] font-mono text-gray-500">
-                            {item.topic} • {item.timeFormatted}
-                          </span>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                            {item.timeFormatted}
+                          </div>
                         </div>
 
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${badgeColor}`}>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: diffColor, flexShrink: 0 }}>
                           {item.difficulty}
                         </span>
                       </div>
                     );
                   })}
                 </div>
-
               </div>
             ))}
           </div>
         )}
       </div>
-
-    </motion.div>
+    </div>
   );
 };

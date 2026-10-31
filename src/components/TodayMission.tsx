@@ -1,163 +1,238 @@
 import React from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { Sparkles, ExternalLink, CheckCircle2, Coffee, ArrowRight } from 'lucide-react';
+import { ExternalLink, Check, Coffee, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
+import { COMPANY_LABELS } from '../data/companyMappings';
 
 export const TodayMission: React.FC = () => {
   const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile } = useProgress();
 
   const SKILL_LABELS: Record<string, string> = {
-    project: 'your personal project',
-    research: 'your research paper or thesis',
+    project: 'personal project',
+    research: 'research paper or thesis',
     competitive: 'competitive programming',
     systemdesign: 'system design reading',
     openSource: 'open source contributions',
     other: 'rest and recharge',
   };
-  const restActivity = SKILL_LABELS[userProfile.secondarySkill] || 'your secondary focus';
+  const restActivity = SKILL_LABELS[userProfile.secondarySkill] || 'secondary focus';
 
-  // Determine greeting based on local time
-  const hour = new Date().getHours();
-  let greeting = "Good Morning";
-  if (hour >= 12 && hour < 17) greeting = "Good Afternoon";
-  if (hour >= 17) greeting = "Good Evening";
-
-  // Find current week and day plan
   const currentWeekPlan = PLAN_DATA.find((w) => w.week === stats.currentWeek) || PLAN_DATA[0];
   const todayDayPlan = currentWeekPlan.days.find((d) => d.day === stats.currentDay) || currentWeekPlan.days[0];
   const isComplete = isDayComplete(currentWeekPlan.week, todayDayPlan.day);
+  const solvedToday = todayDayPlan.problems.filter(p => !!progress[p.id]).length;
+  const totalToday = todayDayPlan.problems.length;
+  const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-r from-[#12121e] via-[#101018] to-[#18121f] border border-orange-500/30 p-6 shadow-2xl relative overflow-hidden">
-      {/* BACKGROUND GLOW ACCENT */}
-      <div className="absolute -right-20 -top-20 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      {/* ── HEADER ── */}
+      <div>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 8, flexWrap: 'wrap', gap: 8
+        }}>
+          <div style={{
+            fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+            display: 'flex', alignItems: 'center', gap: 6
+          }}>
+            <span>Day {todayDayPlan.day} of 140</span>
+            <span>·</span>
+            <span>Week {currentWeekPlan.week}</span>
+            <span>·</span>
+            <span>{todayDayPlan.weekday}</span>
+          </div>
 
-      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        
-        {/* HEADER & TOPIC INFO */}
-        <div className="flex flex-col gap-2 max-w-xl">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-orange-500/20 text-orange-400 border border-orange-500/30">
-              WEEK {currentWeekPlan.week} • DAY {todayDayPlan.day} ({todayDayPlan.weekday})
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {stats.streak > 0 && (
+              <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--color-warning-text)', fontWeight: 600 }}>
+                🔥 {stats.streak} day streak
+              </span>
+            )}
             {isComplete && (
-              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> MISSION ACCOMPLISHED
+              <span style={{
+                fontSize: 11, fontWeight: 600, color: 'var(--color-success-text)',
+                padding: '2px 8px', borderRadius: 'var(--radius-xs)',
+                background: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)'
+              }}>
+                Day Complete
               </span>
             )}
           </div>
-
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <span>{greeting}, {userProfile.name}</span>
-            <Sparkles className="w-6 h-6 text-yellow-400" />
-          </h2>
-
-          <p className="text-sm text-gray-300 font-medium leading-relaxed">
-            Today's Target: <strong className="text-white">{todayDayPlan.topic}</strong>. Complete these {todayDayPlan.problems.length} curated problems to maintain your <strong className="text-orange-400">{stats.streak}-day streak</strong>!
-          </p>
         </div>
 
-        {/* QUICK ACTION BUTTON */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Link
-            to="/curriculum"
-            onClick={() => setActiveWeek(currentWeekPlan.week)}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-bold text-xs shadow-lg shadow-orange-500/25 transition flex items-center gap-2"
-          >
-            <span>Full Curriculum</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+        <h1 style={{
+          fontSize: 24, fontWeight: 700, color: 'var(--text-primary)',
+          letterSpacing: '-0.02em', margin: '0 0 6px', lineHeight: 1.2
+        }}>
+          {todayDayPlan.topic}
+        </h1>
 
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+          {todayDayPlan.type === 'rest'
+            ? `Rest day — dedicated to ${restActivity}. Recharge your mental focus.`
+            : `Completed ${solvedToday} of ${totalToday} problem${totalToday !== 1 ? 's' : ''} today to maintain your daily cadence.`}
+        </p>
       </div>
 
-      {/* TODAY'S PROBLEM CARDS */}
-      <div className="mt-6 pt-5 border-t border-gray-800/80">
-        {todayDayPlan.type === 'rest' ? (
-          <div className="p-4 rounded-xl bg-gray-900/60 border border-gray-800 text-xs text-gray-300 flex items-center gap-3">
-            <Coffee className="w-5 h-5 text-orange-400 shrink-0" />
-            <div>
-              <h4 className="font-bold text-white mb-0.5">Rest Day</h4>
-              <p className="text-gray-400">Time for {restActivity}. Enjoy your scheduled rest day — recharge and come back focused.</p>
+      {/* ── TODAY'S PROBLEMS LIST ── */}
+      {todayDayPlan.type === 'rest' ? (
+        <div style={{
+          padding: '24px 20px', borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-default)', background: 'var(--bg-card)',
+          display: 'flex', alignItems: 'center', gap: 14
+        }}>
+          <Coffee size={22} style={{ color: 'var(--text-muted)' }} />
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Scheduled Rest Day</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+              Spend today on {restActivity}. Deliberate recovery builds long-term endurance.
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {todayDayPlan.problems.map((p) => {
-              const isChecked = !!progress[p.id];
-              let badgeColor = "bg-orange-500/20 text-orange-400 border-orange-500/30";
-              if (p.difficulty === 'Easy') badgeColor = "bg-green-500/20 text-green-400 border-green-500/30";
-              if (p.difficulty === 'Hard') badgeColor = "bg-red-500/20 text-red-400 border-red-500/30";
+        </div>
+      ) : (
+        <div style={{
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-lg)',
+          background: 'var(--bg-card)',
+          overflow: 'hidden'
+        }}>
+          {todayDayPlan.problems.map((p, idx) => {
+            const isChecked = !!progress[p.id];
+            const diffColor = p.difficulty === 'Easy'
+              ? 'var(--color-success-text)'
+              : p.difficulty === 'Hard'
+              ? 'var(--color-danger-text)'
+              : 'var(--color-warning-text)';
 
-              return (
-                <div
-                  key={p.id}
-                  className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between gap-3 ${
-                    isChecked
-                      ? 'bg-green-950/20 border-green-500/40'
-                      : 'bg-[#141420] border-gray-800 hover:border-gray-700'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleProblem(p.id)}
-                        className="w-4 h-4 accent-green-500 rounded cursor-pointer shrink-0"
-                      />
+            return (
+              <div
+                key={p.id}
+                onClick={() => toggleProblem(p.id)}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 12,
+                  padding: '14px 16px',
+                  borderBottom: idx < todayDayPlan.problems.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                  background: isChecked ? 'var(--color-success-bg)' : 'transparent',
+                  cursor: 'pointer', transition: 'background var(--transition-fast)'
+                }}
+              >
+                {/* Checkbox */}
+                <div style={{ marginTop: 2 }}>
+                  <div className={`checkbox-minimal ${isChecked ? 'checked' : ''}`}>
+                    {isChecked && <Check size={11} />}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <a
                         href={p.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-bold text-white hover:text-orange-400 transition flex items-center gap-1 group line-clamp-1"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          fontSize: 14, fontWeight: 600,
+                          color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)',
+                          textDecoration: isChecked ? 'line-through' : 'none',
+                          display: 'inline-flex', alignItems: 'center', gap: 5
+                        }}
                       >
-                        <span className={`transition-all duration-300 ${isChecked ? 'line-through text-gray-500' : ''}`}>{p.name}</span>
-                        <ExternalLink className="w-3 h-3 text-gray-500 group-hover:text-orange-400 shrink-0" />
+                        {p.name}
+                        <ExternalLink size={11} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                       </a>
+
+                      {p.lcNumber > 0 && (
+                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                          #{p.lcNumber}
+                        </span>
+                      )}
                     </div>
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${badgeColor}`}>
-                      {p.difficulty}
-                    </span>
-                    {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
-                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
-                        TOP 150
+
+                    {/* Metadata tags */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: diffColor }}>
+                        {p.difficulty}
                       </span>
-                    )}
+
+                      {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
+                        <span className="badge-mono" style={{ color: 'var(--color-info-text)' }}>
+                          Top 150
+                        </span>
+                      )}
+
+                      {p.companyTags?.slice(0, 2).map((tag) => {
+                        const meta = COMPANY_LABELS[tag];
+                        return meta ? (
+                          <span key={tag} className="badge-mono">
+                            {meta.badge}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
                   </div>
 
-                  <p className="text-[11px] text-gray-400 italic line-clamp-2 pl-6">
-                    {p.note}
-                  </p>
+                  {p.note && (
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0', lineHeight: 1.4, fontStyle: 'italic' }}>
+                      {p.note}
+                    </p>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-        {/* MARK DAY COMPLETE BUTTON */}
-        {todayDayPlan.type !== 'rest' && (
-          <div className="flex justify-end mt-4">
-            {isComplete ? (
-              <span className="px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/30 text-xs font-bold text-green-400 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> All Done Today!
-              </span>
-            ) : (
+      {/* ── ACTIONS & OVERALL PROGRESS BAR ── */}
+      <div style={{
+        paddingTop: 16, borderTop: '1px solid var(--border-default)',
+        display: 'flex', flexDirection: 'column', gap: 14
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            Curriculum Progress: <strong style={{ color: 'var(--text-primary)' }}>{stats.solvedCount}</strong> / {stats.totalProblems} solved ({pct}%)
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {todayDayPlan.type !== 'rest' && !isComplete && (
               <button
                 onClick={() => markDayComplete(currentWeekPlan.week, todayDayPlan.day)}
-                className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-green-500 hover:text-black border border-gray-700 text-xs font-bold text-gray-200 transition flex items-center gap-1.5 shadow-md"
+                className="btn btn-default"
+                style={{ fontSize: 12 }}
               >
-                <Sparkles className="w-4 h-4 text-yellow-400" />
-                Mark Today Complete
+                Mark Day Complete
               </button>
             )}
-          </div>
-        )}
-      </div>
 
+            <Link
+              to="/curriculum"
+              onClick={() => setActiveWeek(currentWeekPlan.week)}
+              className="btn btn-ghost"
+              style={{ fontSize: 12 }}
+            >
+              All Weeks <ArrowRight size={11} />
+            </Link>
+          </div>
+        </div>
+
+        {/* Minimal progress hairline bar */}
+        <div style={{
+          height: 2, background: 'var(--border-subtle)',
+          borderRadius: 99, overflow: 'hidden'
+        }}>
+          <div
+            style={{
+              height: '100%', width: `${pct}%`,
+              background: 'var(--text-primary)', transition: 'width 0.4s ease'
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 };

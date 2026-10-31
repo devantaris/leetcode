@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import type { UserProgressMap, SolveRecordMap, AppStats } from '../types';
+import type { 
+  UserProgressMap, 
+  SolveRecordMap, 
+  AppStats, 
+  PlacementRecord, 
+  CohortInfo, 
+  CompanyTag, 
+  ReadinessBreakdown 
+} from '../types';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { sounds } from '../utils/audio';
 import confetti from 'canvas-confetti';
@@ -89,6 +97,15 @@ interface ProgressContextType {
   setSelectedDifficulty: (diff: string) => void;
   statusFilter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150';
   setStatusFilter: (filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150') => void;
+  companyFilter: CompanyTag | 'all';
+  setCompanyFilter: (filter: CompanyTag | 'all') => void;
+  placements: PlacementRecord[];
+  addPlacement: (rec: Omit<PlacementRecord, 'id'>) => void;
+  updatePlacement: (id: string, updates: Partial<PlacementRecord>) => void;
+  deletePlacement: (id: string) => void;
+  activeCohort: CohortInfo | null;
+  joinCohort: (code: string, name?: string) => Promise<boolean>;
+  leaveCohort: () => void;
   exportJSON: () => void;
   exportJSONString: () => string;
   importJSON: (jsonString: string) => boolean;
@@ -243,12 +260,82 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [searchQuery, _setSearchQuery] = useState<string>('');
   const [selectedDifficulty, _setSelectedDifficulty] = useState<string>('All');
   const [statusFilter, _setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review' | 'top150'>('all');
+  const [companyFilter, _setCompanyFilter] = useState<CompanyTag | 'all'>('all');
   const [soundEnabled, _setSoundEnabled] = useState<boolean>(true);
+
+  // ── Placements & Cohort ──────────────────────────────────────────────────────
+  const [placements, setPlacements] = useState<PlacementRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.placements);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [activeCohort, setActiveCohort] = useState<CohortInfo | null>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.activeCohort);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.placements, JSON.stringify(placements));
+  }, [placements]);
+
+  useEffect(() => {
+    if (activeCohort) {
+      localStorage.setItem(STORAGE_KEYS.activeCohort, JSON.stringify(activeCohort));
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.activeCohort);
+    }
+  }, [activeCohort]);
+
+  const addPlacement = useCallback((rec: Omit<PlacementRecord, 'id'>) => {
+    const newRec: PlacementRecord = {
+      ...rec,
+      id: `place_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+    };
+    setPlacements(prev => [newRec, ...prev]);
+    toast.success(`Logged application for ${rec.company}! 🎯`);
+  }, []);
+
+  const updatePlacement = useCallback((id: string, updates: Partial<PlacementRecord>) => {
+    setPlacements(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    toast.success('Interview status updated! 🚀');
+  }, []);
+
+  const deletePlacement = useCallback((id: string) => {
+    setPlacements(prev => prev.filter(p => p.id !== id));
+    toast.success('Application record removed.');
+  }, []);
+
+  const joinCohort = useCallback(async (code: string, name?: string): Promise<boolean> => {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) return false;
+    const cohort: CohortInfo = {
+      code: cleanCode,
+      name: name || `Cohort ${cleanCode}`,
+      memberCount: Math.floor(Math.random() * 12) + 3,
+    };
+    setActiveCohort(cohort);
+    toast.success(`Joined cohort ${cohort.name}! 👥`);
+    return true;
+  }, []);
+
+  const leaveCohort = useCallback(() => {
+    setActiveCohort(null);
+    toast.success('Left cohort.');
+  }, []);
 
   const setActiveWeek = useCallback((week: number) => _setActiveWeek(week), []);
   const setSearchQuery = useCallback((query: string) => _setSearchQuery(query), []);
   const setSelectedDifficulty = useCallback((diff: string) => _setSelectedDifficulty(diff), []);
   const setStatusFilter = useCallback((filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150') => _setStatusFilter(filter), []);
+  const setCompanyFilter = useCallback((filter: CompanyTag | 'all') => _setCompanyFilter(filter), []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(progress));
@@ -424,11 +511,35 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const diffTime = targetDate.getTime() - now.getTime();
     const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 0);
 
-    // Odds formula: Base 15% + (Progress %) * 60% + Streak bonus (max 10% for 20 days)
-    const oddsPercentage = Math.min(
-      85,
-      Math.round(15 + (solvedCount / (totalProblems || 1)) * 60 + Math.min(streak, 20) * 0.5)
-    );
+    // Explainable Readiness Formula: Coverage (40%) + Consistency/Streak (25%) + Pace (25%) + Breadth (10%)
+    const coverageScore = Math.min(40, Math.round((solvedCount / (totalProblems || 1)) * 40));
+    const streakScore = Math.min(25, Math.round(streak * 1.6));
+    const paceScore = Math.max(0, Math.min(25, 25 - missedDaysCount * 3));
+    const breadthScore = currentDay > 0
+      ? Math.min(10, Math.round((completedDaysCount / Math.max(1, currentDay)) * 10))
+      : 5;
+
+    const rawOdds = coverageScore + streakScore + paceScore + breadthScore;
+    const oddsPercentage = Math.min(95, Math.max(10, rawOdds));
+
+    let actionableAdvice = 'Pace is rock solid. Keep tackling today\'s mission to protect your streak.';
+    if (missedDaysCount >= 3) {
+      actionableAdvice = `You have ${missedDaysCount} missed practice days dragging your pace score (-${missedDaysCount * 3} pts). Clear backlogged questions to regain momentum.`;
+    } else if (streak < 3) {
+      actionableAdvice = 'Your streak is just starting. A 5-day consecutive solve streak will add +8 pts to your readiness score.';
+    } else if (coverageScore < 15) {
+      actionableAdvice = 'Prioritize completing Phase 1 & 2 foundations (Arrays, Trees) to build baseline OA problem coverage.';
+    } else if (oddsPercentage >= 75) {
+      actionableAdvice = 'Elite placement tier! Focus on timed mock speedruns and target company problem tags.';
+    }
+
+    const readinessBreakdown: ReadinessBreakdown = {
+      coverageScore,
+      streakScore,
+      paceScore,
+      breadthScore,
+      actionableAdvice
+    };
 
     const solvedRatePerDay = solvedCount > 0 ? solvedCount / Math.max(1, daysSinceStart) : 1.8;
     const remainingProblems = totalProblems - solvedCount;
@@ -448,22 +559,25 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       currentWeek,
       currentDay,
       isOnTrack,
-      projectedCompletionDate
+      projectedCompletionDate,
+      readinessBreakdown
     };
   }, [progress, streak, userProfile]);
 
   // ── Import / Export ──────────────────────────────────────────────────────────
   const exportJSONString = useCallback((): string => {
     const data = {
-      version: 3,
+      version: 4,
       progress,
       solveHistory,
       streak,
       userProfile,
+      placements,
+      activeCohort,
       exportedAt: new Date().toISOString()
     };
     return JSON.stringify(data, null, 2);
-  }, [progress, solveHistory, streak, userProfile]);
+  }, [progress, solveHistory, streak, userProfile, placements, activeCohort]);
 
   const exportJSON = useCallback(() => {
     const jsonStr = exportJSONString();
@@ -472,7 +586,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const a = document.createElement("a");
     a.href = url;
     const safeName = (userProfile?.name || 'user').toLowerCase().replace(/\s+/g, '_');
-    a.download = `${APP_CONFIG.exports.filenamePrefix}${safeName}_${format(new Date(), 'yyyy-MM-dd')}.json`;
+    a.download = `${APP_CONFIG.exports.filenamePrefix}_${safeName}_${format(new Date(), 'yyyy-MM-dd')}.json`;
     a.click();
     toast.success("Progress backup downloaded! 💾");
   }, [exportJSONString, userProfile]);
@@ -483,11 +597,16 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (parsed && typeof parsed.progress === 'object') {
         setProgress(parsed.progress);
         if (parsed.solveHistory) setSolveHistory(parsed.solveHistory);
-        // Restore profile if present in backup
         if (parsed.userProfile && typeof parsed.userProfile === 'object') {
           setUserProfile(parsed.userProfile);
         }
-        toast.success("Progress restored successfully! 🔄");
+        if (Array.isArray(parsed.placements)) {
+          setPlacements(parsed.placements);
+        }
+        if (parsed.activeCohort && typeof parsed.activeCohort === 'object') {
+          setActiveCohort(parsed.activeCohort);
+        }
+        toast.success("Progress & placements restored! 🔄");
         return true;
       }
       toast.error("Invalid backup file structure.");
@@ -503,9 +622,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.removeItem(STORAGE_KEYS.solveHistory);
     localStorage.removeItem(STORAGE_KEYS.streak);
     localStorage.removeItem(STORAGE_KEYS.userProfile);
+    localStorage.removeItem(STORAGE_KEYS.placements);
+    localStorage.removeItem(STORAGE_KEYS.activeCohort);
     setProgress({});
     setSolveHistory({});
     setUserProfile(null);
+    setPlacements([]);
+    setActiveCohort(null);
     toast.error("All progress wiped.", { id: 'reset-toast' });
   }, []);
 
@@ -530,6 +653,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setSelectedDifficulty,
     statusFilter,
     setStatusFilter,
+    companyFilter,
+    setCompanyFilter,
+    placements,
+    addPlacement,
+    updatePlacement,
+    deletePlacement,
+    activeCohort,
+    joinCohort,
+    leaveCohort,
     exportJSON,
     exportJSONString,
     importJSON,
@@ -540,7 +672,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     progress, solveHistory, streak, dailySolveLog, stats, userProfile, isOnboarded,
     updateProfile, resumeFromDay, toggleProblem, markDayComplete, isDayComplete,
     activeWeek, setActiveWeek, searchQuery, setSearchQuery, selectedDifficulty, setSelectedDifficulty,
-    statusFilter, setStatusFilter, exportJSON, exportJSONString, importJSON, resetAll, soundEnabled, toggleSound
+    statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,
+    updatePlacement, deletePlacement, activeCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
+    importJSON, resetAll, soundEnabled, toggleSound
   ]);
 
   return (

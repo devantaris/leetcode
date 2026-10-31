@@ -25,11 +25,20 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({ isOpen, onClose, tit
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)'
+      }}
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-xl bg-[#101018] border border-gray-800 rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[85vh]"
+        style={{
+          position: 'relative', width: '100%', maxWidth: 560,
+          background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-xl)', padding: 24, boxShadow: 'var(--shadow-lg)',
+          overflowY: 'auto', maxHeight: '85vh', color: 'var(--text-primary)'
+        }}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -37,9 +46,14 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({ isOpen, onClose, tit
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition p-1.5 rounded-xl hover:bg-gray-800"
+          style={{
+            position: 'absolute', top: 16, right: 16,
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-muted)', padding: 4, borderRadius: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}
         >
-          <X className="w-5 h-5" />
+          <X size={16} />
         </button>
         {children}
       </div>

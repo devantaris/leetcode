@@ -12,7 +12,6 @@ function loadTimerState(): { secondsLeft: number; totalSeconds: number; isActive
 
     let secondsLeft = parseInt(sessionStorage.getItem(STORAGE_KEYS.timerSeconds) || '') || total;
 
-    // If timer was running while navigating away, compute elapsed time
     if (active && startedAt) {
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       secondsLeft = Math.max(0, secondsLeft - elapsed);
@@ -31,7 +30,6 @@ export const DailyFocusTimer: React.FC = () => {
   const [totalSeconds, setTotalSeconds] = useState<number>(initial.totalSeconds);
   const startedAtRef = useRef<number | null>(initial.isActive ? Date.now() : null);
 
-  // Persist state to sessionStorage whenever it changes
   useEffect(() => {
     sessionStorage.setItem(STORAGE_KEYS.timerSeconds, secondsLeft.toString());
     sessionStorage.setItem(STORAGE_KEYS.timerTotal, totalSeconds.toString());
@@ -53,7 +51,7 @@ export const DailyFocusTimer: React.FC = () => {
       if (secondsLeft === 0) {
         setIsActive(false);
         sounds.playVictorySound();
-        toast.success("🏆 Focus Session Completed! Take a breather.", { duration: 5000 });
+        toast.success("Focus session completed. Take a short break.", { duration: 5000 });
       } else if (secondsLeft % 300 === 0) {
         sounds.playTickSound();
       }
@@ -63,7 +61,6 @@ export const DailyFocusTimer: React.FC = () => {
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
-
     if (isActive) {
       startedAtRef.current = Date.now();
       interval = setInterval(() => {
@@ -72,7 +69,6 @@ export const DailyFocusTimer: React.FC = () => {
     } else if (interval) {
       clearInterval(interval);
     }
-
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -92,98 +88,90 @@ export const DailyFocusTimer: React.FC = () => {
   const progressPct = Math.round(((totalSeconds - secondsLeft) / (totalSeconds || 1)) * 100);
 
   return (
-    <div className="bg-[#101018] border border-gray-800 rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
-
-      {/* LEFT TITLE & DESCRIPTION */}
-      <div className="flex items-center gap-4">
-        <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-400 shrink-0">
-          <Timer className="w-6 h-6 animate-pulse" />
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      flexWrap: 'wrap', gap: 16
+    }}>
+      {/* Title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'var(--text-primary)'
+        }}>
+          <Timer size={16} />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-            DAILY FOCUS STOPWATCH
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              Focus Stopwatch
+            </span>
             {isActive && (
-              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 border border-green-500/30 animate-pulse">
-                RUNNING
+              <span className="badge badge-success" style={{ fontSize: 10, padding: '1px 6px' }}>
+                Running
               </span>
             )}
-          </h3>
-          <p className="text-xs text-gray-400 mt-0.5">
-            45-60 min focused practice slot. Timer persists across page navigation.
-          </p>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
+            Dedicated deep-work practice session
+          </div>
         </div>
       </div>
 
-      {/* TIMER DISPLAY & CONTROLS */}
-      <div className="flex items-center gap-5">
-
-        {/* TIME DIGITS */}
-        <div className="flex flex-col items-center">
-          <span className={`font-mono text-4xl font-black tracking-widest bg-black/40 px-4 py-1.5 rounded-xl border transition-colors ${
-            isActive ? 'text-orange-400 border-orange-500/40' : 'text-white border-gray-800'
-          }`}>
+      {/* Clock display & Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 700,
+            color: 'var(--text-primary)', letterSpacing: '0.05em', lineHeight: 1
+          }}>
             {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-          </span>
-          <span className="text-[10px] font-mono text-gray-500 mt-1">
-            {progressPct}% Completed
-          </span>
-        </div>
-
-        {/* PRESET BUTTONS */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => resetTimer(25)}
-              className={`px-2 py-1 rounded text-[10px] font-mono border transition ${
-                totalSeconds === 25 * 60 ? 'bg-orange-500/20 text-orange-400 border-orange-500/40' : 'bg-gray-900 text-gray-400 border-gray-800 hover:text-white'
-              }`}
-            >
-              25m
-            </button>
-            <button
-              onClick={() => resetTimer(45)}
-              className={`px-2 py-1 rounded text-[10px] font-mono border transition ${
-                totalSeconds === 45 * 60 ? 'bg-orange-500/20 text-orange-400 border-orange-500/40' : 'bg-gray-900 text-gray-400 border-gray-800 hover:text-white'
-              }`}
-            >
-              45m
-            </button>
-            <button
-              onClick={() => resetTimer(60)}
-              className={`px-2 py-1 rounded text-[10px] font-mono border transition ${
-                totalSeconds === 60 * 60 ? 'bg-orange-500/20 text-orange-400 border-orange-500/40' : 'bg-gray-900 text-gray-400 border-gray-800 hover:text-white'
-              }`}
-            >
-              60m
-            </button>
           </div>
-
-          {/* PLAY / PAUSE / RESET */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleTimer}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-md ${
-                isActive
-                  ? 'bg-yellow-500 hover:bg-yellow-400 text-black'
-                  : 'bg-green-500 hover:bg-green-400 text-black'
-              }`}
-            >
-              {isActive ? <Pause className="w-3.5 h-3.5 fill-black" /> : <Play className="w-3.5 h-3.5 fill-black" />}
-              <span>{isActive ? 'Pause' : 'Start'}</span>
-            </button>
-
-            <button
-              onClick={() => resetTimer(totalSeconds / 60)}
-              className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition border border-gray-700"
-              title="Reset Timer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+            {progressPct}% elapsed
           </div>
         </div>
 
+        {/* Presets */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          {[25, 45, 60].map((m) => (
+            <button
+              key={m}
+              onClick={() => resetTimer(m)}
+              style={{
+                fontSize: 11, fontFamily: 'var(--font-mono)', padding: '4px 8px',
+                borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-default)',
+                background: totalSeconds === m * 60 ? 'var(--bg-hover)' : 'var(--bg-card)',
+                color: totalSeconds === m * 60 ? 'var(--text-primary)' : 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+            >
+              {m}m
+            </button>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button
+            onClick={toggleTimer}
+            className="btn btn-primary"
+            style={{ padding: '6px 12px', fontSize: 12 }}
+          >
+            {isActive ? <Pause size={12} /> : <Play size={12} />}
+            {isActive ? 'Pause' : 'Start'}
+          </button>
+          <button
+            onClick={() => resetTimer(totalSeconds / 60)}
+            className="btn btn-default"
+            style={{ padding: '6px 8px' }}
+            title="Reset"
+          >
+            <RotateCcw size={12} />
+          </button>
+        </div>
       </div>
-
     </div>
   );
 };
