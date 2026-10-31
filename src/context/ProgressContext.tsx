@@ -18,6 +18,9 @@ import { STORAGE_KEYS, migrateLegacyStorageKeys } from '../config/storageKeys';
 
 // Migrate old 'dsa_*' keys to 'go_*' BEFORE any state initialization reads localStorage
 migrateLegacyStorageKeys();
+import { AuthService } from '../services/authService';
+import type { AuthUser } from '../services/authService';
+import { CloudSyncService } from '../services/cloudSync';
 import { CURRICULUM } from '../data/curriculumStats';
 
 // ─── User Profile ─────────────────────────────────────────────────────────────
@@ -112,6 +115,13 @@ interface ProgressContextType {
   resetAll: () => void;
   soundEnabled: boolean;
   toggleSound: () => void;
+  authUser: AuthUser | null;
+  login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (email: string, pass: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  cloudSyncStatus: 'synced' | 'syncing' | 'offline' | 'error';
+  lastCloudSync: Date | null;
+  triggerCloudSync: () => Promise<boolean>;
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -632,6 +642,155 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     toast.error("All progress wiped.", { id: 'reset-toast' });
   }, []);
 
+  // ── Auth & Live Cloud Sync ──────────────────────────────────────────────────
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
+  const [lastCloudSync, setLastCloudSync] = useState<Date | null>(null);
+
+  useEffect(() => {
+    let unmounted = false;
+    AuthService.init().then(async (user) => {
+      if (unmounted) return;
+      setAuthUser(user);
+      if (user) {
+        setCloudSyncStatus('syncing');
+        const pull = await CloudSyncService.pullFromCloud(user.id);
+        if (pull.success && pull.data) {
+          if (pull.data.progress && Object.keys(pull.data.progress).length > 0) {
+            setProgress((prev) => ({ ...prev, ...pull.data!.progress }));
+          }
+          if (pull.data.solveHistory && Object.keys(pull.data.solveHistory).length > 0) {
+            setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
+          }
+          if (pull.data.placements && pull.data.placements.length > 0) {
+            setPlacements(pull.data.placements);
+          }
+          if (pull.data.userProfile) {
+            setUserProfile(pull.data.userProfile);
+          }
+          setCloudSyncStatus('synced');
+          setLastCloudSync(new Date());
+        } else {
+          setCloudSyncStatus('synced');
+        }
+      }
+    });
+
+    const unsubscribe = AuthService.subscribe((u) => {
+      if (!unmounted) setAuthUser(u);
+    });
+
+    return () => {
+      unmounted = true;
+      unsubscribe();
+    };
+  }, []);
+
+  const login = useCallback(async (email: string, pass: string) => {
+    setCloudSyncStatus('syncing');
+    const res = await AuthService.signInWithPassword(email, pass);
+    if (res.error) {
+      setCloudSyncStatus('error');
+      return { success: false, error: res.error };
+    }
+    setAuthUser(res.user);
+    if (res.user) {
+      const pull = await CloudSyncService.pullFromCloud(res.user.id);
+      if (pull.success && pull.data) {
+        if (pull.data.progress && Object.keys(pull.data.progress).length > 0) {
+          setProgress((prev) => ({ ...prev, ...pull.data!.progress }));
+        }
+        if (pull.data.solveHistory && Object.keys(pull.data.solveHistory).length > 0) {
+          setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
+        }
+        if (pull.data.placements && pull.data.placements.length > 0) {
+          setPlacements(pull.data.placements);
+        }
+        if (pull.data.userProfile) {
+          setUserProfile(pull.data.userProfile);
+        }
+      }
+      setCloudSyncStatus('synced');
+      setLastCloudSync(new Date());
+    }
+    return { success: true };
+  }, []);
+
+  const signup = useCallback(async (email: string, pass: string, name: string) => {
+    setCloudSyncStatus('syncing');
+    const res = await AuthService.signUp(email, pass, name);
+    if (res.error) {
+      setCloudSyncStatus('error');
+      return { success: false, error: res.error };
+    }
+    setAuthUser(res.user);
+    if (res.user) {
+      await CloudSyncService.pushToCloud({
+        userId: res.user.id,
+        userProfile: userProfile || DEFAULT_PROFILE,
+        progress,
+        solveHistory,
+        placements,
+        streak,
+        solvedCount: stats.solvedCount,
+      });
+      setCloudSyncStatus('synced');
+      setLastCloudSync(new Date());
+    }
+    return { success: true };
+  }, [userProfile, progress, solveHistory, placements, streak, stats.solvedCount]);
+
+  const logout = useCallback(async () => {
+    await AuthService.signOut();
+    setAuthUser(null);
+    setCloudSyncStatus('offline');
+  }, []);
+
+  const triggerCloudSync = useCallback(async (): Promise<boolean> => {
+    if (!authUser) return false;
+    setCloudSyncStatus('syncing');
+    const res = await CloudSyncService.pushToCloud({
+      userId: authUser.id,
+      userProfile: userProfile || DEFAULT_PROFILE,
+      progress,
+      solveHistory,
+      placements,
+      streak,
+      solvedCount: stats.solvedCount,
+    });
+    if (res.success) {
+      setCloudSyncStatus('synced');
+      setLastCloudSync(new Date());
+      return true;
+    } else {
+      setCloudSyncStatus('error');
+      return false;
+    }
+  }, [authUser, userProfile, progress, solveHistory, placements, streak, stats.solvedCount]);
+
+  // Debounced auto-sync when solves change
+  useEffect(() => {
+    if (!authUser) return;
+    const timer = setTimeout(() => {
+      CloudSyncService.pushToCloud({
+        userId: authUser.id,
+        userProfile: userProfile || DEFAULT_PROFILE,
+        progress,
+        solveHistory,
+        placements,
+        streak,
+        solvedCount: stats.solvedCount,
+      }).then((res) => {
+        if (res.success) {
+          setCloudSyncStatus('synced');
+          setLastCloudSync(new Date());
+        }
+      });
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [authUser, progress, userProfile, placements, solveHistory, streak, stats.solvedCount]);
+
   const contextValue = useMemo(() => ({
     progress,
     solveHistory,
@@ -667,14 +826,22 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     importJSON,
     resetAll,
     soundEnabled,
-    toggleSound
+    toggleSound,
+    authUser,
+    login,
+    signup,
+    logout,
+    cloudSyncStatus,
+    lastCloudSync,
+    triggerCloudSync,
   }), [
     progress, solveHistory, streak, dailySolveLog, stats, userProfile, isOnboarded,
     updateProfile, resumeFromDay, toggleProblem, markDayComplete, isDayComplete,
     activeWeek, setActiveWeek, searchQuery, setSearchQuery, selectedDifficulty, setSelectedDifficulty,
     statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,
     updatePlacement, deletePlacement, activeCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
-    importJSON, resetAll, soundEnabled, toggleSound
+    importJSON, resetAll, soundEnabled, toggleSound,
+    authUser, login, signup, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync
   ]);
 
   return (
