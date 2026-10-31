@@ -1,0 +1,17 @@
+{
+  "short_name": "GrindOS",
+  "name": "GrindOS — 140-Day Placement Operating System",
+  "description": "Retro Cyber-Terminal desktop operating system for DSA interview preparation and placement mastery.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020403",
+  "theme_color": "#020403",
+  "display": "standalone",
+  "orientation": "any"
+}
