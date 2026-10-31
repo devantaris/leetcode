@@ -10,7 +10,8 @@ export type AppId =
   | 'log'
   | 'config'
   | 'readme'
-  | 'setup';
+  | 'setup'
+  | 'auth';
 
 export interface WindowState {
   id: AppId;

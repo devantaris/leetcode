@@ -81,6 +81,14 @@ button {
   cursor: pointer;
 }
 
+/* Scanlines and Vignette Disable Overrides */
+body.no-scanlines::after {
+  display: none !important;
+}
+body.no-vignette::before {
+  display: none !important;
+}
+
 /* CRT Scanlines overlay */
 body::after {
   content: "";

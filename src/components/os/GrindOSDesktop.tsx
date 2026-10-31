@@ -14,6 +14,7 @@ import { LogWindow } from './windows/LogWindow';
 import { ConfigWindow } from './windows/ConfigWindow';
 import { ReadmeWindow } from './windows/ReadmeWindow';
 import { SetupWindow } from './windows/SetupWindow';
+import { AuthWindow } from './windows/AuthWindow';
 import type { AppId, WindowState, LogEntry } from './types';
 
 const INITIAL_WINDOWS: Record<AppId, Omit<WindowState, 'zIndex'>> = {
@@ -137,6 +138,16 @@ const INITIAL_WINDOWS: Record<AppId, Omit<WindowState, 'zIndex'>> = {
     y: 75,
     w: 480,
   },
+  auth: {
+    id: 'auth',
+    title: 'AUTH.EXE — GATEWAY & CLOUD',
+    glyph: '🔑',
+    isOpen: false,
+    isFocused: false,
+    x: 230,
+    y: 65,
+    w: 490,
+  },
 };
 
 const ICONS_CONFIG: Array<{ id: AppId; name: string; glyph: string }> = [
@@ -151,11 +162,12 @@ const ICONS_CONFIG: Array<{ id: AppId; name: string; glyph: string }> = [
   { id: 'log', name: 'SYSTEM.LOG', glyph: '≡' },
   { id: 'config', name: 'CONFIG.EXE', glyph: '⚙' },
   { id: 'setup', name: 'SETUP.EXE', glyph: '⚡' },
+  { id: 'auth', name: 'AUTH.EXE', glyph: '🔑' },
   { id: 'readme', name: 'README.TXT', glyph: '?' },
 ];
 
 export const GrindOSDesktop: React.FC = () => {
-  const { stats, streak, userProfile, soundEnabled, toggleSound } = useProgress();
+  const { stats, streak, userProfile, soundEnabled, toggleSound, authUser, cloudSyncStatus } = useProgress();
 
   // Boot state: check if already booted in session
   const [isBooted, setIsBooted] = useState<boolean>(() => {
@@ -780,6 +792,7 @@ export const GrindOSDesktop: React.FC = () => {
               currentTheme={theme}
               onThemeChange={setTheme}
               onLog={addSysLog}
+              onOpenAuth={() => openApp('auth')}
             />
           </div>
         )}
@@ -818,6 +831,38 @@ export const GrindOSDesktop: React.FC = () => {
               onLog={addSysLog}
               onClose={() => closeApp('setup')}
             />
+          </div>
+        )}
+
+        {/* AUTH.EXE */}
+        {windows.auth.isOpen && (
+          <div
+            className={`win ${windows.auth.isFocused ? 'focused' : ''}`}
+            style={{
+              width: windows.auth.w,
+              left: windows.auth.x,
+              top: windows.auth.y,
+              zIndex: windows.auth.zIndex,
+            }}
+            onPointerDown={() => focusWindow('auth')}
+          >
+            <div
+              className="tbar"
+              onPointerDown={(e) => handlePointerDown('auth', e)}
+            >
+              <span>{windows.auth.glyph}</span>
+              <span className="ttl">{windows.auth.title}</span>
+              <button
+                className="x"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeApp('auth');
+                }}
+              >
+                X
+              </button>
+            </div>
+            <AuthWindow onLog={addSysLog} onClose={() => closeApp('auth')} />
           </div>
         )}
 
@@ -907,15 +952,32 @@ export const GrindOSDesktop: React.FC = () => {
         {/* System Tray */}
         <div id="tray">
           <button
+            onClick={() => openApp('auth')}
+            style={{
+              fontSize: 11,
+              cursor: 'pointer',
+              color: cloudSyncStatus === 'synced' ? 'var(--fg)' : cloudSyncStatus === 'syncing' ? 'var(--amb)' : 'var(--dim)',
+              border: '1px solid var(--line)',
+              padding: '1px 6px',
+            }}
+            title="Click to manage live cloud authentication and device sync"
+          >
+            ☁ {cloudSyncStatus === 'synced' ? 'SYNCED' : cloudSyncStatus === 'syncing' ? 'SYNCING...' : 'LOCAL'}
+          </button>
+          <button
             onClick={toggleSound}
             style={{ fontSize: 13, padding: '0 4px', cursor: 'pointer' }}
             title={soundEnabled ? 'Click to Mute Audio (Ctrl+M)' : 'Click to Unmute Audio (Ctrl+M)'}
           >
             {soundEnabled ? '🔊' : '🔇'}
           </button>
-          <span>
+          <button
+            onClick={() => openApp('auth')}
+            style={{ cursor: 'pointer' }}
+            title="Click to view operator identity"
+          >
             OPERATOR: <b style={{ color: 'var(--fg)' }}>{operatorHandle}</b>
-          </span>
+          </button>
           <span>
             DAY <b>{currentDayNum}</b>/140
           </span>
@@ -950,6 +1012,7 @@ export const GrindOSDesktop: React.FC = () => {
               {ic.id === 'missions' && <span className="k2">3 DUE</span>}
               {ic.id === 'review' && <span className="k2">3 DUE</span>}
               {ic.id === 'setup' && <span className="k2">CONFIG</span>}
+              {ic.id === 'auth' && <span className="k2">{authUser ? 'ONLINE' : 'GATEWAY'}</span>}
             </button>
           ))}
           <div className="sm-h" style={{ borderTop: '1px solid var(--line)' }}>

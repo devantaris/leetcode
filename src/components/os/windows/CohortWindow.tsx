@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useProgress } from '../../../context/ProgressContext';
 import { sounds } from '../../../utils/audio';
+import { CloudSyncService } from '../../../services/cloudSync';
+import { getActiveSupabaseCredentials } from '../../../config/supabaseClient';
 
 interface CohortWindowProps {
   onLog: (msg: string, type?: 'ok' | 'warn' | 'dim') => void;
@@ -11,44 +13,78 @@ interface Peer {
   handle: string;
   xp: number;
   streak: number;
+  solved?: number;
   isUser?: boolean;
 }
 
+const DEFAULT_GLOBAL_PEERS: Peer[] = [
+  { handle: 'karan_algo', xp: 3420, streak: 45, solved: 190 },
+  { handle: 'code_ninja_x', xp: 3100, streak: 38, solved: 172 },
+  { handle: 'dev_varma', xp: 2890, streak: 31, solved: 160 },
+  { handle: 'alok_verma', xp: 2410, streak: 22, solved: 130 },
+  { handle: 'neha_singh', xp: 2020, streak: 14, solved: 110 },
+  { handle: 'vikram_r', xp: 1780, streak: 9, solved: 95 },
+];
+
+const COHORT_PEERS: Peer[] = [
+  { handle: 'sneha_k', xp: 2680, streak: 24, solved: 142 },
+  { handle: 'arjun_cs', xp: 2510, streak: 19, solved: 135 },
+  { handle: 'rohan_m', xp: 2100, streak: 15, solved: 115 },
+  { handle: 'ishaan_v', xp: 1940, streak: 12, solved: 105 },
+  { handle: 'priya_d', xp: 1820, streak: 16, solved: 98 },
+  { handle: 'tanvi_99', xp: 1650, streak: 10, solved: 88 },
+];
+
 export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => {
-  const { userProfile, activeCohort, joinCohort } = useProgress();
+  const { userProfile, activeCohort, joinCohort, stats, streak, triggerCloudSync } = useProgress();
   const [tab, setTab] = useState<'cohort' | 'global'>('cohort');
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [showJoinBox, setShowJoinBox] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [liveGlobalPeers, setLiveGlobalPeers] = useState<Peer[]>([]);
 
   const cohortName = activeCohort?.name || 'IIT-B BATCH 2027';
   const cohortCode = activeCohort?.code || 'GRND27';
+  const creds = getActiveSupabaseCredentials();
 
-  // Base peers for cohort
-  const cohortPeers: Peer[] = [
-    { handle: 'sneha_k', xp: 2680, streak: 24 },
-    { handle: 'arjun_cs', xp: 2510, streak: 19 },
-    { handle: 'rohan_m', xp: 2100, streak: 15 },
-    { handle: 'ishaan_v', xp: 1940, streak: 12 },
-    { handle: 'priya_d', xp: 1820, streak: 16 },
-    { handle: 'tanvi_99', xp: 1650, streak: 10 },
-  ];
+  // Fetch live global leaderboard from Supabase
+  const loadLiveLeaderboard = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const rows = await CloudSyncService.fetchLiveLeaderboard();
+      if (rows && rows.length > 0) {
+        const mapped: Peer[] = rows.map((r: any) => ({
+          handle: r.display_name || 'Anonymous',
+          xp: (r.solved_count * 15) + (r.streak * 20),
+          streak: r.streak || 0,
+          solved: r.solved_count || 0,
+        }));
+        setLiveGlobalPeers(mapped);
+        onLog(`cohort: live leaderboard synced (${rows.length} peer nodes)`, 'ok');
+      } else {
+        setLiveGlobalPeers(DEFAULT_GLOBAL_PEERS);
+      }
+    } catch {
+      setLiveGlobalPeers(DEFAULT_GLOBAL_PEERS);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [onLog]);
 
-  // Base peers for global
-  const globalPeers: Peer[] = [
-    { handle: 'karan_algo', xp: 3420, streak: 45 },
-    { handle: 'code_ninja_x', xp: 3100, streak: 38 },
-    { handle: 'dev_varma', xp: 2890, streak: 31 },
-    { handle: 'alok_verma', xp: 2410, streak: 22 },
-    { handle: 'neha_singh', xp: 2020, streak: 14 },
-    { handle: 'vikram_r', xp: 1780, streak: 9 },
-  ];
+  useEffect(() => {
+    loadLiveLeaderboard();
+  }, [loadLiveLeaderboard]);
 
-  const currentPeers = tab === 'cohort' ? cohortPeers : globalPeers;
+  const currentPeers = tab === 'cohort'
+    ? COHORT_PEERS
+    : (liveGlobalPeers.length > 0 ? liveGlobalPeers : DEFAULT_GLOBAL_PEERS);
 
   // Insert current user and sort descending by XP
   const userHandle = userProfile.name ? userProfile.name.toLowerCase().replace(/\s+/g, '_') : 'devansh';
-  const combinedList = [...currentPeers, { handle: `${userHandle} (you)`, xp: userXP, streak: 18, isUser: true }]
-    .sort((a, b) => b.xp - a.xp);
+  const combinedList = [
+    ...currentPeers,
+    { handle: `${userHandle} (you)`, xp: userXP, streak, solved: stats.solvedCount, isUser: true },
+  ].sort((a, b) => b.xp - a.xp);
 
   const userRank = combinedList.findIndex((p) => p.isUser) + 1;
   const topXP = combinedList[0]?.xp || userXP;
@@ -69,10 +105,16 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
     }
   };
 
+  const handleSyncMyRank = async () => {
+    sounds.playTickSound();
+    await triggerCloudSync();
+    await loadLiveLeaderboard();
+  };
+
   return (
-    <div className="wbody" style={{ width: 460, maxWidth: '90vw' }}>
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+    <div className="wbody" style={{ width: 490, maxWidth: '90vw' }}>
+      {/* Top Banner & Tabs */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 8, alignItems: 'center' }}>
         <button
           className={`k small ${tab === 'cohort' ? '' : 'ghost'}`}
           onClick={() => { setTab('cohort'); sounds.playTickSound(); }}
@@ -83,14 +125,23 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
           className={`k small ${tab === 'global' ? '' : 'ghost'}`}
           onClick={() => { setTab('global'); sounds.playTickSound(); }}
         >
-          GLOBAL BATCH
+          LIVE GLOBAL BATCH
         </button>
+
         <button
           className="k ghost small"
           style={{ marginLeft: 'auto' }}
+          onClick={handleSyncMyRank}
+          title="Push stats and fetch latest live board"
+        >
+          {isRefreshing ? 'SYNCING...' : 'SYNC LIVE ⟳'}
+        </button>
+
+        <button
+          className="k ghost small"
           onClick={() => setShowJoinBox(!showJoinBox)}
         >
-          {showJoinBox ? 'CANCEL' : '+ JOIN CODE'}
+          {showJoinBox ? 'CANCEL' : '+ JOIN'}
         </button>
       </div>
 
@@ -99,7 +150,7 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
           <input
             type="text"
             className="retro-input"
-            placeholder="ENTER INVITE CODE (e.g. GRND27)..."
+            placeholder="INVITE CODE (e.g. GRND27, IITD26)..."
             value={joinCodeInput}
             onChange={(e) => setJoinCodeInput(e.target.value)}
             style={{ textTransform: 'uppercase' }}
@@ -123,19 +174,20 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
           border: '1px solid var(--line)',
         }}
       >
-        {' RANK  HANDLE             XP      STRK\n'}
-        {'─────────────────────────────────────────\n'}
+        {' RANK  HANDLE             XP      SOLVE  STRK\n'}
+        {'───────────────────────────────────────────────\n'}
         {combinedList.map((p, idx) => {
           const rankNum = idx + 1;
           const rankStr = String(rankNum).padStart(2, ' ') + '.';
           const handleStr = p.handle.padEnd(18, ' ');
           const xpStr = p.xp.toLocaleString().padStart(6, ' ');
+          const solveStr = String(p.solved || 0).padStart(5, ' ');
           const streakStr = `${p.streak}🔥`.padStart(5, ' ');
 
           if (p.isUser) {
             return (
               <span key={idx} style={{ color: 'var(--fg)', fontWeight: 700 }}>
-                {` ${rankStr}  ${handleStr} ${xpStr}   ${streakStr}  ←\n`}
+                {` ${rankStr}  ${handleStr} ${xpStr}  ${solveStr} ${streakStr}  ←\n`}
               </span>
             );
           }
@@ -143,30 +195,36 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
           if (rankNum === 1) {
             return (
               <span key={idx} className="ambtxt">
-                {` ${rankStr}  ${handleStr} ${xpStr}   ${streakStr}\n`}
+                {` ${rankStr}  ${handleStr} ${xpStr}  ${solveStr} ${streakStr}\n`}
               </span>
             );
           }
 
           return (
             <span key={idx} className="dimtxt">
-              {` ${rankStr}  ${handleStr} ${xpStr}   ${streakStr}\n`}
+              {` ${rankStr}  ${handleStr} ${xpStr}  ${solveStr} ${streakStr}\n`}
             </span>
           );
         })}
       </pre>
 
       <hr />
-      <div className="dimtxt" style={{ fontSize: 11 }}>
-        NODE: <span style={{ color: 'var(--fg)' }}>{cohortName}</span> · INVITE CODE:{' '}
-        <span style={{ color: 'var(--fg)' }}>{cohortCode}</span> (42 NODES ONLINE)
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--dim)' }}>
+        <div>
+          STATUS:{' '}
+          <span style={{ color: creds.source !== 'none' ? 'var(--fg)' : 'var(--amb)' }}>
+            {creds.source !== 'none' ? '● LIVE DATABASE CONNECTED' : '○ LOCAL PEER SIMULATION'}
+          </span>
+        </div>
+        <div>NODE: <span style={{ color: 'var(--fg)' }}>{cohortName} [{cohortCode}]</span></div>
       </div>
+
       <div className="dimtxt" style={{ fontSize: 11, marginTop: 4 }}>
-        CURRENT RANK: #{userRank} · GAP TO #1:{' '}
+        YOUR RANK: #{userRank} · GAP TO #1:{' '}
         <b style={{ color: gapToTop === 0 ? 'var(--fg)' : 'var(--amb)' }}>{gapToTop} XP</b>
         {gapToTop > 0
           ? ` (${Math.ceil(gapToTop / 15)} SOLVES FLIP THE BOARD)`
-          : ' (YOU HOLD THE LEAD 👑)'}
+          : ' (YOU HOLD THE BOARD 👑)'}
       </div>
     </div>
   );
