@@ -2,6 +2,8 @@ export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
 export type DayType = 'regular' | 'review' | 'contest' | 'rest';
 
+export type CompanyTag = 'amazon' | 'google' | 'microsoft' | 'meta' | 'apple' | 'uber' | 'adobe' | 'netflix';
+
 export interface Problem {
   id: string;
   name: string;
@@ -10,6 +12,7 @@ export interface Problem {
   url: string;
   note: string;
   isReview?: boolean;
+  companyTags?: CompanyTag[];
 }
 
 export interface DayPlan {
@@ -35,6 +38,14 @@ export interface SolveRecordMap {
   [problemId: string]: string; // ISO string timestamp when solved
 }
 
+export interface ReadinessBreakdown {
+  coverageScore: number;     // 0-40 based on solved / total
+  streakScore: number;       // 0-25 based on streak consistency
+  paceScore: number;         // 0-25 based on target pace vs deadline
+  breadthScore: number;      // 0-10 based on phase distribution
+  actionableAdvice: string;  // Explicit guidance on what moves the score
+}
+
 export interface AppStats {
   solvedCount: number;
   totalProblems: number;
@@ -47,4 +58,33 @@ export interface AppStats {
   currentDay: number;
   isOnTrack: boolean;
   projectedCompletionDate: string;
+  readinessBreakdown: ReadinessBreakdown;
+}
+
+export type PlacementStage = 
+  | 'Wishlist' 
+  | 'Applied' 
+  | 'OA Pending' 
+  | 'OA Cleared' 
+  | 'Technical Round 1' 
+  | 'Technical Round 2' 
+  | 'Managerial / HR' 
+  | 'Offer Received 🎉' 
+  | 'Rejected';
+
+export interface PlacementRecord {
+  id: string;
+  company: string;
+  role: string;
+  stage: PlacementStage;
+  appliedDate: string;
+  compensation?: string;
+  notes?: string;
+}
+
+export interface CohortInfo {
+  code: string;
+  name: string;
+  memberCount: number;
+  isOwner?: boolean;
 }

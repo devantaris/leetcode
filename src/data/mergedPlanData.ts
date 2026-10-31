@@ -2,11 +2,13 @@ import type { WeekPlan } from '../types';
 import { PLAN_DATA } from './planData';
 import { TOP_150_ADDITIONS } from './top150Additions';
 import { TOP_150_LC_NUMBERS } from './top150List';
+import { COMPANY_MAPPINGS } from './companyMappings';
 
 /**
  * Builds the final merged plan data by:
  * 1. Inserting the 60 missing Top 150 problems into their target days
  * 2. Reordering each day's problems so Top 150 come first
+ * 3. Decorating problems with companyTags for interview targeting
  *
  * This runs once at module load time — zero runtime cost.
  */
@@ -30,9 +32,15 @@ function buildMergedPlan(): WeekPlan[] {
     }
   }
 
-  // Reorder each day's problems: Top 150 first, then custom
+  // Reorder each day's problems: Top 150 first, then custom, and attach company tags
   for (const week of merged) {
     for (const day of week.days) {
+      day.problems.forEach((p) => {
+        if (p.lcNumber && COMPANY_MAPPINGS[p.lcNumber]) {
+          p.companyTags = COMPANY_MAPPINGS[p.lcNumber];
+        }
+      });
+
       day.problems.sort((a, b) => {
         const aIsTop = TOP_150_LC_NUMBERS.has(a.lcNumber) ? 0 : 1;
         const bIsTop = TOP_150_LC_NUMBERS.has(b.lcNumber) ? 0 : 1;

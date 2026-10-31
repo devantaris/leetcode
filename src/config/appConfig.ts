@@ -1,45 +1,45 @@
-// GrindOS — Centralized App Configuration
+// Cadence — Centralized App Configuration
 // Single source of truth for all branding, naming, and product constants.
 
 export const APP_CONFIG = {
   // Brand Identity
-  name: 'GrindOS',
-  tagline: 'The operating system for interview prep.',
-  shortName: 'GO',
-  description: 'A structured DSA interview prep system with spaced repetition, streak tracking, and a 20-week phased curriculum.',
+  name: 'Cadence',
+  tagline: 'Rhythmic interview preparation.',
+  shortName: 'CD',
+  description: 'A minimal, distraction-free 140-day algorithmic preparation system for technical interviews.',
 
   // Favicon config (used in index.html SVG)
   favicon: {
-    text: 'GO',
-    bg: '#0a0a0f',
-    color: '#ff4444',
+    text: 'CD',
+    bg: '#000000',
+    color: '#ffffff',
   },
 
-  // Track naming (avoids "LeetCode" trademark)
+  // Track naming
   tracks: {
-    primary: 'Interview 150 Essentials',
-    full: 'Full Curriculum',
+    primary: 'Interview 150',
+    full: '20-Week Curriculum',
   },
 
   // Smart defaults
   defaults: {
-    targetDateOffsetDays: 140, // days from start date
+    targetDateOffsetDays: 140,
     dailyProblems: 3,
     restDay: 'sunday' as const,
     secondarySkill: 'project' as const,
-    defaultTagline: 'Interview Prep',
+    defaultTagline: 'Software Engineer',
   },
 
   // Export config
   exports: {
-    filenamePrefix: 'grindos_backup',
+    filenamePrefix: 'cadence_backup',
     fileExtension: '.json',
   },
 
   // External links
   links: {
     github: 'https://github.com/devantaris/leetcode',
-    landing: '/',
+    landing: '/dashboard',
     app: '/dashboard',
   },
 } as const;

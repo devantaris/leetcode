@@ -24,6 +24,10 @@ export const STORAGE_KEYS = {
   leaderboardOptIn: `${PREFIX}_leaderboard_optin`,
   leaderboardAnonymous: `${PREFIX}_leaderboard_anonymous`,
   leaderboardUserId: `${PREFIX}_leaderboard_user_id`,
+
+  // Placements & Cohort (localStorage)
+  placements: `${PREFIX}_placements_v1`,
+  activeCohort: `${PREFIX}_active_cohort_v1`,
 } as const;
 
 export type StorageKeys = typeof STORAGE_KEYS;
