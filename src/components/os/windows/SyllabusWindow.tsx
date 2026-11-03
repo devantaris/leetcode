@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useProgress } from '../../../context/ProgressContext';
 import { MERGED_PLAN_DATA } from '../../../data/mergedPlanData';
+import { CURRICULUM } from '../../../data/curriculumStats';
 import { sounds } from '../../../utils/audio';
 
 interface SyllabusWindowProps {
   onLog: (msg: string, type?: 'ok' | 'warn' | 'dim') => void;
 }
 
-const TOP_COMPANIES = ['ALL', 'GOOGLE', 'AMAZON', 'META', 'MICROSOFT', 'UBER', 'APPLE'];
+const TOP_COMPANIES = ['ALL', 'GOOGLE', 'AMAZON', 'META', 'MICROSOFT', 'UBER', 'APPLE', 'ADOBE', 'NETFLIX'];
 
 export const SyllabusWindow: React.FC<SyllabusWindowProps> = ({ onLog }) => {
   const { progress, toggleProblem } = useProgress();
@@ -17,6 +18,7 @@ export const SyllabusWindow: React.FC<SyllabusWindowProps> = ({ onLog }) => {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'SOLVED' | 'UNSOLVED'>('ALL');
   const [weekFilter, setWeekFilter] = useState<number | 'ALL'>('ALL');
   const [companyFilter, setCompanyFilter] = useState<string>('ALL');
+  const [displayLimit, setDisplayLimit] = useState<number>(100);
 
   // Flatten all problems with week and day info
   const allProblems = useMemo(() => {
@@ -133,8 +135,8 @@ export const SyllabusWindow: React.FC<SyllabusWindowProps> = ({ onLog }) => {
           value={weekFilter}
           onChange={(e) => setWeekFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
         >
-          <option value="ALL">ALL 20 WEEKS</option>
-          {Array.from({ length: 20 }, (_, i) => i + 1).map((w) => (
+          <option value="ALL">ALL {CURRICULUM.totalWeeks} WEEKS</option>
+          {Array.from({ length: CURRICULUM.totalWeeks }, (_, i) => i + 1).map((w) => (
             <option key={w} value={w}>
               WEEK {w}
             </option>
@@ -164,7 +166,7 @@ export const SyllabusWindow: React.FC<SyllabusWindowProps> = ({ onLog }) => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--dim)', marginBottom: 6 }}>
         <span>
-          SHOWING <b style={{ color: 'var(--fg)' }}>{filtered.length}</b> OF {allProblems.length} PROBLEMS
+          SHOWING <b style={{ color: 'var(--fg)' }}>{Math.min(filtered.length, displayLimit)}</b> OF {filtered.length} PROBLEMS
         </span>
         <span>
           OVERALL: <b style={{ color: 'var(--fg)' }}>{solvedTotal}</b>/{allProblems.length} SOLVED ({((solvedTotal / allProblems.length) * 100).toFixed(1)}%)
@@ -180,7 +182,7 @@ export const SyllabusWindow: React.FC<SyllabusWindowProps> = ({ onLog }) => {
             — NO PROBLEMS MATCHING FILTER —
           </div>
         ) : (
-          filtered.slice(0, 100).map((p) => {
+          filtered.slice(0, displayLimit).map((p) => {
             const isDone = !!progress[p.id];
             const diffTag = p.difficulty === 'Easy' ? 'e' : p.difficulty === 'Hard' ? 'h' : 'm';
             const diffText = p.difficulty === 'Easy' ? 'EASY' : p.difficulty === 'Hard' ? 'HARD' : 'MED';
@@ -188,12 +190,20 @@ export const SyllabusWindow: React.FC<SyllabusWindowProps> = ({ onLog }) => {
             return (
               <div
                 key={p.id}
+                tabIndex={0}
                 className={`row ${isDone ? 'done' : ''}`}
                 onClick={(e) => handleToggle(p, e)}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    handleToggle(p, e as any);
+                  }
+                }}
+                style={{ outline: 'none' }}
               >
                 <span className="chk">{isDone ? '[x]' : '[ ]'}</span>
                 <span className="id" style={{ width: 62 }}>W{p.week} D{p.day}</span>
-                <span className="id" style={{ width: 44 }}>#{p.lcNumber}</span>
+                <span className="id" style={{ width: 54 }}>{p.lcNumber > 0 ? `#${p.lcNumber}` : 'CONTEST'}</span>
                 <span className="nm">{p.name}</span>
 
                 {p.companyTags && p.companyTags.length > 0 && (
@@ -219,16 +229,27 @@ export const SyllabusWindow: React.FC<SyllabusWindowProps> = ({ onLog }) => {
             );
           })
         )}
-        {filtered.length > 100 && (
-          <div className="dimtxt" style={{ fontSize: 10, textAlign: 'center', marginTop: 4 }}>
-            ... and {filtered.length - 100} more problems (refine filter above)
+        {filtered.length > displayLimit && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, margin: '8px 0' }}>
+            <button
+              className="k small"
+              onClick={() => setDisplayLimit((prev) => prev + 100)}
+            >
+              LOAD MORE (+100)
+            </button>
+            <button
+              className="k ghost small"
+              onClick={() => setDisplayLimit(filtered.length)}
+            >
+              SHOW ALL ({filtered.length})
+            </button>
           </div>
         )}
       </div>
 
       <hr />
       <div className="dimtxt" style={{ fontSize: 10 }}>
-        [SPACE / CLICK ROW] TOGGLE STATUS · [↗] OPEN ON LEETCODE
+        [SPACE / ENTER / CLICK ROW] TOGGLE STATUS · [↗] OPEN ON LEETCODE
       </div>
     </div>
   );

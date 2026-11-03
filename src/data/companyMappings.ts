@@ -71,6 +71,24 @@ export const COMPANY_MAPPINGS: Record<number, CompanyTag[]> = {
   986: ['meta', 'amazon'], // Interval List Intersections
   1143: ['amazon', 'google'], // Longest Common Subsequence
   1235: ['uber', 'google'], // Maximum Profit in Job Scheduling
+
+  // Additional High-Frequency Top 150 Mappings (Adobe, Netflix, Apple, Uber)
+  13: ['adobe', 'amazon', 'apple'], // Roman to Integer
+  14: ['adobe', 'apple', 'google'], // Longest Common Prefix
+  122: ['amazon', 'netflix', 'meta'], // Best Time to Buy and Sell Stock II
+  150: ['netflix', 'amazon', 'meta'], // Evaluate Reverse Polish Notation
+  151: ['microsoft', 'adobe', 'apple'], // Reverse Words in a String
+  191: ['apple', 'adobe', 'microsoft'], // Number of 1 Bits
+  228: ['adobe', 'apple'], // Summary Ranges
+  242: ['uber', 'adobe', 'amazon'], // Valid Anagram
+  380: ['meta', 'netflix', 'amazon', 'google', 'uber'], // Insert Delete GetRandom O(1)
+  383: ['amazon', 'apple', 'adobe'], // Ransom Note
+  392: ['netflix', 'google'], // Is Subsequence
+  399: ['google', 'amazon', 'uber'], // Evaluate Division
+  452: ['adobe', 'amazon'], // Minimum Number of Arrows to Burst Balloons
+  637: ['meta', 'adobe'], // Average of Levels in Binary Tree
+  909: ['amazon', 'uber'], // Snakes and Ladders
+  918: ['amazon', 'adobe'], // Maximum Sum Circular Subarray
 };
 
 export const COMPANY_LABELS: Record<CompanyTag, { name: string; color: string; badge: string }> = {

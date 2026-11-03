@@ -715,8 +715,7 @@ h4:first-child {
     gap: 8px;
     font-size: 10px;
   }
-  #tray span:nth-child(2),
-  #tray span:nth-child(6) {
+  #tray .tray-mem {
     display: none;
   }
   #hintbar {

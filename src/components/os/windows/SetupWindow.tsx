@@ -19,7 +19,7 @@ export const SetupWindow: React.FC<SetupWindowProps> = ({
 
   const [name, setName] = useState(userProfile.name === 'User' ? '' : userProfile.name);
   const [tagline, setTagline] = useState(userProfile.tagline || 'IIT-B BATCH 2027');
-  const [targetTier, setTargetTier] = useState('tier1');
+  const [targetTier, setTargetTier] = useState(userProfile.targetTier || 'tier1');
   const [restDay, setRestDay] = useState(userProfile.restDay || 'sunday');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -33,11 +33,12 @@ export const SetupWindow: React.FC<SetupWindowProps> = ({
       name: cleanName,
       tagline: cleanTag,
       restDay: restDay as any,
+      targetTier,
     });
 
     setSavedSuccess(true);
     sounds.playVictorySound();
-    onLog(`setup: terminal initialized for [${cleanName}] @ ${cleanTag}`, 'ok');
+    onLog(`setup: terminal initialized for [${cleanName}] @ ${cleanTag} [${targetTier}]`, 'ok');
 
     setTimeout(() => {
       onClose();

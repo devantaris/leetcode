@@ -8,6 +8,7 @@ interface ConfigWindowProps {
   onThemeChange: (theme: string) => void;
   onLog: (msg: string, type?: 'ok' | 'warn' | 'dim') => void;
   onOpenAuth?: () => void;
+  onSwitchToWeb?: () => void;
 }
 
 type ConfigTab = 'cloud' | 'display' | 'audio' | 'workstation' | 'storage';
@@ -17,6 +18,7 @@ export const ConfigWindow: React.FC<ConfigWindowProps> = ({
   onThemeChange,
   onLog,
   onOpenAuth,
+  onSwitchToWeb,
 }) => {
   const {
     userProfile,
@@ -39,7 +41,7 @@ export const ConfigWindow: React.FC<ConfigWindowProps> = ({
   const [tagline, setTagline] = useState(userProfile.tagline);
   const [restDay, setRestDay] = useState(userProfile.restDay);
   const [startDate, setStartDate] = useState(userProfile.startDate);
-  const [dailyQuota, setDailyQuota] = useState<number>(3);
+  const [dailyQuota, setDailyQuota] = useState<number>(userProfile.dailyQuota || 3);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Custom DB states
@@ -82,9 +84,10 @@ export const ConfigWindow: React.FC<ConfigWindowProps> = ({
       tagline: tagline.trim() || 'Software Engineer',
       restDay: restDay as any,
       startDate,
+      dailyQuota,
     });
     sounds.playVictorySound();
-    onLog(`config: saved profile parameters for [${name}]`, 'ok');
+    onLog(`config: saved profile parameters for [${name}] (quota: ${dailyQuota}/day)`, 'ok');
   };
 
   const handleSaveDb = (e: React.FormEvent) => {
@@ -296,6 +299,22 @@ export const ConfigWindow: React.FC<ConfigWindowProps> = ({
               BARREL VIGNETTE: {vignetteEnabled ? 'ENABLED [ON]' : 'DISABLED [OFF]'}
             </button>
           </div>
+
+          {onSwitchToWeb && (
+            <div style={{ borderTop: '1px dashed var(--line)', paddingTop: 10, marginTop: 10 }}>
+              <h4>▸ DUAL-MODE INTERFACE</h4>
+              <button
+                className="k small"
+                onClick={() => {
+                  sounds.playTickSound();
+                  onSwitchToWeb();
+                }}
+                style={{ color: 'var(--amb)', borderColor: 'var(--amb)' }}
+              >
+                SWITCH TO MODERN LINEAR WEB UI 🌐
+              </button>
+            </div>
+          )}
         </div>
       )}
 

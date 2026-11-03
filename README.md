@@ -10,7 +10,7 @@ A structured DSA interview prep system with spaced repetition, streak tracking, 
 
 ## Features
 
-- **20-Week Phased Curriculum** — 140 days of structured DSA problems, from Arrays to System Design
+- **25-Week Phased Curriculum** — 178 days of structured DSA problems, from Arrays to System Design
 - **Interview 150 Essentials Track** — curated subset of the most high-signal problems
 - **Streak & Consistency Tracking** — daily solve streaks, heatmap, and completeddays counter
 - **Interview Readiness Score** — dynamic odds formula based on progress, streak, and pace

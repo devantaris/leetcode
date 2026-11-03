@@ -71,17 +71,13 @@ export const StatsWindow: React.FC<StatsWindowProps> = ({ onLog: _onLog }) => {
     };
   }, [progress]);
 
-  const readinessScore = stats.readinessBreakdown?.coverageScore !== undefined
-    ? Math.round(
-        (stats.readinessBreakdown.coverageScore || 0) +
-        (stats.readinessBreakdown.streakScore || 0) +
-        (stats.readinessBreakdown.paceScore || 0) +
-        (stats.readinessBreakdown.breadthScore || 0)
-      )
-    : Math.min(100, Math.round((stats.solvedCount / (stats.totalProblems || 280)) * 100));
+  const readinessScore = typeof stats.oddsPercentage === 'number'
+    ? stats.oddsPercentage
+    : Math.min(100, Math.round((stats.solvedCount / (stats.totalProblems || 1)) * 100));
 
   const makeAsciiBar = (pct: number, length: number = 18) => {
-    const filled = Math.round((pct / 100) * length);
+    const validPct = isNaN(pct) ? 0 : Math.max(0, Math.min(100, pct));
+    const filled = Math.round((validPct / 100) * length);
     const empty = Math.max(0, length - filled);
     return '█'.repeat(filled) + '░'.repeat(empty);
   };
@@ -134,7 +130,7 @@ export const StatsWindow: React.FC<StatsWindowProps> = ({ onLog: _onLog }) => {
             {diffStats.easy.solved}/{diffStats.easy.total}
           </div>
           <div style={{ fontSize: 9, color: 'var(--dim)', fontFamily: 'var(--mono)' }}>
-            [{makeAsciiBar(Math.round((diffStats.easy.solved / diffStats.easy.total) * 100), 8)}]
+            [{makeAsciiBar(diffStats.easy.total > 0 ? Math.round((diffStats.easy.solved / diffStats.easy.total) * 100) : 0, 8)}]
           </div>
         </div>
 
@@ -144,7 +140,7 @@ export const StatsWindow: React.FC<StatsWindowProps> = ({ onLog: _onLog }) => {
             {diffStats.med.solved}/{diffStats.med.total}
           </div>
           <div style={{ fontSize: 9, color: 'var(--dim)', fontFamily: 'var(--mono)' }}>
-            [{makeAsciiBar(Math.round((diffStats.med.solved / diffStats.med.total) * 100), 8)}]
+            [{makeAsciiBar(diffStats.med.total > 0 ? Math.round((diffStats.med.solved / diffStats.med.total) * 100) : 0, 8)}]
           </div>
         </div>
 
@@ -154,7 +150,7 @@ export const StatsWindow: React.FC<StatsWindowProps> = ({ onLog: _onLog }) => {
             {diffStats.hard.solved}/{diffStats.hard.total}
           </div>
           <div style={{ fontSize: 9, color: 'var(--dim)', fontFamily: 'var(--mono)' }}>
-            [{makeAsciiBar(Math.round((diffStats.hard.solved / (diffStats.hard.total || 1)) * 100), 8)}]
+            [{makeAsciiBar(diffStats.hard.total > 0 ? Math.round((diffStats.hard.solved / diffStats.hard.total) * 100) : 0, 8)}]
           </div>
         </div>
       </div>

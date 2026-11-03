@@ -6,12 +6,17 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { useProgress } from './context/ProgressContext';
 import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
-import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock } from 'lucide-react';
+import { CURRICULUM } from './data/curriculumStats';
+import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal } from 'lucide-react';
 
 type Theme = 'dark' | 'light';
 type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | null;
 
-export const Layout: React.FC = () => {
+interface LayoutProps {
+  onSwitchToOS?: () => void;
+}
+
+export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS }) => {
   const { importJSON, isOnboarded, userProfile, stats, exportJSON } = useProgress();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -117,7 +122,31 @@ export const Layout: React.FC = () => {
         </nav>
 
         {/* Right utility icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {/* Switch to Retro OS */}
+          {onSwitchToOS && (
+            <button
+              onClick={onSwitchToOS}
+              style={{
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border-default)',
+                cursor: 'pointer',
+                color: 'var(--text-primary)',
+                padding: '4px 8px',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: 11,
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 600,
+              }}
+              title="Launch Retro Terminal Shell"
+            >
+              <Terminal size={12} /> OS Shell
+            </button>
+          )}
+
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
@@ -216,7 +245,7 @@ export const Layout: React.FC = () => {
         fontSize: 11, color: 'var(--text-muted)', display: 'flex',
         alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-mono)'
       }}>
-        <span>{APP_CONFIG.name} · Day {stats.currentDay} / 140</span>
+        <span>{APP_CONFIG.name} · Day {stats.currentDay} / {CURRICULUM.totalDays}</span>
         <span>{stats.solvedCount} / {stats.totalProblems} solved {stats.streak > 0 && `· 🔥 ${stats.streak}d`}</span>
       </footer>
 

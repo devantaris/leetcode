@@ -5,7 +5,7 @@ export const ReadmeWindow: React.FC = () => {
     <div className="wbody" style={{ width: 480, maxWidth: '90vw' }}>
       <h4>▸ WHAT THIS IS</h4>
       <div style={{ marginBottom: 10 }}>
-        GrindOS is a focused 140-day operating system designed to get engineers and students placement-ready
+        GrindOS is a focused 178-day, 25-week operating system designed to get engineers and students placement-ready
         for Tier-1 tech companies (Google, Amazon, Meta, Microsoft, Uber).
         <br />
         <br />
@@ -31,6 +31,8 @@ export const ReadmeWindow: React.FC = () => {
         <code>CTRL + P</code> — Open POMODORO.EXE (Deep focus timer)
         <br />
         <code>CTRL + S</code> — Open SYLLABUS.EXE (Curriculum problem search)
+        <br />
+        <code>CTRL + M</code> — Toggle audio synthesizer (Mute/Unmute)
       </div>
 
       <h4>▸ LOCAL-FIRST PRIVACY</h4>
@@ -41,7 +43,7 @@ export const ReadmeWindow: React.FC = () => {
 
       <hr />
       <div className="dimtxt" style={{ fontSize: 10 }}>
-        VERSION 2.4 — 140-DAY PLACEMENT KERNEL (BUILD 2026.10)
+        VERSION 2.4 — 178-DAY PLACEMENT KERNEL (BUILD 2026.11)
       </div>
     </div>
   );

@@ -95,9 +95,10 @@ export class AuthService {
     }
 
     // Offline / Local Simulation Mode
+    const emailKey = email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
     this.currentUser = {
-      id: 'usr_' + Math.random().toString(36).substring(2, 10),
-      email,
+      id: 'usr_' + emailKey,
+      email: email.trim(),
       displayName: email.split('@')[0],
       isAnonymous: false,
       provider: 'local',
@@ -138,10 +139,11 @@ export class AuthService {
     }
 
     // Offline / Local Simulation Mode
+    const emailKey = email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
     this.currentUser = {
-      id: 'usr_' + Math.random().toString(36).substring(2, 10),
-      email,
-      displayName: displayName || email.split('@')[0],
+      id: 'usr_' + emailKey,
+      email: email.trim(),
+      displayName: displayName.trim() || email.split('@')[0],
       isAnonymous: false,
       provider: 'local',
     };

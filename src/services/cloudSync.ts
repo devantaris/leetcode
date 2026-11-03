@@ -4,6 +4,7 @@
 import { getSupabase } from '../config/supabaseClient';
 import type { UserProfile } from '../context/ProgressContext';
 import type { PlacementRecord, UserProgressMap, SolveRecordMap } from '../types';
+import { CURRICULUM } from '../data/curriculumStats';
 
 export interface CloudSyncPayload {
   userId: string;
@@ -86,21 +87,25 @@ export class CloudSyncService {
 
       // 3. Upsert placements
       if (payload.placements.length > 0) {
-        const placementRows = payload.placements.map((p) => ({
-          id: p.id.includes('-') && p.id.length === 36 ? p.id : undefined,
-          user_id: payload.userId,
-          company: p.company,
-          role: p.role,
-          stage: p.stage,
-          compensation: p.compensation || '',
-          notes: p.notes || '',
-        }));
+        const placementRows = payload.placements.map((p) => {
+          const isValidUUID = p.id && p.id.includes('-') && p.id.length === 36;
+          return {
+            ...(isValidUUID ? { id: p.id } : {}),
+            user_id: payload.userId,
+            company: p.company,
+            role: p.role,
+            stage: p.stage,
+            compensation: p.compensation || '',
+            notes: p.notes || '',
+          };
+        });
 
         const { error: placeErr } = await sb.from('placement_records').upsert(placementRows);
         if (placeErr) console.warn('[CloudSync] Placement upsert warning:', placeErr.message);
       }
 
       // 4. Upsert global leaderboard entry
+      const totalProblems = CURRICULUM.totalProblems || 332;
       const { error: lbErr } = await sb.from('leaderboard_entries').upsert(
         {
           user_id: payload.userId,
@@ -108,7 +113,7 @@ export class CloudSyncService {
           tagline: payload.userProfile.tagline,
           solved_count: payload.solvedCount,
           streak: payload.streak,
-          readiness_pct: Math.min(100, Math.round((payload.solvedCount / 280) * 100)),
+          readiness_pct: Math.min(100, Math.round((payload.solvedCount / totalProblems) * 100)),
           last_synced_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }

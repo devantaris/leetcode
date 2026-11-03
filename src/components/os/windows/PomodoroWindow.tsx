@@ -6,14 +6,81 @@ interface PomodoroWindowProps {
   onAwardXP: (amount: number) => void;
 }
 
-export const PomodoroWindow: React.FC<PomodoroWindowProps> = ({ onLog, onAwardXP }) => {
-  const [modeMinutes, setModeMinutes] = useState<number>(25);
-  const [secondsLeft, setSecondsLeft] = useState<number>(25 * 60);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [completedPips, setCompletedPips] = useState<number>(0);
-  const [justFinished, setJustFinished] = useState<boolean>(false);
+interface SavedPomoState {
+  modeMinutes: number;
+  secondsLeft: number;
+  isRunning: boolean;
+  targetEndTime: number | null;
+  completedPips: number;
+}
 
+const STORAGE_KEY = 'grindos_pomo_state';
+
+export const PomodoroWindow: React.FC<PomodoroWindowProps> = ({ onLog, onAwardXP }) => {
+  const [modeMinutes, setModeMinutes] = useState<number>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).modeMinutes || 25 : 25;
+    } catch {
+      return 25;
+    }
+  });
+
+  const [completedPips, setCompletedPips] = useState<number>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).completedPips || 0 : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [isRunning, setIsRunning] = useState<boolean>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      if (!s) return false;
+      const parsed: SavedPomoState = JSON.parse(s);
+      if (parsed.isRunning && parsed.targetEndTime) {
+        return parsed.targetEndTime > Date.now();
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  });
+
+  const [secondsLeft, setSecondsLeft] = useState<number>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      if (!s) return 25 * 60;
+      const parsed: SavedPomoState = JSON.parse(s);
+      if (parsed.isRunning && parsed.targetEndTime) {
+        const diff = Math.round((parsed.targetEndTime - Date.now()) / 1000);
+        return Math.max(0, diff);
+      }
+      return parsed.secondsLeft || (parsed.modeMinutes ? parsed.modeMinutes * 60 : 25 * 60);
+    } catch {
+      return 25 * 60;
+    }
+  });
+
+  const [justFinished, setJustFinished] = useState<boolean>(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Synchronize state to localStorage
+  const saveState = (updates: Partial<SavedPomoState>) => {
+    try {
+      const current = localStorage.getItem(STORAGE_KEY);
+      const parsed = current ? JSON.parse(current) : {};
+      const next = { ...parsed, modeMinutes, secondsLeft, isRunning, completedPips, ...updates };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore storage error
+    }
+  };
+
+  const saveStateRef = useRef(saveState);
+  saveStateRef.current = saveState;
 
   const fmt = (s: number) => {
     const mins = Math.floor(s / 60);
@@ -26,11 +93,14 @@ export const PomodoroWindow: React.FC<PomodoroWindowProps> = ({ onLog, onAwardXP
       setIsRunning(false);
       if (timerRef.current) clearInterval(timerRef.current);
       beep(440, 0.05);
+      saveState({ isRunning: false, targetEndTime: null, secondsLeft });
       onLog('pomodoro: paused focus session', 'dim');
     } else {
       setIsRunning(true);
       setJustFinished(false);
       beep(880, 0.06);
+      const targetEndTime = Date.now() + secondsLeft * 1000;
+      saveState({ isRunning: true, targetEndTime });
       onLog(`pomodoro: started ${modeMinutes}m deep work block`, 'ok');
     }
   };
@@ -38,8 +108,10 @@ export const PomodoroWindow: React.FC<PomodoroWindowProps> = ({ onLog, onAwardXP
   const handleReset = () => {
     setIsRunning(false);
     if (timerRef.current) clearInterval(timerRef.current);
-    setSecondsLeft(modeMinutes * 60);
+    const resetSecs = modeMinutes * 60;
+    setSecondsLeft(resetSecs);
     setJustFinished(false);
+    saveState({ isRunning: false, targetEndTime: null, secondsLeft: resetSecs });
     sounds.playTickSound();
     onLog('pomodoro: timer reset', 'dim');
   };
@@ -48,8 +120,10 @@ export const PomodoroWindow: React.FC<PomodoroWindowProps> = ({ onLog, onAwardXP
     setIsRunning(false);
     if (timerRef.current) clearInterval(timerRef.current);
     setModeMinutes(mins);
-    setSecondsLeft(mins * 60);
+    const resetSecs = mins * 60;
+    setSecondsLeft(resetSecs);
     setJustFinished(false);
+    saveState({ modeMinutes: mins, isRunning: false, targetEndTime: null, secondsLeft: resetSecs });
     sounds.playTickSound();
   };
 
@@ -60,13 +134,17 @@ export const PomodoroWindow: React.FC<PomodoroWindowProps> = ({ onLog, onAwardXP
           if (prev <= 1) {
             clearInterval(timerRef.current!);
             setIsRunning(false);
-            setCompletedPips((p) => Math.min(4, p + 1));
+            const nextPips = Math.min(4, completedPips + 1);
+            setCompletedPips(nextPips);
             setJustFinished(true);
             sounds.playVictorySound();
             onAwardXP(25);
             onLog(`pomodoro: deep work block complete! +25 XP awarded ☕`, 'ok');
-            return modeMinutes * 60;
+            const resetSecs = modeMinutes * 60;
+            saveStateRef.current({ isRunning: false, targetEndTime: null, secondsLeft: resetSecs, completedPips: nextPips });
+            return resetSecs;
           }
+          saveStateRef.current({ secondsLeft: prev - 1 });
           return prev - 1;
         });
       }, 1000);
@@ -74,7 +152,7 @@ export const PomodoroWindow: React.FC<PomodoroWindowProps> = ({ onLog, onAwardXP
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, modeMinutes, onAwardXP, onLog]);
+  }, [isRunning, modeMinutes, completedPips, onAwardXP, onLog]);
 
   return (
     <div className="wbody" style={{ width: 380, maxWidth: '90vw' }}>

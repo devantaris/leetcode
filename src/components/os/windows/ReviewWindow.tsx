@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { useProgress } from '../../../context/ProgressContext';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useProgress, problemLookupMap } from '../../../context/ProgressContext';
 import { beep } from '../../../utils/audio';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 
 interface ReviewWindowProps {
   onLog: (msg: string, type?: 'ok' | 'warn' | 'dim') => void;
@@ -11,6 +12,7 @@ interface ReviewItem {
   id: string;
   name: string;
   lcNumber: number;
+  url?: string;
   interval: 'D3' | 'D7' | 'D21';
   done: boolean;
 }
@@ -18,22 +20,48 @@ interface ReviewItem {
 export const ReviewWindow: React.FC<ReviewWindowProps> = ({ onLog, onAwardXP }) => {
   const { solveHistory } = useProgress();
 
-  // Local state for completed reviews in this session
-  const [completedMap, setCompletedMap] = useState<Record<string, boolean>>({});
+  // Persistent review completion state
+  const [completedMap, setCompletedMap] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('go_reviews_done');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
-  // Generate review queue dynamically from solveHistory + default fallback calibration items
+  useEffect(() => {
+    try {
+      localStorage.setItem('go_reviews_done', JSON.stringify(completedMap));
+    } catch {
+      // ignore storage error
+    }
+  }, [completedMap]);
+
+  // Generate review queue dynamically from solveHistory using actual problem lookup + elapsed intervals
   const reviewQueue = useMemo<ReviewItem[]>(() => {
     const list: ReviewItem[] = [];
     const entries = Object.entries(solveHistory);
+    const now = new Date();
 
     if (entries.length > 0) {
-      // Pick up to 6 problems from history
-      entries.slice(0, 6).forEach(([problemId], idx) => {
-        const interval: 'D3' | 'D7' | 'D21' = idx % 3 === 0 ? 'D3' : idx % 3 === 1 ? 'D7' : 'D21';
+      entries.slice(0, 8).forEach(([problemId, isoTimestamp]) => {
+        const info = problemLookupMap.get(problemId);
+        let daysAgo = 1;
+        try {
+          if (isoTimestamp) {
+            daysAgo = Math.max(0, differenceInCalendarDays(now, parseISO(isoTimestamp)));
+          }
+        } catch {
+          daysAgo = 1;
+        }
+
+        const interval: 'D3' | 'D7' | 'D21' = daysAgo >= 14 ? 'D21' : daysAgo >= 5 ? 'D7' : 'D3';
         list.push({
           id: problemId,
-          name: problemId.replace('w', 'Week ').replace('-d', ' Day '),
-          lcNumber: 100 + idx,
+          name: info?.name || problemId,
+          lcNumber: info?.lcNumber || 0,
+          url: info?.url || 'https://leetcode.com/problemset/',
           interval,
           done: !!completedMap[problemId],
         });
@@ -43,9 +71,9 @@ export const ReviewWindow: React.FC<ReviewWindowProps> = ({ onLog, onAwardXP }) 
     // If fewer than 3 items, provide curated calibration spaced repetition cards
     if (list.length < 3) {
       const defaults = [
-        { id: 'LC-001', name: 'Two Sum (Hash Map Index Lookup)', lcNumber: 1, interval: 'D3' as const },
-        { id: 'LC-121', name: 'Best Time to Buy and Sell Stock (Valley-Peak)', lcNumber: 121, interval: 'D7' as const },
-        { id: 'LC-056', name: 'Merge Intervals (Sort + Sweep)', lcNumber: 56, interval: 'D21' as const },
+        { id: 'LC-001', name: 'Two Sum (Hash Map Index Lookup)', lcNumber: 1, url: 'https://leetcode.com/problems/two-sum/', interval: 'D3' as const },
+        { id: 'LC-121', name: 'Best Time to Buy and Sell Stock (Valley-Peak)', lcNumber: 121, url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/', interval: 'D7' as const },
+        { id: 'LC-056', name: 'Merge Intervals (Sort + Sweep)', lcNumber: 56, url: 'https://leetcode.com/problems/merge-intervals/', interval: 'D21' as const },
       ];
       defaults.forEach((d) => {
         if (!list.some((item) => item.id === d.id)) {
@@ -53,6 +81,7 @@ export const ReviewWindow: React.FC<ReviewWindowProps> = ({ onLog, onAwardXP }) 
             id: d.id,
             name: d.name,
             lcNumber: d.lcNumber,
+            url: d.url,
             interval: d.interval,
             done: !!completedMap[d.id],
           });
@@ -101,9 +130,22 @@ export const ReviewWindow: React.FC<ReviewWindowProps> = ({ onLog, onAwardXP }) 
               title="Click to pass blind review recall"
             >
               <span className="chk">{item.done ? '[x]' : '[ ]'}</span>
-              <span className="id">#{item.lcNumber}</span>
+              <span className="id">{item.lcNumber > 0 ? `#${item.lcNumber}` : 'CARD'}</span>
               <span className="nm">{item.name}</span>
               <span className={`tag ${tagClass}`}>{item.interval}</span>
+              {item.url && (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="k ghost small"
+                  style={{ padding: '0 4px', fontSize: 9, margin: 0 }}
+                  title="Open on LeetCode"
+                >
+                  ↗
+                </a>
+              )}
             </div>
           );
         })}

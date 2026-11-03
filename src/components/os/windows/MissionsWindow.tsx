@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useProgress } from '../../../context/ProgressContext';
 import { MERGED_PLAN_DATA } from '../../../data/mergedPlanData';
+import { CURRICULUM } from '../../../data/curriculumStats';
 import { sounds } from '../../../utils/audio';
 
 interface MissionsWindowProps {
@@ -33,7 +34,7 @@ export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
     return list;
   }, []);
 
-  const todayDay = Math.min(Math.max(stats.currentDay || 1, 1), 140);
+  const todayDay = Math.min(Math.max(stats.currentDay || 1, 1), CURRICULUM.totalDays);
   const [selectedDay, setSelectedDay] = useState<number>(todayDay);
   const [expandedHintId, setExpandedHintId] = useState<string | null>(null);
 
@@ -58,7 +59,7 @@ export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
   };
 
   const nextDay = () => {
-    if (selectedDay < 140) {
+    if (selectedDay < CURRICULUM.totalDays) {
       setSelectedDay((d) => d + 1);
       sounds.playTickSound();
     }
@@ -84,7 +85,7 @@ export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
           <button className="k small" onClick={prevDay} disabled={selectedDay <= 1}>
             &lt; PREV
           </button>
-          <button className="k small" onClick={nextDay} disabled={selectedDay >= 140}>
+          <button className="k small" onClick={nextDay} disabled={selectedDay >= CURRICULUM.totalDays}>
             NEXT &gt;
           </button>
           {selectedDay !== todayDay && (
@@ -94,7 +95,7 @@ export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
           )}
         </div>
         <div style={{ fontSize: 11, color: 'var(--dim)' }}>
-          DAY <b style={{ color: 'var(--fg)' }}>{selectedDay}</b>/140 · W{currentDayData.week} ({currentDayData.weekday})
+          DAY <b style={{ color: 'var(--fg)' }}>{selectedDay}</b>/{CURRICULUM.totalDays} · W{currentDayData.week} ({currentDayData.weekday})
         </div>
       </div>
 
@@ -121,7 +122,7 @@ export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
                 title="Click row to toggle completion"
               >
                 <span className="chk">{isDone ? '[x]' : '[ ]'}</span>
-                <span className="id">#{p.lcNumber}</span>
+                <span className="id" style={{ width: 54 }}>{p.lcNumber > 0 ? `#${p.lcNumber}` : 'CONTEST'}</span>
                 <span className="nm">{p.name}</span>
 
                 {p.companyTags && p.companyTags.length > 0 && (
@@ -197,7 +198,7 @@ export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
         <div style={{ marginTop: 10, color: 'var(--fg)', fontSize: 11 }}>
           <hr />
           <span className="blink">
-            ▶ DAY {selectedDay} COMPLETE — REVIEWS QUEUED FOR DAY {selectedDay + 3}. REST DAY PROTECTED. █
+            ▶ DAY {selectedDay} COMPLETE — REVIEWS QUEUED FOR DAY {Math.min(selectedDay + 3, CURRICULUM.totalDays)}. REST DAY PROTECTED. █
           </span>
         </div>
       )}

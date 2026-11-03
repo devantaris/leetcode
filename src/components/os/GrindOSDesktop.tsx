@@ -16,6 +16,8 @@ import { ReadmeWindow } from './windows/ReadmeWindow';
 import { SetupWindow } from './windows/SetupWindow';
 import { AuthWindow } from './windows/AuthWindow';
 import type { AppId, WindowState, LogEntry } from './types';
+import { CURRICULUM } from '../../data/curriculumStats';
+import { MERGED_PLAN_DATA } from '../../data/mergedPlanData';
 
 const INITIAL_WINDOWS: Record<AppId, Omit<WindowState, 'zIndex'>> = {
   missions: {
@@ -80,7 +82,7 @@ const INITIAL_WINDOWS: Record<AppId, Omit<WindowState, 'zIndex'>> = {
   },
   cohort: {
     id: 'cohort',
-    title: 'COHORT.EXE — IIT-B BATCH 2027',
+    title: 'COHORT.EXE — PEER NETWORK',
     glyph: '☰',
     isOpen: false,
     isFocused: false,
@@ -166,8 +168,12 @@ const ICONS_CONFIG: Array<{ id: AppId; name: string; glyph: string }> = [
   { id: 'readme', name: 'README.TXT', glyph: '?' },
 ];
 
-export const GrindOSDesktop: React.FC = () => {
-  const { stats, streak, userProfile, soundEnabled, toggleSound, authUser, cloudSyncStatus } = useProgress();
+interface GrindOSDesktopProps {
+  onSwitchToWeb?: () => void;
+}
+
+export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb }) => {
+  const { stats, streak, userProfile, soundEnabled, toggleSound, authUser, cloudSyncStatus, progress, solveHistory } = useProgress();
 
   // Boot state: check if already booted in session
   const [isBooted, setIsBooted] = useState<boolean>(() => {
@@ -371,7 +377,7 @@ export const GrindOSDesktop: React.FC = () => {
       const targetWin = windows[targetId];
 
       const maxX = Math.max(0, window.innerWidth - (targetWin?.w || 320));
-      const maxY = Math.max(0, window.innerHeight - 70);
+      const maxY = Math.max(0, window.innerHeight - 120);
 
       setWindows((prev) => ({
         ...prev,
@@ -433,12 +439,43 @@ export const GrindOSDesktop: React.FC = () => {
     }
   };
 
+  const currentDayNum = Math.min(Math.max(stats.currentDay || 1, 1), CURRICULUM.totalDays);
+  const operatorHandle = userProfile.name.toLowerCase().replace(/\s+/g, '_');
+
+  // Compute live active missions due count
+  const todayDayPlan = React.useMemo(() => {
+    for (const w of MERGED_PLAN_DATA) {
+      for (const d of w.days) {
+        if (d.day === currentDayNum) return d;
+      }
+    }
+    return MERGED_PLAN_DATA[0].days[0];
+  }, [currentDayNum]);
+
+  const todayUnsolvedCount = React.useMemo(() => {
+    return todayDayPlan.problems.filter((p) => !progress[p.id]).length;
+  }, [todayDayPlan, progress]);
+
+  // Compute live review queue due count
+  const reviewsDueCount = React.useMemo(() => {
+    let doneMap: Record<string, boolean> = {};
+    try {
+      const saved = localStorage.getItem('go_reviews_done');
+      if (saved) doneMap = JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    const solvedKeys = Object.keys(solveHistory);
+    if (solvedKeys.length === 0) {
+      return 3 - (['LC-001', 'LC-121', 'LC-056'].filter((k) => doneMap[k]).length);
+    }
+    const queue = solvedKeys.slice(0, 8);
+    return queue.filter((k) => !doneMap[k]).length;
+  }, [solveHistory]);
+
   if (!isBooted) {
     return <BootScreen onComplete={handleBootComplete} />;
   }
-
-  const currentDayNum = Math.min(Math.max(stats.currentDay || 1, 1), 140);
-  const operatorHandle = userProfile.name.toLowerCase().replace(/\s+/g, '_');
 
   return (
     <div className="os-desktop" onClick={() => setIsStartMenuOpen(false)}>
@@ -793,6 +830,7 @@ export const GrindOSDesktop: React.FC = () => {
               onThemeChange={setTheme}
               onLog={addSysLog}
               onOpenAuth={() => openApp('auth')}
+              onSwitchToWeb={onSwitchToWeb}
             />
           </div>
         )}
@@ -979,7 +1017,7 @@ export const GrindOSDesktop: React.FC = () => {
             OPERATOR: <b style={{ color: 'var(--fg)' }}>{operatorHandle}</b>
           </button>
           <span>
-            DAY <b>{currentDayNum}</b>/140
+            DAY <b>{currentDayNum}</b>/{CURRICULUM.totalDays}
           </span>
           <span>
             XP <b>{totalXP.toLocaleString()}</b>
@@ -987,7 +1025,7 @@ export const GrindOSDesktop: React.FC = () => {
           <span>
             STREAK <b>{streak}</b>🔥
           </span>
-          <span>
+          <span className="tray-mem">
             MEM <b>640K</b> OK
           </span>
           <span style={{ color: 'var(--fg)' }}>{currentTime}</span>
@@ -1009,12 +1047,29 @@ export const GrindOSDesktop: React.FC = () => {
               }}
             >
               <span>{ic.glyph} {ic.name}</span>
-              {ic.id === 'missions' && <span className="k2">3 DUE</span>}
-              {ic.id === 'review' && <span className="k2">3 DUE</span>}
+              {ic.id === 'missions' && (
+                <span className="k2">{todayUnsolvedCount > 0 ? `${todayUnsolvedCount} DUE` : 'DONE ✓'}</span>
+              )}
+              {ic.id === 'review' && (
+                <span className="k2">{reviewsDueCount > 0 ? `${reviewsDueCount} DUE` : 'CLEAR ✓'}</span>
+              )}
               {ic.id === 'setup' && <span className="k2">CONFIG</span>}
               {ic.id === 'auth' && <span className="k2">{authUser ? 'ONLINE' : 'GATEWAY'}</span>}
             </button>
           ))}
+          {onSwitchToWeb && (
+            <button
+              onClick={() => {
+                sounds.playTickSound();
+                setIsStartMenuOpen(false);
+                onSwitchToWeb();
+              }}
+              style={{ borderTop: '1px solid var(--line)', color: 'var(--amb)' }}
+            >
+              <span>🌐 SWITCH TO MODERN WEB UI</span>
+              <span className="k2">WEB</span>
+            </button>
+          )}
           <div className="sm-h" style={{ borderTop: '1px solid var(--line)' }}>
             NODE: {userProfile.tagline.toUpperCase()} · 100% OFFLINE
           </div>

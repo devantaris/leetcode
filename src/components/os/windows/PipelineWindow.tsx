@@ -183,14 +183,51 @@ export const PipelineWindow: React.FC<PipelineWindowProps> = ({ onLog }) => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 4 }}>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  <select
+                    className="retro-select"
+                    style={{ fontSize: 10, padding: '1px 4px' }}
+                    value={p.stage}
+                    onChange={(e) => {
+                      const nextStage = e.target.value as PlacementStage;
+                      updatePlacement(p.id, { stage: nextStage });
+                      if (nextStage === 'Offer Received 🎉') {
+                        sounds.playVictorySound();
+                      } else if (nextStage === 'Rejected') {
+                        sounds.playUncheckSound();
+                      } else {
+                        sounds.playCheckSound();
+                      }
+                      onLog(`pipeline: set ${p.company} stage to [${nextStage}]`, 'ok');
+                    }}
+                  >
+                    {STAGES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
                   {!isOffer && !isRejected && (
                     <button
                       className="k ghost small"
                       onClick={() => advanceStage(p.id, p.stage)}
                       title="Advance to next interview round"
                     >
-                      ADVANCE &gt;
+                      &gt;
+                    </button>
+                  )}
+                  {!isRejected && !isOffer && (
+                    <button
+                      className="k ghost small"
+                      style={{ color: 'var(--red)', borderColor: 'var(--red)' }}
+                      onClick={() => {
+                        updatePlacement(p.id, { stage: 'Rejected' });
+                        sounds.playUncheckSound();
+                        onLog(`pipeline: marked ${p.company} as [Rejected]`, 'warn');
+                      }}
+                      title="Mark as Rejected"
+                    >
+                      REJECT
                     </button>
                   )}
                   <button
@@ -209,7 +246,7 @@ export const PipelineWindow: React.FC<PipelineWindowProps> = ({ onLog }) => {
 
       <hr />
       <div className="dimtxt" style={{ fontSize: 10 }}>
-        PLACEMENT PIPELINE MAINTAINED IN LOCAL ENCRYPTED BROWSER STORAGE.
+        PLACEMENT PIPELINE MAINTAINED IN LOCAL BROWSER STORAGE (LOCAL-FIRST & OFFLINE READY).
       </div>
     </div>
   );

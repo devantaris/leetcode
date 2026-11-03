@@ -80,7 +80,7 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
     : (liveGlobalPeers.length > 0 ? liveGlobalPeers : DEFAULT_GLOBAL_PEERS);
 
   // Insert current user and sort descending by XP
-  const userHandle = userProfile.name ? userProfile.name.toLowerCase().replace(/\s+/g, '_') : 'devansh';
+  const userHandle = userProfile.name ? userProfile.name.toLowerCase().replace(/\s+/g, '_') : 'operator';
   const combinedList = [
     ...currentPeers,
     { handle: `${userHandle} (you)`, xp: userXP, streak, solved: stats.solvedCount, isUser: true },

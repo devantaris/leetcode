@@ -14,7 +14,7 @@ export const CurriculumPage: React.FC = () => {
           Syllabus
         </h1>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-          20-week chronological progression through foundational data structures and algorithms.
+          25-week chronological progression through foundational data structures and algorithms.
         </p>
       </div>
 

@@ -31,6 +31,8 @@ export interface UserProfile {
   targetDate: string;
   restDay: string;        // 'sunday' | 'saturday' | 'none'
   secondarySkill: string; // e.g. 'project' | 'research' | 'competitive' etc.
+  dailyQuota?: number;    // 2 | 3 | 4 problems/day
+  targetTier?: string;    // 'tier1' | 'fintech' | 'unicorns'
 }
 
 const DEFAULT_PROFILE: UserProfile = {
@@ -40,6 +42,8 @@ const DEFAULT_PROFILE: UserProfile = {
   targetDate: format(addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'),
   restDay: 'sunday',
   secondarySkill: 'project',
+  dailyQuota: 3,
+  targetTier: 'tier1',
 };
 
 export function normalizeUserProfile(raw: any): UserProfile | null {
@@ -57,6 +61,8 @@ export function normalizeUserProfile(raw: any): UserProfile | null {
     targetDate,
     restDay: (raw.restDay === 'saturday' || raw.restDay === 'sunday' || raw.restDay === 'none') ? raw.restDay : 'sunday',
     secondarySkill: (raw.secondarySkill && typeof raw.secondarySkill === 'string') ? raw.secondarySkill : 'project',
+    dailyQuota: (typeof raw.dailyQuota === 'number' && [2, 3, 4].includes(raw.dailyQuota)) ? raw.dailyQuota : 3,
+    targetTier: (typeof raw.targetTier === 'string') ? raw.targetTier : 'tier1',
   };
 }
 
@@ -126,14 +132,26 @@ interface ProgressContextType {
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
+// ─── UUID Generator ────────────────────────────────────────────────────────────
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // ─── Problem Lookup Map ────────────────────────────────────────────────────────
-const problemLookupMap = (() => {
-  const map = new Map<string, { name: string; lcNumber: number; difficulty: string; url: string; topic: string }>();
+export const problemLookupMap = (() => {
+  const map = new Map<string, { name: string; lcNumber: number; difficulty: string; url: string; topic: string; isReview?: boolean }>();
   PLAN_DATA.forEach((w) => {
     w.days.forEach((d) => {
       d.problems.forEach((p) => {
         if (!map.has(p.id)) {
-          map.set(p.id, { name: p.name, lcNumber: p.lcNumber, difficulty: p.difficulty, url: p.url, topic: d.topic });
+          map.set(p.id, { name: p.name, lcNumber: p.lcNumber, difficulty: p.difficulty, url: p.url, topic: d.topic, isReview: p.isReview });
         }
       });
     });
@@ -271,13 +289,43 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [selectedDifficulty, _setSelectedDifficulty] = useState<string>('All');
   const [statusFilter, _setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review' | 'top150'>('all');
   const [companyFilter, _setCompanyFilter] = useState<CompanyTag | 'all'>('all');
-  const [soundEnabled, _setSoundEnabled] = useState<boolean>(true);
+  const [soundEnabled, _setSoundEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('grindos_sound_enabled');
+      return saved !== null ? saved === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    sounds.setEnabled(soundEnabled);
+    try {
+      localStorage.setItem('grindos_sound_enabled', String(soundEnabled));
+    } catch {
+      // ignore storage errors
+    }
+  }, [soundEnabled]);
 
   // ── Placements & Cohort ──────────────────────────────────────────────────────
   const [placements, setPlacements] = useState<PlacementRecord[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.placements);
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const list: PlacementRecord[] = JSON.parse(saved);
+      // Migrate legacy place_ IDs to standard UUIDs
+      let migrated = false;
+      const normalized = list.map((p) => {
+        if (!p.id || !p.id.includes('-') || p.id.length !== 36) {
+          migrated = true;
+          return { ...p, id: generateUUID() };
+        }
+        return p;
+      });
+      if (migrated) {
+        localStorage.setItem(STORAGE_KEYS.placements, JSON.stringify(normalized));
+      }
+      return normalized;
     } catch {
       return [];
     }
@@ -307,7 +355,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const addPlacement = useCallback((rec: Omit<PlacementRecord, 'id'>) => {
     const newRec: PlacementRecord = {
       ...rec,
-      id: `place_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+      id: generateUUID()
     };
     setPlacements(prev => [newRec, ...prev]);
     toast.success(`Logged application for ${rec.company}! 🎯`);
@@ -463,17 +511,17 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // ── Stats ────────────────────────────────────────────────────────────────────
   const stats: AppStats = useMemo(() => {
-    let totalProblems = 0;
-    let solvedCount = 0;
     let completedDaysCount = 0;
+    const uniqueSolvedIds = new Set<string>();
 
     PLAN_DATA.forEach((w) => {
       w.days.forEach((d) => {
         let allSolved = d.problems.length > 0;
         d.problems.forEach((p) => {
-          totalProblems++;
           if (progress[p.id]) {
-            solvedCount++;
+            if (!p.isReview) {
+              uniqueSolvedIds.add(p.id);
+            }
           } else {
             allSolved = false;
           }
@@ -481,6 +529,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (allSolved) completedDaysCount++;
       });
     });
+
+    const totalProblems = CURRICULUM.totalProblems;
+    const solvedCount = uniqueSolvedIds.size;
 
     const now = new Date();
 
@@ -524,16 +575,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Explainable Readiness Formula: Coverage (40%) + Consistency/Streak (25%) + Pace (25%) + Breadth (10%)
     const coverageScore = Math.min(40, Math.round((solvedCount / (totalProblems || 1)) * 40));
     const streakScore = Math.min(25, Math.round(streak * 1.6));
-    const paceScore = Math.max(0, Math.min(25, 25 - missedDaysCount * 3));
-    const breadthScore = currentDay > 0
+    const paceScore = solvedCount === 0 ? 0 : Math.max(0, Math.min(25, 25 - missedDaysCount * 3));
+    const breadthScore = (solvedCount > 0 && currentDay > 0)
       ? Math.min(10, Math.round((completedDaysCount / Math.max(1, currentDay)) * 10))
-      : 5;
+      : 0;
 
     const rawOdds = coverageScore + streakScore + paceScore + breadthScore;
-    const oddsPercentage = Math.min(95, Math.max(10, rawOdds));
+    const oddsPercentage = solvedCount === 0 ? 0 : Math.min(95, Math.max(10, rawOdds));
 
     let actionableAdvice = 'Pace is rock solid. Keep tackling today\'s mission to protect your streak.';
-    if (missedDaysCount >= 3) {
+    if (solvedCount === 0) {
+      actionableAdvice = 'Start your journey by solving Day 1\'s mission to establish your baseline readiness index.';
+    } else if (missedDaysCount >= 3) {
       actionableAdvice = `You have ${missedDaysCount} missed practice days dragging your pace score (-${missedDaysCount * 3} pts). Clear backlogged questions to regain momentum.`;
     } else if (streak < 3) {
       actionableAdvice = 'Your streak is just starting. A 5-day consecutive solve streak will add +8 pts to your readiness score.';

@@ -11,11 +11,11 @@ interface BootLine {
 }
 
 const BOOT_LINES: BootLine[] = [
-  { text: 'GRINDOS BIOS v2.4 — 140-DAY PLACEMENT OS', type: 'dim' },
+  { text: 'GRINDOS BIOS v2.4 — 178-DAY PLACEMENT OS', type: 'dim' },
   { text: '', type: '' },
   { text: 'CPU : CONSISTENCY ENGINE @ 100% ............ [OK]', type: 'ok' },
   { text: 'MEM : 640K RETENTION ....................... [OK]', type: 'ok' },
-  { text: 'DSK : 280+ PROBLEMS CURATED (TOP 150) ....... [OK]', type: 'ok' },
+  { text: 'DSK : 332 PROBLEMS CURATED (TOP 150) ....... [OK]', type: 'ok' },
   { text: 'SR  : LEITNER SPACED REPETITION (D3/7/21) .. [ARMED]', type: 'warn' },
   { text: 'NET : COHORT SYNC (IIT-B/42 NODES) ......... [ONLINE]', type: 'ok' },
   { text: '', type: '' },
