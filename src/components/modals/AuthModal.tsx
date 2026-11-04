@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useProgress } from '../../context/ProgressContext';
-import { getActiveSupabaseCredentials, initializeSupabaseClient } from '../../config/supabaseClient';
-import { X, Mail, Lock, User, LogIn, UserPlus, Cloud, Shield, Database, RefreshCw } from 'lucide-react';
+import { X, Mail, Lock, User, LogIn, UserPlus, Cloud, Shield, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface AuthModalProps {
@@ -9,10 +8,10 @@ interface AuthModalProps {
   onClose: () => void;
 }
 
-type AuthTab = 'login' | 'signup' | 'db';
+type AuthTab = 'login' | 'signup';
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { login, signup, authUser, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, signInWithMagicLink, signInWithOAuth } = useProgress();
+  const { login, signup, authUser, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, signInWithMagicLink } = useProgress();
   const [tab, setTab] = useState<AuthTab>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,39 +20,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Custom Supabase database credentials
-  const currentCreds = getActiveSupabaseCredentials();
-  const [dbUrl, setDbUrl] = useState(currentCreds.url);
-  const [dbKey, setDbKey] = useState(currentCreds.key);
-
   if (!isOpen) return null;
-
-  const handleMagicLink = async () => {
-    if (!email.trim()) {
-      setError('Enter your email above to receive a magic link.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    const res = await signInWithMagicLink(email.trim());
-    setLoading(false);
-    if (res.success) {
-      setSuccess('✨ Magic link sent to your inbox! Check your email to sign in.');
-    } else {
-      setError(res.error || 'Failed to send magic link.');
-    }
-  };
-
-  const handleGoogleOAuth = async () => {
-    setLoading(true);
-    setError(null);
-    const res = await signInWithOAuth('google');
-    setLoading(false);
-    if (res.error) {
-      setError(res.error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,24 +30,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
     try {
       if (tab === 'login') {
-        const res = await login(email, password);
+        const res = await login(email.trim(), password);
         if (!res.success) {
-          setError(res.error || 'Login failed. Check your credentials.');
+          setError(res.error || 'Login failed. Check your email & password.');
         } else {
-          setSuccess('Signed in! Your cloud data has been loaded. ☁️');
+          setSuccess('Signed in! Your progress is now synced to the cloud. ☁️');
+          toast.success('Welcome back!');
           setTimeout(onClose, 1200);
         }
-      } else if (tab === 'signup') {
+      } else {
         if (!name.trim()) {
           setError('Display name is required.');
           setLoading(false);
           return;
         }
-        const res = await signup(email, password, name.trim());
+        const res = await signup(email.trim(), password, name.trim());
         if (!res.success) {
-          setError(res.error || 'Sign up failed. Try a different email.');
+          setError(res.error || 'Sign up failed. Please try again.');
         } else {
-          setSuccess('Account created! Your local progress has been saved to the cloud. 🚀');
+          setSuccess('Account created! Your local solves have been synced to the cloud. 🚀');
+          toast.success('Account created successfully!');
           setTimeout(onClose, 1500);
         }
       }
@@ -89,19 +58,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleSaveDb = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!dbUrl.trim() || !dbKey.trim()) {
-      setError('Both Supabase URL and Anon Key are required.');
+  const handleMagicLink = async () => {
+    if (!email.trim()) {
+      setError('Enter your email address above to receive a login link.');
       return;
     }
-    const client = initializeSupabaseClient(dbUrl.trim(), dbKey.trim());
-    if (client) {
-      setSuccess('Supabase database linked successfully! ⚡');
-      toast.success('Database configured!');
-      setTimeout(() => setTab('login'), 1000);
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    const res = await signInWithMagicLink(email.trim());
+    setLoading(false);
+    if (res.success) {
+      setSuccess('✨ Magic link sent! Check your email inbox to sign in instantly.');
+      toast.success('Check your email inbox!');
     } else {
-      setError('Failed to initialize Supabase client with provided credentials.');
+      setError(res.error || 'Failed to send magic link.');
     }
   };
 
@@ -110,14 +81,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const ok = await triggerCloudSync();
     setLoading(false);
     if (ok) {
-      toast.success('All progress pushed to cloud! ☁️');
+      toast.success('Progress pushed to cloud! ☁️');
     } else {
-      toast.error('Sync failed. Check database connection.');
+      toast.error('Sync failed. Check your network connection.');
     }
   };
 
   const handleLogout = async () => {
     await logout();
+    toast.success('Signed out.');
     onClose();
   };
 
@@ -142,7 +114,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         background: 'var(--bg-card)',
         border: '1px solid var(--border-default)',
         borderRadius: 'var(--radius-xl)',
-        width: '100%', maxWidth: 440,
+        width: '100%', maxWidth: 400,
         boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
         overflow: 'hidden',
       }}>
@@ -156,7 +128,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <Cloud size={18} style={{ color: 'var(--text-accent)' }} />
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-                {authUser ? 'Your Account & Cloud' : 'Account & Cloud Sync'}
+                {authUser ? 'Your Account' : 'Account & Sync'}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
                 {authUser ? syncLabel : 'Save progress across all devices'}
@@ -236,9 +208,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
           ) : (
-            /* Sign-in / Sign-up / DB form */
+            /* Sign-in / Sign-up form (Clean consumer UI) */
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {/* Tab switcher */}
+              {/* Tab switcher: Sign In vs Register only */}
               <div style={{
                 display: 'flex', gap: 2,
                 background: 'var(--bg-elevated)',
@@ -271,214 +243,117 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     transition: 'all var(--transition-fast)',
                   }}
                 >
-                  ✨ Register
-                </button>
-                <button
-                  onClick={() => { setTab('db'); setError(null); setSuccess(null); }}
-                  style={{
-                    flex: 1, padding: '7px 8px',
-                    borderRadius: 'var(--radius-xs)',
-                    border: 'none', cursor: 'pointer',
-                    fontSize: 12, fontWeight: 600,
-                    background: tab === 'db' ? 'var(--bg-card)' : 'transparent',
-                    color: tab === 'db' ? 'var(--text-primary)' : 'var(--text-muted)',
-                    transition: 'all var(--transition-fast)',
-                  }}
-                >
-                  ⚡ Database
+                  ✨ Create Account
                 </button>
               </div>
 
-              {tab === 'db' ? (
-                /* Database configuration tab */
-                <form onSubmit={handleSaveDb} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    Connect your own Supabase project or customize endpoints for live cross-device sync.
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
-                      Supabase Project URL
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://xyzcompany.supabase.co"
-                      value={dbUrl}
-                      onChange={e => setDbUrl(e.target.value)}
-                      className="input"
-                      style={{ fontSize: 12, width: '100%', fontFamily: 'var(--font-mono)' }}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
-                      Supabase Anon Public API Key
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="eyJhbGciOi..."
-                      value={dbKey}
-                      onChange={e => setDbKey(e.target.value)}
-                      className="input"
-                      style={{ fontSize: 12, width: '100%', fontFamily: 'var(--font-mono)' }}
-                      required
-                    />
-                  </div>
-
-                  {error && (
-                    <div style={{
-                      padding: '8px 12px',
-                      background: 'var(--color-danger-bg)',
-                      border: '1px solid var(--color-danger-border)',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: 12, color: 'var(--color-danger-text)',
-                    }}>
-                      {error}
-                    </div>
-                  )}
-
-                  {success && (
-                    <div style={{
-                      padding: '8px 12px',
-                      background: 'var(--color-success-bg)',
-                      border: '1px solid var(--color-success-border)',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: 12, color: 'var(--color-success-text)',
-                    }}>
-                      {success}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    style={{ padding: '9px 16px', fontSize: 13, marginTop: 4 }}
-                  >
-                    <Database size={13} /> Link Database
-                  </button>
-                </form>
-              ) : (
-                /* Sign in or Sign up form */
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {tab === 'signup' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <User size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                      <input
-                        type="text"
-                        placeholder="Display Name"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        className="input"
-                        style={{ fontSize: 13, flex: 1 }}
-                        autoComplete="name"
-                      />
-                    </div>
-                  )}
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {tab === 'signup' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Mail size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                    <User size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                     <input
-                      type="email"
-                      placeholder="Email address"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
+                      type="text"
+                      placeholder="Display Name (or Callsign)"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
                       className="input"
                       style={{ fontSize: 13, flex: 1 }}
-                      autoComplete="email"
+                      autoComplete="name"
                       required
                     />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      className="input"
-                      style={{ fontSize: 13, flex: 1 }}
-                      autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
-                      required
-                      minLength={6}
-                    />
-                  </div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Mail size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="input"
+                    style={{ fontSize: 13, flex: 1 }}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <input
+                    type="password"
+                    placeholder="Password (minimum 6 characters)"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="input"
+                    style={{ fontSize: 13, flex: 1 }}
+                    autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+                    required
+                    minLength={6}
+                  />
+                </div>
 
-                  {error && (
-                    <div style={{
-                      padding: '8px 12px',
-                      background: 'var(--color-danger-bg)',
-                      border: '1px solid var(--color-danger-border)',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: 12, color: 'var(--color-danger-text)',
-                    }}>
-                      {error}
-                    </div>
+                {error && (
+                  <div style={{
+                    padding: '8px 12px',
+                    background: 'var(--color-danger-bg)',
+                    border: '1px solid var(--color-danger-border)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: 12, color: 'var(--color-danger-text)',
+                  }}>
+                    {error}
+                  </div>
+                )}
+
+                {success && (
+                  <div style={{
+                    padding: '8px 12px',
+                    background: 'var(--color-success-bg)',
+                    border: '1px solid var(--color-success-border)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: 12, color: 'var(--color-success-text)',
+                  }}>
+                    {success}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary"
+                  style={{ padding: '10px 16px', fontSize: 13, marginTop: 4 }}
+                >
+                  {loading ? (
+                    '…'
+                  ) : tab === 'login' ? (
+                    <><LogIn size={14} /> Sign In</>
+                  ) : (
+                    <><UserPlus size={14} /> Create Free Account</>
                   )}
+                </button>
 
-                  {success && (
-                    <div style={{
-                      padding: '8px 12px',
-                      background: 'var(--color-success-bg)',
-                      border: '1px solid var(--color-success-border)',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: 12, color: 'var(--color-success-text)',
-                    }}>
-                      {success}
-                    </div>
-                  )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0' }}>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>or passwordless</span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                </div>
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn btn-primary"
-                    style={{ padding: '10px 16px', fontSize: 13, marginTop: 4 }}
-                  >
-                    {loading ? (
-                      '…'
-                    ) : tab === 'login' ? (
-                      <><LogIn size={14} /> Sign In with Password</>
-                    ) : (
-                      <><UserPlus size={14} /> Create Account</>
-                    )}
-                  </button>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
-                    <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>or</span>
-                    <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      type="button"
-                      onClick={handleMagicLink}
-                      disabled={loading}
-                      className="btn btn-default"
-                      style={{ flex: 1, padding: '8px 10px', fontSize: 11 }}
-                      title="Send a login link to your email without passwords"
-                    >
-                      <Mail size={12} /> Magic Link
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleGoogleOAuth}
-                      disabled={loading}
-                      className="btn btn-default"
-                      style={{ flex: 1, padding: '8px 10px', fontSize: 11 }}
-                      title="Sign in with Google OAuth"
-                    >
-                      <span>Google</span>
-                    </button>
-                  </div>
-                </form>
-              )}
+                <button
+                  type="button"
+                  onClick={handleMagicLink}
+                  disabled={loading}
+                  className="btn btn-default"
+                  style={{ width: '100%', padding: '8px 12px', fontSize: 12 }}
+                  title="Send a login link to your email without needing a password"
+                >
+                  <Mail size={12} /> Send Magic Sign-In Link
+                </button>
+              </form>
 
               <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
                 {tab === 'login'
-                  ? 'No account yet? Click Register above.'
-                  : tab === 'signup'
-                  ? 'Already have an account? Click Sign In above.'
-                  : 'Database credentials are saved securely in your browser session.'}
+                  ? 'New grinder? Switch to Create Account above.'
+                  : 'Already have an account? Switch to Sign In above.'}
                 <br />
-                Guest mode works offline — your data persists in local cache until you sign in.
+                Guest mode works offline — your data stays safe in local cache until you sign in.
               </div>
             </div>
           )}
