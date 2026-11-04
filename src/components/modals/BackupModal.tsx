@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Upload, Copy, Check } from 'lucide-react';
+import { Download, Upload, Copy, Check, Cloud, RefreshCw } from 'lucide-react';
 import { useProgress } from '../../context/ProgressContext';
 import { ModalWrapper } from './ModalWrapper';
 import toast from 'react-hot-toast';
@@ -11,9 +11,21 @@ interface BackupModalProps {
 }
 
 export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onTriggerImportFile }) => {
-  const { exportJSON, exportJSONString, importJSON } = useProgress();
+  const { exportJSON, exportJSONString, importJSON, authUser, cloudSyncStatus, lastCloudSync, triggerCloudSync } = useProgress();
   const [pasteString, setPasteString] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    const ok = await triggerCloudSync();
+    setIsSyncing(false);
+    if (ok) {
+      toast.success("Progress pushed to cloud! ☁️");
+    } else {
+      toast.error("Cloud sync failed. Check database connection.");
+    }
+  };
 
   const handleCopyJSON = () => {
     const jsonStr = exportJSONString();
@@ -45,6 +57,38 @@ export const BackupModal: React.FC<BackupModalProps> = ({ isOpen, onClose, onTri
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
             Your data is stored locally. Export or import JSON files to sync across devices.
           </p>
+        </div>
+
+        {/* Cloud Sync Status Card */}
+        <div style={{
+          padding: '12px 14px', background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Cloud size={16} style={{ color: authUser ? 'var(--color-success-text)' : 'var(--text-muted)' }} />
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                {authUser ? `Cloud Connected: ${authUser.displayName}` : 'Local Offline Mode'}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                {authUser
+                  ? `Status: ${cloudSyncStatus.toUpperCase()} ${lastCloudSync ? `· Last: ${lastCloudSync.toLocaleTimeString()}` : ''}`
+                  : 'Progress saved in browser storage only'}
+              </div>
+            </div>
+          </div>
+          {authUser && (
+            <button
+              onClick={handleManualSync}
+              disabled={isSyncing}
+              className="btn btn-default"
+              style={{ fontSize: 11, padding: '4px 10px' }}
+            >
+              <RefreshCw size={11} className={isSyncing ? 'animate-spin' : ''} />
+              {isSyncing ? 'Pushing...' : 'Push to Cloud'}
+            </button>
+          )}
         </div>
 
         {/* Actions grid */}

@@ -9,7 +9,7 @@ interface MissionsWindowProps {
 }
 
 export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
-  const { progress, toggleProblem, stats } = useProgress();
+  const { progress, toggleProblem, stats, catchUpQueue } = useProgress();
 
   // Find all days flatly for quick lookup
   const allDays = React.useMemo(() => {
@@ -79,6 +79,31 @@ export const MissionsWindow: React.FC<MissionsWindowProps> = ({ onLog }) => {
 
   return (
     <div className="wbody" style={{ width: 500, maxWidth: '90vw' }}>
+      {/* Backlog Alert if Previous Days Incomplete */}
+      {catchUpQueue && catchUpQueue.length > 0 && (
+        <div style={{
+          border: '1px solid var(--amb)',
+          background: 'rgba(255, 179, 0, 0.08)',
+          padding: '6px 10px',
+          marginBottom: 10,
+          fontSize: 11,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span style={{ color: 'var(--amb)' }}>
+            ⚠ BACKLOG: {catchUpQueue.length} missed day{catchUpQueue.length > 1 ? 's' : ''} require attention
+          </span>
+          <button
+            className="k small"
+            style={{ fontSize: 10, padding: '2px 6px' }}
+            onClick={() => setSelectedDay(catchUpQueue[0].day)}
+          >
+            JUMP TO D{catchUpQueue[0].day}
+          </button>
+        </div>
+      )}
+
       {/* Day Navigation Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <div>

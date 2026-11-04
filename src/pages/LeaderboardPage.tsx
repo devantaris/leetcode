@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
-import { RefreshCw, Users, Globe, Lock, Copy, Check, Eye, EyeOff } from 'lucide-react';
+import { AuthModal } from '../components/modals/AuthModal';
+import { RefreshCw, Users, Globe, Lock, Copy, Check, Eye, EyeOff, LogIn, Cloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const LeaderboardPage: React.FC = () => {
-  const { stats, userProfile, activeCohort, joinCohort, leaveCohort } = useProgress();
+  const { stats, userProfile, activeCohort, joinCohort, leaveCohort, authUser } = useProgress();
   const [boardType, setBoardType] = useState<'global' | 'cohort'>('global');
   const [cohortInput, setCohortInput] = useState('');
   const [copied, setCopied] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const {
     entries,
@@ -215,27 +217,34 @@ export const LeaderboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Peers */}
-              {[
-                { name: 'Rohan Sharma', tagline: 'IIT Roorkee', solved: Math.max(1, stats.solvedCount - 3), streak: 8, ready: 68 },
-                { name: 'Priya V.', tagline: 'Target: Amazon', solved: Math.max(0, stats.solvedCount - 7), streak: 5, ready: 54 },
-                { name: 'Ananya Iyer', tagline: 'BITS Pilani', solved: Math.max(0, stats.solvedCount - 12), streak: 4, ready: 45 }
-              ].map((peer, idx) => (
-                <div key={peer.name} className="data-row">
+              {/* Real Cohort Peers */}
+              {isEnabled && entries.filter(e => e.user_id !== myEntry?.user_id).map((peer, idx) => (
+                <div key={peer.id || peer.user_id} className="data-row">
                   <span style={{ width: 36, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
                     {renderRankBadge(idx + 2)}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{peer.name}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{peer.tagline}</span>
+                    <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
+                      {peer.is_anonymous ? 'Anonymous Grinder 🎭' : peer.display_name}
+                    </span>
+                    {peer.tagline && !peer.is_anonymous && (
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{peer.tagline}</span>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexShrink: 0 }}>
-                    <span style={{ color: 'var(--text-primary)' }}>{peer.solved} solved</span>
+                    <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>{peer.solved_count} solved</span>
                     <span style={{ color: '#f59e0b' }}>🔥 {peer.streak}d</span>
-                    <span style={{ color: '#818cf8' }}>{peer.ready}%</span>
+                    <span style={{ color: '#818cf8' }}>{peer.readiness_pct}%</span>
                   </div>
                 </div>
               ))}
+
+              {(!isEnabled || entries.filter(e => e.user_id !== myEntry?.user_id).length === 0) && (
+                <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.6 }}>
+                  No other grinders have joined this cohort yet.<br />
+                  <span style={{ color: 'var(--text-secondary)' }}>Share your code <strong>{activeCohort.code}</strong> with peers to compare live progress!</span>
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -343,6 +352,39 @@ export const LeaderboardPage: React.FC = () => {
           )}
         </>
       )}
+
+      {/* Auth Banner if Guest */}
+      {!authUser && (
+        <div style={{
+          padding: '16px 20px',
+          background: 'rgba(99, 102, 241, 0.08)',
+          border: '1px solid rgba(99, 102, 241, 0.25)',
+          borderRadius: 'var(--radius-lg)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Cloud size={20} style={{ color: '#818cf8', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                Sync across devices & claim your rank
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                Sign in to save your solves to the cloud and keep your rank when switching browsers.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="btn btn-primary"
+            style={{ fontSize: 12, padding: '6px 14px' }}
+          >
+            <LogIn size={13} /> Sign In / Register
+          </button>
+        </div>
+      )}
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 };

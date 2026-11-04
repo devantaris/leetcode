@@ -17,24 +17,6 @@ interface Peer {
   isUser?: boolean;
 }
 
-const DEFAULT_GLOBAL_PEERS: Peer[] = [
-  { handle: 'karan_algo', xp: 3420, streak: 45, solved: 190 },
-  { handle: 'code_ninja_x', xp: 3100, streak: 38, solved: 172 },
-  { handle: 'dev_varma', xp: 2890, streak: 31, solved: 160 },
-  { handle: 'alok_verma', xp: 2410, streak: 22, solved: 130 },
-  { handle: 'neha_singh', xp: 2020, streak: 14, solved: 110 },
-  { handle: 'vikram_r', xp: 1780, streak: 9, solved: 95 },
-];
-
-const COHORT_PEERS: Peer[] = [
-  { handle: 'sneha_k', xp: 2680, streak: 24, solved: 142 },
-  { handle: 'arjun_cs', xp: 2510, streak: 19, solved: 135 },
-  { handle: 'rohan_m', xp: 2100, streak: 15, solved: 115 },
-  { handle: 'ishaan_v', xp: 1940, streak: 12, solved: 105 },
-  { handle: 'priya_d', xp: 1820, streak: 16, solved: 98 },
-  { handle: 'tanvi_99', xp: 1650, streak: 10, solved: 88 },
-];
-
 export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => {
   const { userProfile, activeCohort, joinCohort, stats, streak, triggerCloudSync } = useProgress();
   const [tab, setTab] = useState<'cohort' | 'global'>('cohort');
@@ -43,8 +25,8 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [liveGlobalPeers, setLiveGlobalPeers] = useState<Peer[]>([]);
 
-  const cohortName = activeCohort?.name || 'IIT-B BATCH 2027';
-  const cohortCode = activeCohort?.code || 'GRND27';
+  const cohortName = activeCohort?.name || 'PRIVATE COHORT';
+  const cohortCode = activeCohort?.code || 'GRND01';
   const creds = getActiveSupabaseCredentials();
 
   // Fetch live global leaderboard from Supabase
@@ -62,10 +44,10 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
         setLiveGlobalPeers(mapped);
         onLog(`cohort: live leaderboard synced (${rows.length} peer nodes)`, 'ok');
       } else {
-        setLiveGlobalPeers(DEFAULT_GLOBAL_PEERS);
+        setLiveGlobalPeers([]);
       }
     } catch {
-      setLiveGlobalPeers(DEFAULT_GLOBAL_PEERS);
+      setLiveGlobalPeers([]);
     } finally {
       setIsRefreshing(false);
     }
@@ -76,8 +58,8 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
   }, [loadLiveLeaderboard]);
 
   const currentPeers = tab === 'cohort'
-    ? COHORT_PEERS
-    : (liveGlobalPeers.length > 0 ? liveGlobalPeers : DEFAULT_GLOBAL_PEERS);
+    ? []
+    : liveGlobalPeers;
 
   // Insert current user and sort descending by XP
   const userHandle = userProfile.name ? userProfile.name.toLowerCase().replace(/\s+/g, '_') : 'operator';
@@ -213,7 +195,7 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
         <div>
           STATUS:{' '}
           <span style={{ color: creds.source !== 'none' ? 'var(--fg)' : 'var(--amb)' }}>
-            {creds.source !== 'none' ? '● LIVE DATABASE CONNECTED' : '○ LOCAL PEER SIMULATION'}
+            {creds.source !== 'none' ? '● LIVE DATABASE CONNECTED' : '○ LOCAL CACHE / DISCONNECTED'}
           </span>
         </div>
         <div>NODE: <span style={{ color: 'var(--fg)' }}>{cohortName} [{cohortCode}]</span></div>

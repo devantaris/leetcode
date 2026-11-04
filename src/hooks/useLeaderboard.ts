@@ -5,12 +5,15 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isLeaderboardEnabled } from '../config/supabaseClient';
 import type { LeaderboardEntry } from '../config/supabaseClient';
 import { STORAGE_KEYS } from '../config/storageKeys';
+import { AuthService } from '../services/authService';
 
 const SYNC_DEBOUNCE_MS = 5 * 60 * 1000; // sync at most every 5 minutes
 const TOP_N = 50;
 
 // ─── Anonymous User ID ────────────────────────────────────────────────────────
 function getOrCreateUserId(): string {
+  const authUser = AuthService.getUser();
+  if (authUser?.id) return authUser.id;
   const existing = localStorage.getItem(STORAGE_KEYS.leaderboardUserId);
   if (existing) return existing;
   const newId = crypto.randomUUID();
@@ -62,6 +65,14 @@ export function useLeaderboard(): UseLeaderboardReturn {
 
   const lastSyncTimestampRef = useRef<number>(0);
   const userId = useRef<string>(getOrCreateUserId());
+
+  // Keep userId aligned with current auth user
+  useEffect(() => {
+    const unsub = AuthService.subscribe((u) => {
+      userId.current = u?.id || getOrCreateUserId();
+    });
+    return unsub;
+  }, []);
 
   // ── Fetch top N entries ────────────────────────────────────────────────────
   const fetchEntries = useCallback(async () => {
