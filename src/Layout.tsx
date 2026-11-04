@@ -7,7 +7,7 @@ import { useProgress } from './context/ProgressContext';
 import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
 import { CURRICULUM } from './data/curriculumStats';
-import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search } from 'lucide-react';
+import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search, Volume2, VolumeX } from 'lucide-react';
 
 type Theme = 'dark' | 'light';
 type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | null;
@@ -18,7 +18,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
-  const { importJSON, isOnboarded, userProfile, stats, exportJSON } = useProgress();
+  const { importJSON, isOnboarded, userProfile, stats, exportJSON, soundEnabled, toggleSound } = useProgress();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -213,6 +213,19 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
           >
             Portal
           </Link>
+
+          {/* Sound toggle */}
+          <button
+            onClick={toggleSound}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-secondary)', padding: 6, display: 'flex',
+              borderRadius: 'var(--radius-sm)'
+            }}
+            title={soundEnabled ? 'Mute sound effects' : 'Enable tactile audio effects'}
+          >
+            {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} style={{ opacity: 0.5 }} />}
+          </button>
 
           {/* Theme toggle */}
           <button
