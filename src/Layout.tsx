@@ -4,13 +4,14 @@ import { Modals } from './components/Modals';
 import { CommandPalette } from './components/CommandPalette';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { useProgress } from './context/ProgressContext';
+import { AuthModal } from './components/modals/AuthModal';
 import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
 import { CURRICULUM } from './data/curriculumStats';
-import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search, Volume2, VolumeX, Compass, BookOpen, BarChart2, Award } from 'lucide-react';
+import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search, Volume2, VolumeX, Compass, BookOpen, BarChart2, Award, Cloud, LogIn } from 'lucide-react';
 
 type Theme = 'dark' | 'light';
-type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | null;
+type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'auth' | null;
 
 interface LayoutProps {
   onSwitchToOS?: () => void;
@@ -18,7 +19,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
-  const { importJSON, isOnboarded, userProfile, stats, exportJSON, soundEnabled, toggleSound } = useProgress();
+  const { importJSON, isOnboarded, userProfile, stats, exportJSON, soundEnabled, toggleSound, authUser, cloudSyncStatus } = useProgress();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -182,6 +183,53 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
             </div>
           )}
 
+          {/* Auth / Cloud Sync button */}
+          {authUser ? (
+            <button
+              onClick={() => openModal('auth')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: cloudSyncStatus === 'synced'
+                  ? 'rgba(16, 185, 129, 0.1)'
+                  : cloudSyncStatus === 'syncing'
+                  ? 'rgba(99, 102, 241, 0.1)'
+                  : 'var(--bg-elevated)',
+                border: `1px solid ${cloudSyncStatus === 'synced'
+                  ? 'var(--color-success-border)'
+                  : cloudSyncStatus === 'syncing'
+                  ? 'rgba(99,102,241,0.4)'
+                  : 'var(--border-default)'}`,
+                borderRadius: 'var(--radius-sm)',
+                padding: '4px 8px', cursor: 'pointer',
+                fontSize: 11, color: cloudSyncStatus === 'synced'
+                  ? 'var(--color-success-text)'
+                  : 'var(--text-secondary)',
+                transition: 'all var(--transition-fast)',
+              }}
+              title={`${authUser.displayName} · ${cloudSyncStatus}`}
+            >
+              <Cloud size={12} />
+              <span className="hidden sm:inline">{authUser.displayName.split(' ')[0]}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => openModal('auth')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-sm)',
+                padding: '4px 8px', cursor: 'pointer',
+                fontSize: 11, color: 'var(--text-secondary)',
+                transition: 'all var(--transition-fast)',
+              }}
+              title="Sign in to sync progress across devices"
+            >
+              <LogIn size={12} />
+              <span className="hidden sm:inline">Sign In</span>
+            </button>
+          )}
+
           {/* Switch to Retro OS */}
           {onSwitchToOS && (
             <button
@@ -272,6 +320,14 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 borderRadius: 'var(--radius-md)', padding: 4, boxShadow: 'var(--shadow-lg)',
                 zIndex: 60, display: 'flex', flexDirection: 'column', gap: 2
               }}>
+                <button
+                  onClick={() => openModal('auth')}
+                  className="btn btn-ghost"
+                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px', color: authUser ? 'var(--color-success-text)' : 'var(--color-info-text)' }}
+                >
+                  {authUser ? <Cloud size={13} /> : <LogIn size={13} />}
+                  {authUser ? `Cloud: ${authUser.displayName.split(' ')[0]}` : 'Sign In / Register'}
+                </button>
                 <button
                   onClick={() => openModal('profile')}
                   className="btn btn-ghost"
@@ -374,6 +430,16 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span><strong style={{ color: 'var(--color-success-text)' }}>{stats.solvedCount}</strong> / {stats.totalProblems} solved</span>
           {stats.streak > 0 && <span style={{ color: 'var(--color-warning-text)', fontWeight: 700 }}>· 🔥 {stats.streak}d streak</span>}
+          {authUser && (
+            <span style={{
+              color: cloudSyncStatus === 'synced' ? 'var(--color-success-text)' :
+                     cloudSyncStatus === 'syncing' ? '#818cf8' : 'var(--text-muted)',
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              · <Cloud size={10} />
+              {cloudSyncStatus === 'synced' ? 'Synced' : cloudSyncStatus === 'syncing' ? 'Syncing…' : 'Offline'}
+            </span>
+          )}
         </div>
       </footer>
 
@@ -382,6 +448,9 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
       {/* Modals */}
       <Modals activeModal={activeModal} onClose={() => setActiveModal(null)} onTriggerImportFile={handleTriggerImport} />
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={activeModal === 'auth'} onClose={() => setActiveModal(null)} />
 
       {/* Command Palette */}
       <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onOpenModal={openModal} />

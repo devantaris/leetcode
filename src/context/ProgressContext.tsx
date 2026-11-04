@@ -27,10 +27,14 @@ import {
   DEFAULT_PROFILE, 
   normalizeUserProfile, 
   generateUUID, 
-  problemLookupMap 
+  problemLookupMap,
+  computeCurrentDay,
+  computeCatchUpQueue,
 } from '../utils/progressHelpers';
+import type { CatchUpItem } from '../utils/progressHelpers';
 export type { UserProfile } from '../utils/progressHelpers';
 export { problemLookupMap } from '../utils/progressHelpers';
+export type { CatchUpItem } from '../utils/progressHelpers';
 
 // ─── Solve Log Types ───────────────────────────────────────────────────────────
 export interface DailySolveItem {
@@ -94,6 +98,7 @@ interface ProgressContextType {
   cloudSyncStatus: 'synced' | 'syncing' | 'offline' | 'error';
   lastCloudSync: Date | null;
   triggerCloudSync: () => Promise<boolean>;
+  catchUpQueue: CatchUpItem[];
 }
 
 export const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -486,8 +491,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     const daysSinceStart = Math.max(0, differenceInCalendarDays(now, programStartDate) || 0);
-    const currentDay = Math.min(CURRICULUM.totalDays, daysSinceStart + 1);
-    const currentWeek = Math.min(CURRICULUM.totalWeeks, Math.floor(daysSinceStart / 7) + 1);
+    const currentDay = computeCurrentDay(progress, PLAN_DATA, CURRICULUM.totalDays);
+    // currentWeek derived from which week the active day belongs to
+    const activeWeekObj = PLAN_DATA.find(w => w.days.some(d => d.day === currentDay));
+    const currentWeek = activeWeekObj ? activeWeekObj.week : Math.min(CURRICULUM.totalWeeks, Math.floor(daysSinceStart / 7) + 1);
 
     let missedDaysCount = 0;
     PLAN_DATA.forEach((w) => {
@@ -565,6 +572,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       readinessBreakdown
     };
   }, [progress, streak, userProfile]);
+
+  const catchUpQueue = useMemo(
+    () => computeCatchUpQueue(progress, PLAN_DATA, stats.currentDay),
+    [progress, stats.currentDay]
+  );
 
   // ── Import / Export ──────────────────────────────────────────────────────────
   const exportJSONString = useCallback((): string => {
@@ -826,6 +838,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     cloudSyncStatus,
     lastCloudSync,
     triggerCloudSync,
+    catchUpQueue,
   }), [
     progress, solveHistory, streak, dailySolveLog, stats, userProfile, isOnboarded,
     updateProfile, resumeFromDay, toggleProblem, markDayComplete, isDayComplete,
@@ -833,7 +846,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,
     updatePlacement, deletePlacement, activeCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
     importJSON, resetAll, soundEnabled, toggleSound,
-    authUser, login, signup, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync
+    authUser, login, signup, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue
   ]);
 
   return (

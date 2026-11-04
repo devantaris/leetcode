@@ -1,6 +1,7 @@
 import { format, addDays } from 'date-fns';
 import { APP_CONFIG } from '../config/appConfig';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
+import type { UserProgressMap } from '../types';
 
 export interface UserProfile {
   name: string;
@@ -69,3 +70,73 @@ export const problemLookupMap = (() => {
   });
   return map;
 })();
+
+export interface CatchUpItem {
+  day: number;
+  week: number;
+  topic: string;
+  problems: Array<{ id: string; name: string; difficulty: string; url: string; lcNumber: number }>;
+  solvedCount: number;
+  totalCount: number;
+}
+
+/**
+ * Compute the "active day" — lowest day number where not all problems are solved.
+ * Day is considered complete if every non-review problem is solved.
+ * Always at least 1, capped at totalDays.
+ */
+export function computeCurrentDay(
+  progress: UserProgressMap,
+  planData: Array<{ week: number; days: Array<{ day: number; type: string; problems: Array<{ id: string; isReview?: boolean }> }> }>,
+  totalDays: number
+): number {
+  for (const week of planData) {
+    for (const day of week.days) {
+      if (day.type === 'rest') continue;
+      const required = day.problems.filter(p => !p.isReview);
+      if (required.length === 0) continue;
+      const allSolved = required.every(p => progress[p.id]);
+      if (!allSolved) return day.day;
+    }
+  }
+  return totalDays;
+}
+
+/**
+ * Compute list of days before currentDay that have unsolved problems.
+ * Sorted most recent first (highest day number first).
+ */
+export function computeCatchUpQueue(
+  progress: UserProgressMap,
+  planData: Array<{ week: number; days: Array<{ day: number; type: string; topic: string; problems: Array<{ id: string; name: string; difficulty: string; url: string; lcNumber: number; isReview?: boolean }> }> }>,
+  currentDay: number
+): CatchUpItem[] {
+  const items: CatchUpItem[] = [];
+  for (const week of planData) {
+    for (const day of week.days) {
+      if (day.day >= currentDay) continue;
+      if (day.type === 'rest') continue;
+      const required = day.problems.filter(p => !p.isReview);
+      if (required.length === 0) continue;
+      const solved = required.filter(p => progress[p.id]);
+      if (solved.length < required.length) {
+        items.push({
+          day: day.day,
+          week: week.week,
+          topic: day.topic,
+          problems: required.map(p => ({
+            id: p.id,
+            name: p.name,
+            difficulty: p.difficulty,
+            url: p.url,
+            lcNumber: p.lcNumber,
+          })),
+          solvedCount: solved.length,
+          totalCount: required.length,
+        });
+      }
+    }
+  }
+  // most recent missed day first
+  return items.sort((a, b) => b.day - a.day);
+}

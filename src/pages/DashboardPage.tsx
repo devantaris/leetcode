@@ -6,12 +6,16 @@ import { DailyFocusTimer } from '../components/DailyFocusTimer';
 import { Top150Card } from '../components/Top150Card';
 import { StatsAnalyticsDashboard } from '../components/StatsAnalyticsDashboard';
 import { HeatmapGrid } from '../components/HeatmapGrid';
+import { CatchUpQueueCard } from '../components/CatchUpQueueCard';
 
 export const DashboardPage: React.FC = () => {
   return (
     <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Dynamic Motivation & Streak Alert */}
       <BrutalityBanner />
+
+      {/* Catch-Up Queue — only shown when backlog exists */}
+      <CatchUpQueueCard />
 
       {/* Primary Operations Grid */}
       <div style={{
