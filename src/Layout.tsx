@@ -7,7 +7,7 @@ import { useProgress } from './context/ProgressContext';
 import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
 import { CURRICULUM } from './data/curriculumStats';
-import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal } from 'lucide-react';
+import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search } from 'lucide-react';
 
 type Theme = 'dark' | 'light';
 type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | null;
@@ -130,6 +130,30 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
         {/* Right utility icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Quick Search / Command Palette trigger */}
+          <button
+            onClick={() => setIsCommandPaletteOpen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
+              padding: '4px 8px', borderRadius: 'var(--radius-md)',
+              fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer',
+              transition: 'all var(--transition-fast)'
+            }}
+            title="Search problems and commands (Ctrl+K)"
+          >
+            <Search size={13} style={{ color: 'var(--text-muted)' }} />
+            <span className="hidden sm:inline" style={{ fontSize: 11 }}>Search</span>
+            <kbd style={{
+              fontSize: 9, fontFamily: 'var(--font-mono)',
+              padding: '1px 4px', borderRadius: 3,
+              background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+              color: 'var(--text-muted)'
+            }}>
+              ⌘K
+            </kbd>
+          </button>
+
           {/* Active streak pill */}
           {stats.streak > 0 && (
             <div
@@ -316,7 +340,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
       <Modals activeModal={activeModal} onClose={() => setActiveModal(null)} onTriggerImportFile={handleTriggerImport} />
 
       {/* Command Palette */}
-      <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />
+      <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onOpenModal={openModal} />
 
       {/* Toast notifications */}
       <Toaster
