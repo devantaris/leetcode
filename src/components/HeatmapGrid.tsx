@@ -29,8 +29,9 @@ export const HeatmapGrid: React.FC = () => {
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           {[
             { color: 'var(--color-success)', label: 'Done' },
+            { color: '#818cf8', label: 'Active Day' },
+            { color: 'rgba(239, 68, 68, 0.7)', label: 'Backlog' },
             { color: 'var(--color-warning)', opacity: 0.4, label: 'Review' },
-            { color: 'var(--color-info)', opacity: 0.4, label: 'Contest' },
             { color: 'var(--border-default)', label: 'Pending' },
           ].map(({ color, label }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -75,6 +76,8 @@ export const HeatmapGrid: React.FC = () => {
 
                 {w.days.map((d) => {
                   const complete = isDayComplete(w.week, d.day);
+                  const isActive = d.day === stats.currentDay;
+                  const isBacklog = d.day < stats.currentDay && !complete && d.type !== 'rest';
                   let bg = 'rgba(255, 255, 255, 0.04)';
                   let border = 'var(--border-subtle)';
                   let shadow = 'none';
@@ -83,6 +86,13 @@ export const HeatmapGrid: React.FC = () => {
                     bg = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
                     border = '#10b981';
                     shadow = '0 0 6px rgba(16, 185, 129, 0.35)';
+                  } else if (isActive) {
+                    bg = 'rgba(99, 102, 241, 0.25)';
+                    border = '#818cf8';
+                    shadow = '0 0 8px rgba(99, 102, 241, 0.5)';
+                  } else if (isBacklog) {
+                    bg = 'rgba(239, 68, 68, 0.15)';
+                    border = 'rgba(239, 68, 68, 0.5)';
                   } else if (d.type === 'review') {
                     bg = 'rgba(245, 158, 11, 0.2)';
                     border = 'rgba(245, 158, 11, 0.4)';
@@ -93,10 +103,12 @@ export const HeatmapGrid: React.FC = () => {
                     bg = 'rgba(255, 255, 255, 0.02)';
                   }
 
+                  const statusLabel = complete ? 'Done' : isActive ? 'Active Day' : isBacklog ? 'Backlog / Missed' : 'Pending';
+
                   return (
                     <div
                       key={d.day}
-                      title={`Day ${d.day} (${d.weekday}) — ${d.topic} — ${complete ? 'Done' : 'Pending'}`}
+                      title={`Day ${d.day} (${d.weekday}) — ${d.topic} — ${statusLabel}`}
                       style={{
                         width: '100%', height: 12, borderRadius: 3,
                         background: bg, border: `1px solid ${border}`,

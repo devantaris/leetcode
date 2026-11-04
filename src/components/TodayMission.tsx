@@ -8,7 +8,7 @@ import { COMPANY_LABELS } from '../data/companyMappings';
 import { CURRICULUM } from '../data/curriculumStats';
 
 export const TodayMission: React.FC = () => {
-  const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile } = useProgress();
+  const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile, catchUpQueue } = useProgress();
 
   const SKILL_LABELS: Record<string, string> = {
     project: 'personal project',
@@ -50,6 +50,19 @@ export const TodayMission: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {catchUpQueue && catchUpQueue.length > 0 && (
+              <span
+                style={{
+                  fontSize: 11, fontFamily: 'var(--font-mono)',
+                  color: 'var(--color-warning-text)',
+                  background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)',
+                  padding: '3px 8px', borderRadius: 'var(--radius-full)',
+                }}
+                title={`${catchUpQueue.length} previous days have uncompleted missions`}
+              >
+                ⚠ {catchUpQueue.length}d backlog
+              </span>
+            )}
             {stats.streak > 0 && (
               <span style={{
                 fontSize: 12, fontFamily: 'var(--font-mono)',

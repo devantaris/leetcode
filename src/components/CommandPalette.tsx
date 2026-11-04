@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { Search, X, ArrowRight, Check, Compass, BarChart2, Award, Terminal, ExternalLink } from 'lucide-react';
+import { Search, X, ArrowRight, Check, Compass, BarChart2, Award, Terminal, ExternalLink, Cloud } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Problem } from '../types';
 import { CURRICULUM } from '../data/curriculumStats';
@@ -10,7 +10,7 @@ import { sounds } from '../utils/audio';
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenModal?: (modal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements') => void;
+  onOpenModal?: (modal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'auth') => void;
 }
 
 interface CommandAction {
@@ -78,6 +78,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
   ];
 
   if (onOpenModal) {
+    defaultActions.push({
+      id: 'cmd-auth',
+      title: 'Cloud Authentication & Sync',
+      subtitle: 'Sign in, register, or link Supabase database',
+      icon: <Cloud size={15} style={{ color: '#10b981' }} />,
+      action: () => { onOpenModal('auth'); onClose(); }
+    });
     defaultActions.push({
       id: 'cmd-placements',
       title: 'Placement Pipeline Tracker',
