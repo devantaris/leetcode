@@ -18,8 +18,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const [editTagline, setEditTagline] = useState<string>(userProfile.tagline);
   const [editStartDate, setEditStartDate] = useState<string>(userProfile.startDate);
   const [editTargetDate, setEditTargetDate] = useState<string>(userProfile.targetDate || format(addDays(new Date(), 140), 'yyyy-MM-dd'));
-  const editRestDay = userProfile.restDay || 'sunday';
-  const editSecondarySkill = userProfile.secondarySkill || 'project';
+  const [editRestDay, setEditRestDay] = useState<string>(userProfile.restDay || 'sunday');
+  const [editSecondarySkill, setEditSecondarySkill] = useState<string>(userProfile.secondarySkill || 'project');
 
   const handleSaveProfile = () => {
     if (!editName.trim()) {
@@ -99,6 +99,44 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                 onChange={(e) => setEditTargetDate(e.target.value)}
                 className="input"
               />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                Weekly Rest Day
+              </label>
+              <select
+                value={editRestDay}
+                onChange={(e) => setEditRestDay(e.target.value)}
+                className="input"
+                style={{ cursor: 'pointer' }}
+              >
+                <option value="sunday">Sunday</option>
+                <option value="saturday">Saturday</option>
+                <option value="friday">Friday</option>
+                <option value="monday">Monday</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+                Rest Day Focus
+              </label>
+              <select
+                value={editSecondarySkill}
+                onChange={(e) => setEditSecondarySkill(e.target.value)}
+                className="input"
+                style={{ cursor: 'pointer' }}
+              >
+                <option value="project">Personal Project</option>
+                <option value="research">Research / Thesis</option>
+                <option value="competitive">Competitive Programming</option>
+                <option value="systemdesign">System Design Reading</option>
+                <option value="openSource">Open Source Contribution</option>
+                <option value="other">Rest &amp; Recharge</option>
+              </select>
             </div>
           </div>
         </div>

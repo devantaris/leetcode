@@ -3,6 +3,9 @@ import { ModalWrapper } from './ModalWrapper';
 import { useProgress } from '../../context/ProgressContext';
 import { Briefcase, Plus, Trash2 } from 'lucide-react';
 import type { PlacementStage } from '../../types';
+import confetti from 'canvas-confetti';
+import { sounds } from '../../utils/audio';
+import toast from 'react-hot-toast';
 
 interface PlacementTrackerModalProps {
   isOpen: boolean;
@@ -244,7 +247,17 @@ export const PlacementTrackerModal: React.FC<PlacementTrackerModalProps> = ({ is
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                     <select
                       value={p.stage}
-                      onChange={(e) => updatePlacement(p.id, { stage: e.target.value as PlacementStage })}
+                      onChange={(e) => {
+                        const newStage = e.target.value as PlacementStage;
+                        updatePlacement(p.id, { stage: newStage });
+                        if (newStage === 'Offer Received 🎉') {
+                          sounds.playVictorySound();
+                          confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+                          toast.success(`Congratulations on the offer from ${p.company}! 🎉`, { duration: 5000 });
+                        } else {
+                          sounds.playTickSound();
+                        }
+                      }}
                       style={{
                         background: 'var(--bg-card)', border: '1px solid var(--border-default)',
                         color: 'var(--text-primary)', borderRadius: 'var(--radius-sm)',

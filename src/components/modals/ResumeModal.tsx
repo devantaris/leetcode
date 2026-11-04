@@ -64,7 +64,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
         <div>
           <div className="section-label" style={{ marginBottom: 6 }}>Quick Align Presets</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {[1, 7, 14, 28, 42].map((day) => (
+            {[1, 15, 30, 60, 90, 120, 150].map((day) => (
               <button
                 key={day}
                 onClick={() => setResumeDate(computeStartDateForDay(day))}
