@@ -421,12 +421,24 @@ export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb, o
       } else if (e.ctrlKey && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         toggleSound();
+      } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'w') {
+        if (onSwitchToWeb) {
+          e.preventDefault();
+          sounds.playTickSound();
+          onSwitchToWeb();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'h') {
+        if (onGoToHome) {
+          e.preventDefault();
+          sounds.playTickSound();
+          onGoToHome();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeApp, openApp, toggleSound, windows]);
+  }, [closeApp, openApp, toggleSound, windows, onSwitchToWeb, onGoToHome]);
 
   // Handle Boot Complete
   const handleBootComplete = () => {
