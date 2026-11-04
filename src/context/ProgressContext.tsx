@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
 import type { 
   UserProgressMap, 
   SolveRecordMap, 
@@ -22,49 +23,14 @@ import { AuthService } from '../services/authService';
 import type { AuthUser } from '../services/authService';
 import { CloudSyncService } from '../services/cloudSync';
 import { CURRICULUM } from '../data/curriculumStats';
-
-// ─── User Profile ─────────────────────────────────────────────────────────────
-export interface UserProfile {
-  name: string;
-  tagline: string;
-  startDate: string;
-  targetDate: string;
-  restDay: string;        // 'sunday' | 'saturday' | 'none'
-  secondarySkill: string; // e.g. 'project' | 'research' | 'competitive' etc.
-  dailyQuota?: number;    // 2 | 3 | 4 problems/day
-  targetTier?: string;    // 'tier1' | 'fintech' | 'unicorns'
-}
-
-const DEFAULT_PROFILE: UserProfile = {
-  name: 'User',
-  tagline: APP_CONFIG.defaults.defaultTagline,
-  startDate: format(new Date(), 'yyyy-MM-dd'),
-  targetDate: format(addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'),
-  restDay: 'sunday',
-  secondarySkill: 'project',
-  dailyQuota: 3,
-  targetTier: 'tier1',
-};
-
-export function normalizeUserProfile(raw: any): UserProfile | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const now = new Date();
-  const startDate = (raw.startDate && typeof raw.startDate === 'string') ? raw.startDate : format(now, 'yyyy-MM-dd');
-  const targetDate = (raw.targetDate && typeof raw.targetDate === 'string')
-    ? raw.targetDate
-    : format(addDays(now, APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd');
-
-  return {
-    name: (raw.name && typeof raw.name === 'string') ? raw.name : 'User',
-    tagline: (raw.tagline && typeof raw.tagline === 'string') ? raw.tagline : APP_CONFIG.defaults.defaultTagline,
-    startDate,
-    targetDate,
-    restDay: (raw.restDay === 'saturday' || raw.restDay === 'sunday' || raw.restDay === 'none') ? raw.restDay : 'sunday',
-    secondarySkill: (raw.secondarySkill && typeof raw.secondarySkill === 'string') ? raw.secondarySkill : 'project',
-    dailyQuota: (typeof raw.dailyQuota === 'number' && [2, 3, 4].includes(raw.dailyQuota)) ? raw.dailyQuota : 3,
-    targetTier: (typeof raw.targetTier === 'string') ? raw.targetTier : 'tier1',
-  };
-}
+import { 
+  DEFAULT_PROFILE, 
+  normalizeUserProfile, 
+  generateUUID, 
+  problemLookupMap 
+} from '../utils/progressHelpers';
+export type { UserProfile } from '../utils/progressHelpers';
+export { problemLookupMap } from '../utils/progressHelpers';
 
 // ─── Solve Log Types ───────────────────────────────────────────────────────────
 export interface DailySolveItem {
@@ -130,34 +96,7 @@ interface ProgressContextType {
   triggerCloudSync: () => Promise<boolean>;
 }
 
-const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
-
-// ─── UUID Generator ────────────────────────────────────────────────────────────
-export function generateUUID(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-// ─── Problem Lookup Map ────────────────────────────────────────────────────────
-export const problemLookupMap = (() => {
-  const map = new Map<string, { name: string; lcNumber: number; difficulty: string; url: string; topic: string; isReview?: boolean }>();
-  PLAN_DATA.forEach((w) => {
-    w.days.forEach((d) => {
-      d.problems.forEach((p) => {
-        if (!map.has(p.id)) {
-          map.set(p.id, { name: p.name, lcNumber: p.lcNumber, difficulty: p.difficulty, url: p.url, topic: d.topic, isReview: p.isReview });
-        }
-      });
-    });
-  });
-  return map;
-})();
+export const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
 // ─── Streak + Log Computation ──────────────────────────────────────────────────
 function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { dailySolveLog: DailySolveGroup[]; streak: number } {
@@ -904,8 +843,4 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
-export const useProgress = () => {
-  const ctx = useContext(ProgressContext);
-  if (!ctx) throw new Error("useProgress must be used within ProgressProvider");
-  return ctx;
-};
+export { useProgress } from './useProgress';
