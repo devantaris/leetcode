@@ -60,15 +60,18 @@ export const SearchAndFilter: React.FC = () => {
           }}>
             {['All', 'Easy', 'Medium', 'Hard'].map((diff) => {
               const active = selectedDifficulty === diff;
+              const activeColor = diff === 'Easy' ? '#34d399' : diff === 'Medium' ? '#fbbf24' : diff === 'Hard' ? '#fb7185' : 'var(--text-primary)';
+              const activeBg = diff === 'Easy' ? 'rgba(16, 185, 129, 0.15)' : diff === 'Medium' ? 'rgba(245, 158, 11, 0.15)' : diff === 'Hard' ? 'rgba(244, 63, 94, 0.15)' : 'var(--bg-card)';
               return (
                 <button
                   key={diff}
                   onClick={() => setSelectedDifficulty(diff)}
                   style={{
-                    fontSize: 11, fontWeight: 500, padding: '3px 7px',
+                    fontSize: 11, fontWeight: 600, padding: '4px 10px',
                     borderRadius: 'var(--radius-xs)', border: 'none', cursor: 'pointer',
-                    background: active ? 'var(--bg-card)' : 'transparent',
-                    color: active ? 'var(--text-primary)' : 'var(--text-muted)',
+                    background: active ? activeBg : 'transparent',
+                    color: active ? activeColor : 'var(--text-muted)',
+                    boxShadow: active ? 'var(--shadow-sm)' : 'none',
                     transition: 'all var(--transition-fast)'
                   }}
                 >

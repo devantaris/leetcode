@@ -36,9 +36,9 @@ export const StatsAnalyticsDashboard: React.FC = () => {
   }, [progress]);
 
   const diffChartData = useMemo(() => [
-    { name: 'Easy', solved: easySolved, total: easyTotal, color: 'var(--diff-easy)' },
-    { name: 'Medium', solved: medSolved, total: medTotal, color: 'var(--diff-medium)' },
-    { name: 'Hard', solved: hardSolved, total: hardTotal, color: 'var(--diff-hard)' },
+    { name: 'Easy', solved: easySolved, total: easyTotal, color: '#10b981' },
+    { name: 'Medium', solved: medSolved, total: medTotal, color: '#f59e0b' },
+    { name: 'Hard', solved: hardSolved, total: hardTotal, color: '#f43f5e' },
   ], [easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal]);
 
   const topicChartData = useMemo(() => {

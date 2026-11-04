@@ -97,42 +97,51 @@ export const Top150Card: React.FC = () => {
       {/* Big number & bar */}
       <div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-          <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
+          <span style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
             <AnimatedCounter value={solvedTop150} />
           </span>
           <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>/ {totalTop150}</span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-info-text)', marginLeft: 'auto' }}>
             {pct}%
           </span>
         </div>
 
-        <div className="progress-track">
-          <div className="progress-fill progress-fill-info" style={{ width: `${pct}%` }} />
+        <div className="progress-track" style={{ height: 6 }}>
+          <div className="progress-fill-info" style={{ width: `${pct}%`, height: '100%', borderRadius: 99 }} />
         </div>
       </div>
 
       {/* Difficulty breakdown */}
       <div style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8,
-        paddingTop: 10, borderTop: '1px solid var(--border-subtle)', textAlign: 'center'
+        paddingTop: 12, borderTop: '1px solid var(--border-subtle)', textAlign: 'center'
       }}>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--diff-easy)' }}>
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)',
+          borderRadius: 'var(--radius-md)', padding: '6px 4px'
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#34d399' }}>
             {easySolved}<span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/{easyTotal}</span>
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2 }}>Easy</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2, fontWeight: 600 }}>Easy</div>
         </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--diff-medium)' }}>
+        <div style={{
+          background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)',
+          borderRadius: 'var(--radius-md)', padding: '6px 4px'
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24' }}>
             {medSolved}<span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/{medTotal}</span>
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2 }}>Med</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2, fontWeight: 600 }}>Med</div>
         </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--diff-hard)' }}>
+        <div style={{
+          background: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.25)',
+          borderRadius: 'var(--radius-md)', padding: '6px 4px'
+        }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#fb7185' }}>
             {hardSolved}<span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/{hardTotal}</span>
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2 }}>Hard</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2, fontWeight: 600 }}>Hard</div>
         </div>
       </div>
     </div>

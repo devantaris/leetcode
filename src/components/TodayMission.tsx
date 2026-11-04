@@ -28,53 +28,63 @@ export const TodayMission: React.FC = () => {
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+    <div className="modern-card" style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '24px' }}>
       {/* ── HEADER ── */}
       <div>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: 8, flexWrap: 'wrap', gap: 8
+          marginBottom: 10, flexWrap: 'wrap', gap: 8
         }}>
           <div style={{
-            fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
-            display: 'flex', alignItems: 'center', gap: 6
+            fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'var(--bg-elevated)', padding: '3px 10px',
+            borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)'
           }}>
-            <span>Day {todayDayPlan.day} of {CURRICULUM.totalDays}</span>
+            <span style={{ color: 'var(--text-accent)', fontWeight: 700 }}>Day {todayDayPlan.day}</span>
+            <span>of {CURRICULUM.totalDays}</span>
             <span>·</span>
             <span>Week {currentWeekPlan.week}</span>
             <span>·</span>
-            <span>{todayDayPlan.weekday}</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{todayDayPlan.weekday}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {stats.streak > 0 && (
-              <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--color-warning-text)', fontWeight: 600 }}>
+              <span style={{
+                fontSize: 12, fontFamily: 'var(--font-mono)',
+                color: 'var(--color-warning-text)', fontWeight: 700,
+                background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)',
+                padding: '3px 10px', borderRadius: 'var(--radius-full)',
+                boxShadow: '0 0 12px rgba(245, 158, 11, 0.2)'
+              }}>
                 🔥 {stats.streak} day streak
               </span>
             )}
             {isComplete && (
               <span style={{
-                fontSize: 11, fontWeight: 600, color: 'var(--color-success-text)',
-                padding: '2px 8px', borderRadius: 'var(--radius-xs)',
-                background: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)'
+                fontSize: 11, fontWeight: 700, color: 'var(--color-success-text)',
+                padding: '3px 10px', borderRadius: 'var(--radius-full)',
+                background: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)',
+                boxShadow: '0 0 12px rgba(16, 185, 129, 0.25)'
               }}>
-                Day Complete
+                ✓ Day Complete
               </span>
             )}
           </div>
         </div>
 
         <h1 style={{
-          fontSize: 24, fontWeight: 700, color: 'var(--text-primary)',
-          letterSpacing: '-0.02em', margin: '0 0 6px', lineHeight: 1.2
+          fontSize: 26, fontWeight: 800, color: 'var(--text-primary)',
+          letterSpacing: '-0.02em', margin: '0 0 8px', lineHeight: 1.2
         }}>
           {todayDayPlan.topic}
         </h1>
 
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
           {todayDayPlan.type === 'rest'
             ? `Rest day — dedicated to ${restActivity}. Recharge your mental focus.`
-            : `Completed ${solvedToday} of ${totalToday} problem${totalToday !== 1 ? 's' : ''} today to maintain your daily cadence.`}
+            : `Completed ${solvedToday} of ${totalToday} problem${totalToday !== 1 ? 's' : ''} today to maintain your algorithmic velocity.`}
         </p>
       </div>
 
@@ -82,14 +92,14 @@ export const TodayMission: React.FC = () => {
       {todayDayPlan.type === 'rest' ? (
         <div style={{
           padding: '24px 20px', borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-default)', background: 'var(--bg-card)',
+          border: '1px solid var(--border-default)', background: 'var(--bg-elevated)',
           display: 'flex', alignItems: 'center', gap: 14
         }}>
-          <Coffee size={22} style={{ color: 'var(--text-muted)' }} />
+          <Coffee size={24} style={{ color: 'var(--color-warning-text)' }} />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Scheduled Rest Day</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Scheduled Rest & Recovery</div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-              Spend today on {restActivity}. Deliberate recovery builds long-term endurance.
+              Spend today on {restActivity}. Deliberate recovery builds enduring technical problem-solving stamina.
             </div>
           </div>
         </div>
@@ -97,33 +107,39 @@ export const TodayMission: React.FC = () => {
         <div style={{
           border: '1px solid var(--border-default)',
           borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-card)',
+          background: 'var(--bg-elevated)',
           overflow: 'hidden'
         }}>
           {todayDayPlan.problems.map((p, idx) => {
             const isChecked = !!progress[p.id];
-            const diffColor = p.difficulty === 'Easy'
-              ? 'var(--color-success-text)'
+            const diffClass = p.difficulty === 'Easy'
+              ? 'diff-easy'
               : p.difficulty === 'Hard'
-              ? 'var(--color-danger-text)'
-              : 'var(--color-warning-text)';
+              ? 'diff-hard'
+              : 'diff-medium';
 
             return (
               <div
                 key={p.id}
                 onClick={() => toggleProblem(p.id)}
                 style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 12,
-                  padding: '14px 16px',
+                  display: 'flex', alignItems: 'flex-start', gap: 14,
+                  padding: '14px 18px',
                   borderBottom: idx < todayDayPlan.problems.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                  background: isChecked ? 'var(--color-success-bg)' : 'transparent',
-                  cursor: 'pointer', transition: 'background var(--transition-fast)'
+                  background: isChecked ? 'rgba(16, 185, 129, 0.06)' : 'transparent',
+                  cursor: 'pointer', transition: 'all var(--transition-fast)'
+                }}
+                onMouseOver={(e) => {
+                  if (!isChecked) e.currentTarget.style.background = 'var(--bg-hover)';
+                }}
+                onMouseOut={(e) => {
+                  if (!isChecked) e.currentTarget.style.background = 'transparent';
                 }}
               >
                 {/* Checkbox */}
                 <div style={{ marginTop: 2 }}>
                   <div className={`checkbox-minimal ${isChecked ? 'checked' : ''}`}>
-                    {isChecked && <Check size={11} />}
+                    {isChecked && <Check size={12} strokeWidth={3} />}
                   </div>
                 </div>
 
@@ -140,11 +156,12 @@ export const TodayMission: React.FC = () => {
                           fontSize: 14, fontWeight: 600,
                           color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)',
                           textDecoration: isChecked ? 'line-through' : 'none',
-                          display: 'inline-flex', alignItems: 'center', gap: 5
+                          display: 'inline-flex', alignItems: 'center', gap: 5,
+                          transition: 'color var(--transition-fast)'
                         }}
                       >
                         {p.name}
-                        <ExternalLink size={11} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                        <ExternalLink size={12} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                       </a>
 
                       {p.lcNumber > 0 && (
@@ -156,20 +173,20 @@ export const TodayMission: React.FC = () => {
 
                     {/* Metadata tags */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: diffColor }}>
+                      <span className={diffClass}>
                         {p.difficulty}
                       </span>
 
                       {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
-                        <span className="badge-mono" style={{ color: 'var(--color-info-text)' }}>
+                        <span className="badge-top150">
                           Top 150
                         </span>
                       )}
 
-                      {p.companyTags?.slice(0, 2).map((tag) => {
+                      {p.companyTags?.slice(0, 3).map((tag) => {
                         const meta = COMPANY_LABELS[tag];
                         return meta ? (
-                          <span key={tag} className="badge-mono">
+                          <span key={tag} className="badge-company">
                             {meta.badge}
                           </span>
                         ) : null;
@@ -178,8 +195,8 @@ export const TodayMission: React.FC = () => {
                   </div>
 
                   {p.note && (
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0', lineHeight: 1.4, fontStyle: 'italic' }}>
-                      {p.note}
+                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '5px 0 0', lineHeight: 1.4, fontStyle: 'italic' }}>
+                      💡 {p.note}
                     </p>
                   )}
                 </div>
@@ -191,12 +208,12 @@ export const TodayMission: React.FC = () => {
 
       {/* ── ACTIONS & OVERALL PROGRESS BAR ── */}
       <div style={{
-        paddingTop: 16, borderTop: '1px solid var(--border-default)',
-        display: 'flex', flexDirection: 'column', gap: 14
+        paddingTop: 16, borderTop: '1px solid var(--border-subtle)',
+        display: 'flex', flexDirection: 'column', gap: 12
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-            Curriculum Progress: <strong style={{ color: 'var(--text-primary)' }}>{stats.solvedCount}</strong> / {stats.totalProblems} solved ({pct}%)
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+            Curriculum Progress: <strong style={{ color: 'var(--text-primary)' }}>{stats.solvedCount}</strong> / {stats.totalProblems} solved <span style={{ color: 'var(--color-success-text)', fontWeight: 700 }}>({pct}%)</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -204,7 +221,12 @@ export const TodayMission: React.FC = () => {
               <button
                 onClick={() => markDayComplete(currentWeekPlan.week, todayDayPlan.day)}
                 className="btn btn-default"
-                style={{ fontSize: 12 }}
+                style={{
+                  fontSize: 12, padding: '6px 12px',
+                  background: 'var(--color-success-bg)',
+                  color: 'var(--color-success-text)',
+                  borderColor: 'var(--color-success-border)'
+                }}
               >
                 Mark Day Complete
               </button>
@@ -214,23 +236,18 @@ export const TodayMission: React.FC = () => {
               to="/curriculum"
               onClick={() => setActiveWeek(currentWeekPlan.week)}
               className="btn btn-ghost"
-              style={{ fontSize: 12 }}
+              style={{ fontSize: 12, padding: '6px 12px' }}
             >
-              All Weeks <ArrowRight size={11} />
+              All Weeks <ArrowRight size={12} />
             </Link>
           </div>
         </div>
 
-        {/* Minimal progress hairline bar */}
-        <div style={{
-          height: 2, background: 'var(--border-subtle)',
-          borderRadius: 99, overflow: 'hidden'
-        }}>
+        {/* Hairline progress bar */}
+        <div className="progress-track" style={{ height: 6 }}>
           <div
-            style={{
-              height: '100%', width: `${pct}%`,
-              background: 'var(--text-primary)', transition: 'width 0.4s ease'
-            }}
+            className="progress-fill-gradient"
+            style={{ width: `${pct}%` }}
           />
         </div>
       </div>

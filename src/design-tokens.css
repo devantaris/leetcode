@@ -1,120 +1,143 @@
 /* ============================================================
-   Cadence — Pure Swiss Monochrome Design Tokens (Theme A)
-   Stark Black & White · Hairline 1px borders · Zero visual noise
+   Cadence Pro — Modern Vibrant Engineering Design Tokens
+   Deep Void Slate · Luminous Gradients · Radiant Semantic Accents
    ============================================================ */
 
 :root {
   /* ── Typography ── */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* ── Radii (crisp, minimal) ── */
-  --radius-xs: 3px;
-  --radius-sm: 5px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
+  /* ── Radii ── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
 
-  /* ── Semantic Accents ── */
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger:  #dc2626;
-  --color-info:    #2563eb;
+  /* ── Vibrant Semantic Accents ── */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger:  #f43f5e;
+  --color-info:    #6366f1;
+  --color-cyan:    #06b6d4;
+  --color-purple:  #a855f7;
+
+  /* ── Difficulty Palette ── */
+  --diff-easy:   #10b981;
+  --diff-medium: #f59e0b;
+  --diff-hard:   #f43f5e;
+
+  /* ── Gradients ── */
+  --grad-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  --grad-accent:  linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+  --grad-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --grad-warning: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  --grad-danger:  linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+  --grad-card:    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
 
   /* ── Transitions ── */
-  --transition-fast: 100ms ease;
-  --transition-base: 150ms ease;
+  --transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─────────────────────────────────────────────
-   DARK THEME (Default)
-   Pure Stark Black
+   DARK THEME (Default Vibrant Dark)
+   Rich Midnight Obsidian with Luminous Glows
    ───────────────────────────────────────────── */
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg-app:      #000000;
-  --bg-card:     #090909;
-  --bg-elevated: #111111;
-  --bg-hover:    #171717;
-  --bg-active:   #202020;
-  --bg-input:    #090909;
+  --bg-app:      #08090f;
+  --bg-card:     #0e111a;
+  --bg-elevated: #141824;
+  --bg-hover:    #1a2030;
+  --bg-active:   #222a40;
+  --bg-input:    #0a0c13;
 
-  --border-subtle:  #141414;
-  --border-default: #1e1e1e;
-  --border-strong:  #2e2e2e;
-  --border-focus:   #ffffff;
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.18);
+  --border-focus:   #6366f1;
+  --border-glow:    rgba(99, 102, 241, 0.4);
 
-  --text-primary:   #ffffff;
-  --text-secondary: #888888;
-  --text-muted:     #555555;
-  --text-dimmed:    #333333;
-  --text-inverse:   #000000;
+  --text-primary:   #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+  --text-dimmed:    #475569;
+  --text-inverse:   #050608;
+  --text-accent:    #818cf8;
 
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: 0 10px 30px rgba(0,0,0,0.8);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 36px -4px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 24px -4px rgba(99, 102, 241, 0.25);
 
-  --color-success-bg:     rgba(22, 163, 74, 0.08);
-  --color-success-border: rgba(22, 163, 74, 0.25);
-  --color-success-text:   #4ade80;
+  --color-success-bg:     rgba(16, 185, 129, 0.12);
+  --color-success-border: rgba(16, 185, 129, 0.30);
+  --color-success-text:   #34d399;
 
-  --color-warning-bg:     rgba(217, 119, 6, 0.08);
-  --color-warning-border: rgba(217, 119, 6, 0.25);
+  --color-warning-bg:     rgba(245, 158, 11, 0.12);
+  --color-warning-border: rgba(245, 158, 11, 0.30);
   --color-warning-text:   #fbbf24;
 
-  --color-danger-bg:      rgba(220, 38, 38, 0.08);
-  --color-danger-border:  rgba(220, 38, 38, 0.25);
-  --color-danger-text:    #f87171;
+  --color-danger-bg:      rgba(244, 63, 94, 0.12);
+  --color-danger-border:  rgba(244, 63, 94, 0.30);
+  --color-danger-text:    #fb7185;
 
-  --color-info-bg:        rgba(37, 99, 235, 0.08);
-  --color-info-border:    rgba(37, 99, 235, 0.25);
-  --color-info-text:      #60a5fa;
+  --color-info-bg:        rgba(99, 102, 241, 0.12);
+  --color-info-border:    rgba(99, 102, 241, 0.30);
+  --color-info-text:      #818cf8;
 }
 
 /* ─────────────────────────────────────────────
-   LIGHT THEME
-   Pure Crisp White
+   LIGHT THEME (Vibrant Clean Light)
+   Pure Crisp White with Soft Shadows & Vivid Accents
    ───────────────────────────────────────────── */
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg-app:      #ffffff;
-  --bg-card:     #fafafa;
-  --bg-elevated: #f4f4f4;
-  --bg-hover:    #eeeeee;
-  --bg-active:   #e4e4e4;
+  --bg-app:      #f8fafc;
+  --bg-card:     #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-hover:    #e2e8f0;
+  --bg-active:   #cbd5e1;
   --bg-input:    #ffffff;
 
-  --border-subtle:  #f0f0f0;
-  --border-default: #e5e5e5;
-  --border-strong:  #cccccc;
-  --border-focus:   #000000;
+  --border-subtle:  #e2e8f0;
+  --border-default: #cbd5e1;
+  --border-strong:  #94a3b8;
+  --border-focus:   #4f46e5;
+  --border-glow:    rgba(79, 70, 229, 0.3);
 
-  --text-primary:   #000000;
-  --text-secondary: #666666;
-  --text-muted:     #999999;
-  --text-dimmed:    #cccccc;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #64748b;
+  --text-dimmed:    #94a3b8;
   --text-inverse:   #ffffff;
+  --text-accent:    #4f46e5;
 
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: 0 10px 30px rgba(0,0,0,0.06);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px -2px rgba(79, 70, 229, 0.15);
 
-  --color-success-bg:     #f0fdf4;
-  --color-success-border: #bbf7d0;
-  --color-success-text:   #16a34a;
+  --color-success-bg:     #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-success-text:   #059669;
 
   --color-warning-bg:     #fffbeb;
   --color-warning-border: #fde68a;
   --color-warning-text:   #d97706;
 
-  --color-danger-bg:      #fef2f2;
-  --color-danger-border:  #fecaca;
-  --color-danger-text:    #dc2626;
+  --color-danger-bg:      #fff1f2;
+  --color-danger-border:  #fecdd3;
+  --color-danger-text:    #e11d48;
 
-  --color-info-bg:        #eff6ff;
-  --color-info-border:    #bfdbfe;
-  --color-info-text:      #2563eb;
+  --color-info-bg:        #eef2ff;
+  --color-info-border:    #c7d2fe;
+  --color-info-text:      #4f46e5;
 }

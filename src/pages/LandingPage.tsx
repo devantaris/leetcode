@@ -388,7 +388,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               </h2>
 
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 20px' }}>
-                For engineers who prefer clean Swiss monochrome styling, Recharts analytics, GitHub-style heatmaps, and structured Kanban tracking.
+                For engineers who prefer a sleek executive developer dashboard, luminous telemetry charts, GitHub-style heatmaps, and structured Kanban tracking.
               </p>
 
               {/* Modern Card Graphic */}
@@ -416,8 +416,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               {/* Feature Points */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
                 {[
-                  'Stark monochrome dark/light Swiss minimalist design',
-                  'Recharts analytics & GitHub-style activity heatmaps',
+                  'Luminous midnight obsidian interface with Linear/Vercel fidelity',
+                  'Recharts analytics & 25-week activity heatmaps',
                   'Placement pipeline Kanban board & interview tracker',
                   'Quick command palette (Ctrl+K) & company track filtering'
                 ].map((feat, i) => (

@@ -3,12 +3,14 @@ import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
 import { CURRICULUM } from '../data/curriculumStats';
+import { TrendingUp, Zap, Target, Award, Calendar } from 'lucide-react';
 
 const CARD_STYLE: React.CSSProperties = {
   background: 'var(--bg-card)',
   border: '1px solid var(--border-default)',
   borderRadius: 'var(--radius-lg)',
-  padding: '16px 18px',
+  padding: '20px',
+  boxShadow: 'var(--shadow-sm)',
 };
 
 export const AnalyticsPage: React.FC = () => {
@@ -69,12 +71,12 @@ export const AnalyticsPage: React.FC = () => {
   }, [progress]);
 
   return (
-    <div className="page-container" style={{ maxWidth: 960, display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Title */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{
-            fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
+            fontSize: 24, fontWeight: 800, color: 'var(--text-primary)',
             letterSpacing: '-0.02em', margin: '0 0 4px'
           }}>
             Analytics & Velocity
@@ -86,87 +88,126 @@ export const AnalyticsPage: React.FC = () => {
 
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '6px 12px', background: 'var(--bg-card)',
+          padding: '8px 14px', background: 'var(--bg-card)',
           border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
-          fontSize: 12, fontFamily: 'var(--font-mono)'
+          fontSize: 12, fontFamily: 'var(--font-mono)', boxShadow: 'var(--shadow-sm)'
         }}>
+          <Calendar size={14} style={{ color: 'var(--text-accent)' }} />
           <span style={{ color: 'var(--text-muted)' }}>Projected Finish:</span>
-          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{stats.projectedCompletionDate}</span>
+          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stats.projectedCompletionDate}</span>
         </div>
       </div>
 
       {/* Metric summary strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
         <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 6 }}>Solve Velocity</div>
-          <div className="stat-number">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span className="section-label">Solve Velocity</span>
+            <div style={{
+              width: 24, height: 24, borderRadius: 6,
+              background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <Zap size={13} />
+            </div>
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
             {((stats.solvedCount / Math.max(1, stats.currentDay)) * 7).toFixed(1)}
             <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)' }}> / wk</span>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
             Problems solved per 7 days
           </div>
         </div>
 
         <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 6 }}>Pace Status</div>
-          <div className="stat-number" style={{
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span className="section-label">Pace Status</span>
+            <div style={{
+              width: 24, height: 24, borderRadius: 6,
+              background: stats.isOnTrack ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+              color: stats.isOnTrack ? '#34d399' : '#fbbf24',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <TrendingUp size={13} />
+            </div>
+          </div>
+          <div style={{
             color: stats.isOnTrack ? 'var(--color-success-text)' : 'var(--color-warning-text)',
-            fontSize: 20
+            fontSize: 22, fontWeight: 800, lineHeight: 1
           }}>
             {stats.isOnTrack ? 'On Schedule' : 'Behind Pace'}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
             Target: ~{CURRICULUM.dailyTarget} problems / day
           </div>
         </div>
 
         <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 6 }}>Easy Ratio</div>
-          <div className="stat-number" style={{ color: 'var(--diff-easy)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span className="section-label">Easy Ratio</span>
+            <div style={{
+              width: 24, height: 24, borderRadius: 6,
+              background: 'rgba(16, 185, 129, 0.15)', color: '#34d399',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <Award size={13} />
+            </div>
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--diff-easy)', lineHeight: 1 }}>
             {Math.round((easySolved / (easyTotal || 1)) * 100)}%
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
             {easySolved} of {easyTotal} problems
           </div>
         </div>
 
         <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 6 }}>Med & Hard Ratio</div>
-          <div className="stat-number" style={{ color: 'var(--diff-medium)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span className="section-label">Med &amp; Hard Ratio</span>
+            <div style={{
+              width: 24, height: 24, borderRadius: 6,
+              background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <Target size={13} />
+            </div>
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--diff-medium)', lineHeight: 1 }}>
             {Math.round(((medSolved + hardSolved) / ((medTotal + hardTotal) || 1)) * 100)}%
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
             {medSolved + hardSolved} of {medTotal + hardTotal} problems
           </div>
         </div>
       </div>
 
       {/* Charts row 1: Weekly trajectory & daily velocity */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
         {/* Trajectory */}
         <div style={CARD_STYLE}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-              20-Week Completion Trajectory
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+              {CURRICULUM.totalWeeks}-Week Completion Trajectory
             </span>
             <span className="section-label">Target vs Solved</span>
           </div>
 
-          <div style={{ height: 220 }}>
+          <div style={{ height: 230 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={weekTrajectoryData} margin={{ top: 5, right: 10, left: -24, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="2 2" stroke="var(--border-subtle)" />
-                <XAxis dataKey="week" stroke="var(--text-muted)" fontSize={9} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+                <XAxis dataKey="week" stroke="var(--text-muted)" fontSize={10} />
                 <YAxis stroke="var(--text-muted)" fontSize={10} />
                 <Tooltip
                   contentStyle={{
-                    background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                    borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                    background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
+                    borderRadius: 8, color: 'var(--text-primary)', fontSize: 12,
+                    boxShadow: 'var(--shadow-md)'
                   }}
                 />
-                <Line type="monotone" dataKey="Target" stroke="var(--border-strong)" strokeWidth={1.5} dot={false} />
-                <Line type="monotone" dataKey="Solved" stroke="var(--color-success)" strokeWidth={2} dot={{ r: 3, fill: 'var(--color-success)' }} />
+                <Line type="monotone" dataKey="Target" stroke="rgba(255, 255, 255, 0.2)" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="Solved" stroke="#818cf8" strokeWidth={2.5} dot={{ r: 3, fill: '#818cf8' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -195,16 +236,17 @@ export const AnalyticsPage: React.FC = () => {
                   }))}
                   margin={{ top: 5, right: 10, left: -24, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke="var(--border-subtle)" />
-                  <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={9} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+                  <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={10} />
                   <YAxis stroke="var(--text-muted)" fontSize={10} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
-                      background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                      background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
+                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12,
+                      boxShadow: 'var(--shadow-md)'
                     }}
                   />
-                  <Bar dataKey="Solved" fill="var(--color-info)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Solved" fill="#6366f1" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -215,7 +257,7 @@ export const AnalyticsPage: React.FC = () => {
       {/* Topic breakdown */}
       <div style={CARD_STYLE}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
             Topic Mastery Distribution
           </span>
           <span className="section-label">{CURRICULUM.totalTopics} Categories</span>
@@ -224,16 +266,18 @@ export const AnalyticsPage: React.FC = () => {
         <div style={{ height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={topicChartData} margin={{ top: 5, right: 10, left: -20, bottom: 40 }}>
-              <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={9} angle={-30} textAnchor="end" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+              <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} angle={-30} textAnchor="end" />
               <YAxis stroke="var(--text-muted)" fontSize={10} />
               <Tooltip
                 contentStyle={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                  borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
+                  background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
+                  borderRadius: 8, color: 'var(--text-primary)', fontSize: 12,
+                  boxShadow: 'var(--shadow-md)'
                 }}
               />
-              <Bar dataKey="Solved" stackId="a" fill="var(--color-success)" />
-              <Bar dataKey="Remaining" stackId="a" fill="var(--border-default)" />
+              <Bar dataKey="Solved" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Remaining" stackId="a" fill="rgba(255, 255, 255, 0.08)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

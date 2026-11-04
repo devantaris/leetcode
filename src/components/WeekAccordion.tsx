@@ -175,11 +175,11 @@ export const WeekAccordion: React.FC = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                           {filteredProblems.map((p) => {
                             const isChecked = !!progress[p.id];
-                            const diffColor = p.difficulty === 'Easy'
-                              ? 'var(--color-success-text)'
+                            const diffClass = p.difficulty === 'Easy'
+                              ? 'diff-easy'
                               : p.difficulty === 'Hard'
-                              ? 'var(--color-danger-text)'
-                              : 'var(--color-warning-text)';
+                              ? 'diff-hard'
+                              : 'diff-medium';
 
                             return (
                               <div
@@ -187,15 +187,21 @@ export const WeekAccordion: React.FC = () => {
                                 onClick={() => toggleProblem(p.id)}
                                 style={{
                                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                  padding: '5px 8px', borderRadius: 'var(--radius-sm)',
-                                  background: isChecked ? 'var(--color-success-bg)' : 'var(--bg-elevated)',
-                                  border: `1px solid ${isChecked ? 'var(--color-success-border)' : 'var(--border-subtle)'}`,
-                                  cursor: 'pointer', gap: 8
+                                  padding: '6px 10px', borderRadius: 'var(--radius-sm)',
+                                  background: isChecked ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-elevated)',
+                                  border: `1px solid ${isChecked ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-subtle)'}`,
+                                  cursor: 'pointer', gap: 8, transition: 'all var(--transition-fast)'
+                                }}
+                                onMouseOver={(e) => {
+                                  if (!isChecked) e.currentTarget.style.background = 'var(--bg-hover)';
+                                }}
+                                onMouseOut={(e) => {
+                                  if (!isChecked) e.currentTarget.style.background = 'var(--bg-elevated)';
                                 }}
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
                                   <div className={`checkbox-minimal ${isChecked ? 'checked' : ''}`}>
-                                    {isChecked && <Check size={10} />}
+                                    {isChecked && <Check size={11} strokeWidth={3} />}
                                   </div>
 
                                   <a
@@ -223,12 +229,12 @@ export const WeekAccordion: React.FC = () => {
                                 </div>
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                                  <span style={{ fontSize: 10, fontWeight: 600, color: diffColor }}>
+                                  <span className={diffClass}>
                                     {p.difficulty}
                                   </span>
 
                                   {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
-                                    <span className="badge-mono" style={{ color: 'var(--color-info-text)' }}>
+                                    <span className="badge-top150">
                                       Top 150
                                     </span>
                                   )}
@@ -236,7 +242,7 @@ export const WeekAccordion: React.FC = () => {
                                   {p.companyTags?.slice(0, 2).map((tag) => {
                                     const meta = COMPANY_LABELS[tag];
                                     return meta ? (
-                                      <span key={tag} className="badge-mono">
+                                      <span key={tag} className="badge-company">
                                         {meta.badge}
                                       </span>
                                     ) : null;

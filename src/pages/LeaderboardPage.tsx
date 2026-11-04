@@ -43,6 +43,13 @@ export const LeaderboardPage: React.FC = () => {
     }
   }, [isOptedIn, handleSync]);
 
+  const renderRankBadge = (rank: number) => {
+    if (rank === 1) return <span style={{ color: '#f59e0b', fontWeight: 800 }}>#1</span>;
+    if (rank === 2) return <span style={{ color: '#94a3b8', fontWeight: 800 }}>#2</span>;
+    if (rank === 3) return <span style={{ color: '#d97706', fontWeight: 800 }}>#3</span>;
+    return <span style={{ color: 'var(--text-muted)' }}>#{rank}</span>;
+  };
+
   return (
     <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* ── Title & Switcher Row ── */}
@@ -96,17 +103,23 @@ export const LeaderboardPage: React.FC = () => {
       {/* ── User Status & Sync Bar ── */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '8px 12px', background: 'var(--bg-card)',
-        border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
-        fontSize: 12, flexWrap: 'wrap', gap: 8
+        padding: '10px 14px', background: 'var(--bg-card)',
+        border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)',
+        fontSize: 12, flexWrap: 'wrap', gap: 10,
+        boxShadow: 'var(--shadow-sm)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span>
-            Rank: <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>#{myRank || '—'}</strong>
-          </span>
-          <span style={{ color: 'var(--border-strong)' }}>|</span>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '3px 8px', borderRadius: 4, background: 'rgba(99, 102, 241, 0.12)',
+            color: '#818cf8', fontWeight: 600, fontSize: 11
+          }}>
+            <span>Rank</span>
+            <strong style={{ fontFamily: 'var(--font-mono)' }}>#{myRank || '—'}</strong>
+          </div>
+          <span style={{ color: 'var(--border-default)' }}>|</span>
           <span style={{ color: 'var(--text-secondary)' }}>
-            {stats.solvedCount} solved · 🔥 {stats.streak}d streak · {stats.oddsPercentage}% readiness
+            <strong style={{ color: 'var(--text-primary)' }}>{stats.solvedCount}</strong> solved · <span style={{ color: '#f59e0b' }}>🔥 {stats.streak}d streak</span> · <span style={{ color: 'var(--color-success-text)' }}>{stats.oddsPercentage}% readiness</span>
           </span>
         </div>
 
@@ -115,7 +128,7 @@ export const LeaderboardPage: React.FC = () => {
             <button
               onClick={toggleAnonymous}
               className="btn btn-ghost"
-              style={{ fontSize: 11, padding: '3px 6px', color: 'var(--text-muted)' }}
+              style={{ fontSize: 11, padding: '4px 8px', color: 'var(--text-muted)' }}
               title={isAnonymous ? "Currently Anonymous" : "Showing your name"}
             >
               {isAnonymous ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -126,7 +139,7 @@ export const LeaderboardPage: React.FC = () => {
           <button
             onClick={toggleOptIn}
             className="btn btn-ghost"
-            style={{ fontSize: 11, padding: '3px 6px', color: isOptedIn ? 'var(--text-muted)' : 'var(--color-info-text)' }}
+            style={{ fontSize: 11, padding: '4px 8px', color: isOptedIn ? 'var(--text-muted)' : 'var(--color-info-text)' }}
           >
             {isOptedIn ? 'Opt out' : 'Join board'}
           </button>
@@ -135,7 +148,7 @@ export const LeaderboardPage: React.FC = () => {
             onClick={fetchEntries}
             disabled={isFetching}
             className="btn btn-default"
-            style={{ fontSize: 11, padding: '3px 6px' }}
+            style={{ fontSize: 11, padding: '4px 8px' }}
             title="Refresh"
           >
             <RefreshCw size={11} className={isFetching || isSyncing ? 'animate-spin' : ''} />
@@ -189,14 +202,16 @@ export const LeaderboardPage: React.FC = () => {
             }}>
               {/* You */}
               <div className="data-row" style={{ background: 'var(--color-info-bg)' }}>
-                <span style={{ width: 30, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>1</span>
+                <span style={{ width: 36, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                  {renderRankBadge(1)}
+                </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ fontWeight: 600, color: 'var(--color-info-text)' }}>{userProfile.name} (You)</span>
                 </div>
                 <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-                  <span>{stats.solvedCount} solved</span>
-                  <span>🔥 {stats.streak}d</span>
-                  <span>{stats.oddsPercentage}%</span>
+                  <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>{stats.solvedCount} solved</span>
+                  <span style={{ color: '#f59e0b' }}>🔥 {stats.streak}d</span>
+                  <span style={{ color: '#818cf8', fontWeight: 600 }}>{stats.oddsPercentage}%</span>
                 </div>
               </div>
 
@@ -207,15 +222,17 @@ export const LeaderboardPage: React.FC = () => {
                 { name: 'Ananya Iyer', tagline: 'BITS Pilani', solved: Math.max(0, stats.solvedCount - 12), streak: 4, ready: 45 }
               ].map((peer, idx) => (
                 <div key={peer.name} className="data-row">
-                  <span style={{ width: 30, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>{idx + 2}</span>
+                  <span style={{ width: 36, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                    {renderRankBadge(idx + 2)}
+                  </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{peer.name}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{peer.tagline}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexShrink: 0 }}>
-                    <span>{peer.solved} solved</span>
-                    <span>🔥 {peer.streak}d</span>
-                    <span>{peer.ready}%</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{peer.solved} solved</span>
+                    <span style={{ color: '#f59e0b' }}>🔥 {peer.streak}d</span>
+                    <span style={{ color: '#818cf8' }}>{peer.ready}%</span>
                   </div>
                 </div>
               ))}
@@ -301,8 +318,8 @@ export const LeaderboardPage: React.FC = () => {
                     className="data-row"
                     style={{ background: isMe ? 'var(--color-info-bg)' : 'transparent' }}
                   >
-                    <span style={{ width: 30, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>
-                      {idx + 1}
+                    <span style={{ width: 36, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                      {renderRankBadge(idx + 1)}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ fontWeight: 500, color: isMe ? 'var(--color-info-text)' : 'var(--text-primary)' }}>
@@ -315,9 +332,9 @@ export const LeaderboardPage: React.FC = () => {
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexShrink: 0 }}>
-                      <span>{entry.solved_count} solved</span>
-                      <span>🔥 {entry.streak}d</span>
-                      <span>{entry.readiness_pct}%</span>
+                      <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>{entry.solved_count} solved</span>
+                      <span style={{ color: '#f59e0b' }}>🔥 {entry.streak}d</span>
+                      <span style={{ color: '#818cf8' }}>{entry.readiness_pct}%</span>
                     </div>
                   </div>
                 );

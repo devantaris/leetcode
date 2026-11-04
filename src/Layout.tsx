@@ -95,18 +95,21 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
       {/* ── TOP NAV HEADER ── */}
       <header className="site-header">
         {/* Brand */}
-        <Link to="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Link to="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
-            width: 22, height: 22, borderRadius: 'var(--radius-xs)',
-            background: 'var(--text-primary)', color: 'var(--text-inverse)',
+            width: 26, height: 26, borderRadius: 'var(--radius-sm)',
+            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: '#ffffff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)'
+            fontSize: 11, fontWeight: 800, fontFamily: 'var(--font-mono)',
+            boxShadow: '0 0 12px rgba(99, 102, 241, 0.4)'
           }}>
             {APP_CONFIG.shortName}
           </div>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            {APP_CONFIG.name}
-          </span>
+          <div>
+            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', display: 'block', lineHeight: 1.2 }}>
+              {APP_CONFIG.name}
+            </span>
+          </div>
         </Link>
 
         {/* Segmented switcher (Today · Syllabus · Analytics · Leaderboard) */}
@@ -126,18 +129,43 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
         </nav>
 
         {/* Right utility icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Active streak pill */}
+          {stats.streak > 0 && (
+            <div
+              style={{
+                fontSize: 11, fontFamily: 'var(--font-mono)',
+                color: 'var(--color-warning-text)', fontWeight: 700,
+                background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)',
+                padding: '3px 9px', borderRadius: 'var(--radius-full)',
+                display: 'flex', alignItems: 'center', gap: 4,
+                boxShadow: '0 0 10px rgba(245, 158, 11, 0.2)'
+              }}
+              title={`${stats.streak}-day streak active!`}
+            >
+              🔥 {stats.streak}d
+            </div>
+          )}
+
           {/* Switch to Retro OS */}
           {onSwitchToOS && (
             <button
               onClick={onSwitchToOS}
-              className="btn btn-default"
               style={{
-                padding: '4px 9px',
+                background: 'rgba(61, 220, 132, 0.08)',
+                border: '1px solid rgba(61, 220, 132, 0.35)',
+                color: '#3ddc84',
+                padding: '4px 10px',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
                 fontSize: 11,
                 fontFamily: 'var(--font-mono)',
-                fontWeight: 600,
-                gap: 5,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 0 10px rgba(61, 220, 132, 0.15)',
+                transition: 'all var(--transition-fast)'
               }}
               title="Switch to Retro Terminal OS"
             >
@@ -155,10 +183,11 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
               textDecoration: 'none',
               padding: '4px 8px',
               borderRadius: 'var(--radius-sm)',
+              fontWeight: 500
             }}
             title="Switch Experience / Return to Landing"
           >
-            Choose Mode
+            Portal
           </Link>
 
           {/* Theme toggle */}
@@ -264,12 +293,20 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
       {/* ── FOOTER STATUS BAR ── */}
       <footer style={{
-        padding: '12px 20px', borderTop: '1px solid var(--border-subtle)',
-        fontSize: 11, color: 'var(--text-muted)', display: 'flex',
-        alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-mono)'
+        padding: '14px 24px', borderTop: '1px solid var(--border-subtle)',
+        fontSize: 12, color: 'var(--text-secondary)', display: 'flex',
+        alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-mono)',
+        background: 'rgba(8, 9, 15, 0.6)'
       }}>
-        <span>{APP_CONFIG.name} · Day {stats.currentDay} / {CURRICULUM.totalDays}</span>
-        <span>{stats.solvedCount} / {stats.totalProblems} solved {stats.streak > 0 && `· 🔥 ${stats.streak}d`}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ color: 'var(--text-accent)', fontWeight: 700 }}>{APP_CONFIG.name} Pro</span>
+          <span>·</span>
+          <span>Day {stats.currentDay} / {CURRICULUM.totalDays}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span><strong style={{ color: 'var(--color-success-text)' }}>{stats.solvedCount}</strong> / {stats.totalProblems} solved</span>
+          {stats.streak > 0 && <span style={{ color: 'var(--color-warning-text)', fontWeight: 700 }}>· 🔥 {stats.streak}d streak</span>}
+        </div>
       </footer>
 
       {/* Hidden file input */}

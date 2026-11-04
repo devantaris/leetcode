@@ -45,8 +45,8 @@ export const HeatmapGrid: React.FC = () => {
       </div>
 
       {/* Grid */}
-      <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
-        <div className="inline-grid grid-cols-20" style={{ gap: 6, minWidth: 680 }}>
+      <div style={{ overflowX: 'auto', paddingBottom: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${PLAN_DATA.length}, minmax(28px, 1fr))`, gap: 6, minWidth: 780 }}>
           {PLAN_DATA.map((w) => {
             const isCurrentWeek = w.week === stats.currentWeek;
             return (
@@ -55,39 +55,42 @@ export const HeatmapGrid: React.FC = () => {
                 onClick={() => handleWeekClick(w.week)}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  padding: '6px 4px',
-                  borderRadius: 6, cursor: 'pointer',
-                  border: `1px solid ${isCurrentWeek ? 'var(--border-focus)' : 'var(--border-subtle)'}`,
-                  background: isCurrentWeek ? 'var(--bg-hover)' : 'transparent',
+                  padding: '8px 4px',
+                  borderRadius: 8, cursor: 'pointer',
+                  border: `1px solid ${isCurrentWeek ? 'rgba(99, 102, 241, 0.5)' : 'var(--border-subtle)'}`,
+                  background: isCurrentWeek ? 'rgba(99, 102, 241, 0.08)' : 'var(--bg-elevated)',
+                  boxShadow: isCurrentWeek ? '0 0 12px rgba(99, 102, 241, 0.2)' : 'none',
                   transition: 'all var(--transition-fast)',
                 }}
                 onMouseOver={e => !isCurrentWeek && (e.currentTarget.style.background = 'var(--bg-hover)')}
-                onMouseOut={e => !isCurrentWeek && (e.currentTarget.style.background = 'transparent')}
+                onMouseOut={e => !isCurrentWeek && (e.currentTarget.style.background = 'var(--bg-elevated)')}
               >
                 <span style={{
-                  fontSize: 9, fontWeight: 700, fontFamily: 'var(--font-mono)',
-                  color: isCurrentWeek ? 'var(--text-primary)' : 'var(--text-dimmed)',
+                  fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)',
+                  color: isCurrentWeek ? '#818cf8' : 'var(--text-muted)',
                   letterSpacing: '0.02em'
                 }}>
-                  {w.week}
+                  W{w.week}
                 </span>
 
                 {w.days.map((d) => {
                   const complete = isDayComplete(w.week, d.day);
-                  let bg = 'var(--bg-elevated)';
+                  let bg = 'rgba(255, 255, 255, 0.04)';
                   let border = 'var(--border-subtle)';
+                  let shadow = 'none';
 
                   if (complete) {
-                    bg = 'var(--color-success)';
-                    border = 'var(--color-success)';
+                    bg = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    border = '#10b981';
+                    shadow = '0 0 6px rgba(16, 185, 129, 0.35)';
                   } else if (d.type === 'review') {
-                    bg = 'rgba(217,119,6,0.25)';
-                    border = 'var(--color-warning)';
+                    bg = 'rgba(245, 158, 11, 0.2)';
+                    border = 'rgba(245, 158, 11, 0.4)';
                   } else if (d.type === 'contest') {
-                    bg = 'rgba(37,99,235,0.25)';
-                    border = 'var(--color-info)';
+                    bg = 'rgba(99, 102, 241, 0.2)';
+                    border = 'rgba(99, 102, 241, 0.4)';
                   } else if (d.type === 'rest') {
-                    bg = 'var(--bg-app)';
+                    bg = 'rgba(255, 255, 255, 0.02)';
                   }
 
                   return (
@@ -95,12 +98,13 @@ export const HeatmapGrid: React.FC = () => {
                       key={d.day}
                       title={`Day ${d.day} (${d.weekday}) — ${d.topic} — ${complete ? 'Done' : 'Pending'}`}
                       style={{
-                        width: '100%', height: 11, borderRadius: 2,
+                        width: '100%', height: 12, borderRadius: 3,
                         background: bg, border: `1px solid ${border}`,
+                        boxShadow: shadow,
                         transition: 'transform var(--transition-fast)',
                       }}
-                      onMouseOver={e => (e.currentTarget.style.transform = 'scaleX(1.1)')}
-                      onMouseOut={e => (e.currentTarget.style.transform = 'scaleX(1)')}
+                      onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.15)')}
+                      onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
                     />
                   );
                 })}
