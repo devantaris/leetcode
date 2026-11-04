@@ -94,7 +94,15 @@ export class AuthService {
     if (sb) {
       try {
         const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-        if (error) return { user: null, error: error.message };
+        if (error) {
+          if (error.message.toLowerCase().includes('email not confirmed')) {
+            return {
+              user: null,
+              error: 'Email not confirmed yet! Check your inbox, or in Supabase Dashboard → Authentication → Providers → Email, turn OFF "Confirm email" for instant login.',
+            };
+          }
+          return { user: null, error: error.message };
+        }
         if (data.user) {
           this.currentUser = {
             id: data.user.id,
@@ -142,8 +150,32 @@ export class AuthService {
             data: { display_name: displayName },
           },
         });
-        if (error) return { user: null, error: error.message };
+        if (error) {
+          if (error.message.toLowerCase().includes('rate limit')) {
+            return {
+              user: null,
+              error: 'Email rate limit reached. In your Supabase Dashboard → Authentication → Providers → Email, turn OFF "Confirm email" for instant login.',
+            };
+          }
+          return { user: null, error: error.message };
+        }
         if (data.user) {
+          // If user exists, Supabase returns user with empty identities
+          if (data.user.identities && data.user.identities.length === 0) {
+            return {
+              user: null,
+              error: 'This email is already registered. Please switch to the Sign In tab to log in.',
+            };
+          }
+
+          // If email confirmation is required by Supabase
+          if (!data.session) {
+            return {
+              user: null,
+              error: 'Confirmation email sent to your inbox! Click the link to activate, or turn OFF "Confirm email" in Supabase for instant login.',
+            };
+          }
+
           this.currentUser = {
             id: data.user.id,
             email: data.user.email || email,

@@ -5,8 +5,22 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const ENV_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
-const ENV_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim();
+const DEFAULT_SUPABASE_URL = 'https://bjjfiycwhkghbibffmtr.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_LZEFz60xje4AKVpppwyIGQ_VO-kxcse';
+
+const ENV_URL = (
+  (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+  (import.meta.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined) ||
+  DEFAULT_SUPABASE_URL
+)?.trim();
+
+const ENV_KEY = (
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
+  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+  (import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+  (import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined) ||
+  DEFAULT_SUPABASE_KEY
+)?.trim();
 
 const STORAGE_URL_KEY = 'grindos_supabase_url';
 const STORAGE_ANON_KEY = 'grindos_supabase_anon_key';
