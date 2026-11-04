@@ -94,6 +94,8 @@ interface ProgressContextType {
   authUser: AuthUser | null;
   login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, pass: string, name: string) => Promise<{ success: boolean; error?: string }>;
+  signInWithMagicLink: (email: string) => Promise<{ success: boolean; error?: string }>;
+  signInWithOAuth: (provider: 'google' | 'github') => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   cloudSyncStatus: 'synced' | 'syncing' | 'offline' | 'error';
   lastCloudSync: Date | null;
@@ -700,25 +702,31 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAuthUser(res.user);
     if (res.user) {
       const pull = await CloudSyncService.pullFromCloud(res.user.id);
-      if (pull.success && pull.data) {
-        if (pull.data.progress && Object.keys(pull.data.progress).length > 0) {
-          setProgress((prev) => ({ ...prev, ...pull.data!.progress }));
-        }
-        if (pull.data.solveHistory && Object.keys(pull.data.solveHistory).length > 0) {
-          setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
-        }
-        if (pull.data.placements && pull.data.placements.length > 0) {
-          setPlacements(pull.data.placements);
-        }
-        if (pull.data.userProfile) {
-          setUserProfile(pull.data.userProfile);
-        }
+      const cloudSolvesCount = Object.keys(pull.data?.progress || {}).length;
+      const localSolvesCount = Object.keys(progress).length;
+
+      if (pull.success && pull.data && cloudSolvesCount > 0) {
+        setProgress(pull.data.progress || {});
+        if (pull.data.solveHistory) setSolveHistory(pull.data.solveHistory);
+        if (pull.data.placements) setPlacements(pull.data.placements);
+        if (pull.data.userProfile) setUserProfile(pull.data.userProfile);
+      } else if (localSolvesCount > 0) {
+        // Auto-import local progress to newly linked cloud account
+        await CloudSyncService.pushToCloud({
+          userId: res.user.id,
+          userProfile: userProfile || DEFAULT_PROFILE,
+          progress,
+          solveHistory,
+          placements,
+          streak,
+          solvedCount: stats.solvedCount,
+        });
       }
       setCloudSyncStatus('synced');
       setLastCloudSync(new Date());
     }
     return { success: true };
-  }, []);
+  }, [progress, solveHistory, placements, userProfile, streak, stats.solvedCount]);
 
   const signup = useCallback(async (email: string, pass: string, name: string) => {
     setCloudSyncStatus('syncing');
@@ -743,6 +751,14 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     return { success: true };
   }, [userProfile, progress, solveHistory, placements, streak, stats.solvedCount]);
+
+  const signInWithMagicLink = useCallback(async (email: string) => {
+    return await AuthService.signInWithMagicLink(email);
+  }, []);
+
+  const signInWithOAuth = useCallback(async (provider: 'google' | 'github') => {
+    return await AuthService.signInWithOAuth(provider);
+  }, []);
 
   const logout = useCallback(async () => {
     await AuthService.signOut();
@@ -834,6 +850,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     authUser,
     login,
     signup,
+    signInWithMagicLink,
+    signInWithOAuth,
     logout,
     cloudSyncStatus,
     lastCloudSync,
@@ -846,7 +864,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,
     updatePlacement, deletePlacement, activeCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
     importJSON, resetAll, soundEnabled, toggleSound,
-    authUser, login, signup, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue
+    authUser, login, signup, signInWithMagicLink, signInWithOAuth, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue
   ]);
 
   return (

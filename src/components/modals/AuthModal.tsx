@@ -12,7 +12,7 @@ interface AuthModalProps {
 type AuthTab = 'login' | 'signup' | 'db';
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { login, signup, authUser, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync } = useProgress();
+  const { login, signup, authUser, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, signInWithMagicLink, signInWithOAuth } = useProgress();
   const [tab, setTab] = useState<AuthTab>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,6 +27,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [dbKey, setDbKey] = useState(currentCreds.key);
 
   if (!isOpen) return null;
+
+  const handleMagicLink = async () => {
+    if (!email.trim()) {
+      setError('Enter your email above to receive a magic link.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    const res = await signInWithMagicLink(email.trim());
+    setLoading(false);
+    if (res.success) {
+      setSuccess('✨ Magic link sent to your inbox! Check your email to sign in.');
+    } else {
+      setError(res.error || 'Failed to send magic link.');
+    }
+  };
+
+  const handleGoogleOAuth = async () => {
+    setLoading(true);
+    setError(null);
+    const res = await signInWithOAuth('google');
+    setLoading(false);
+    if (res.error) {
+      setError(res.error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -407,11 +434,40 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     {loading ? (
                       '…'
                     ) : tab === 'login' ? (
-                      <><LogIn size={14} /> Sign In</>
+                      <><LogIn size={14} /> Sign In with Password</>
                     ) : (
                       <><UserPlus size={14} /> Create Account</>
                     )}
                   </button>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
+                    <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>or</span>
+                    <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={handleMagicLink}
+                      disabled={loading}
+                      className="btn btn-default"
+                      style={{ flex: 1, padding: '8px 10px', fontSize: 11 }}
+                      title="Send a login link to your email without passwords"
+                    >
+                      <Mail size={12} /> Magic Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleGoogleOAuth}
+                      disabled={loading}
+                      className="btn btn-default"
+                      style={{ flex: 1, padding: '8px 10px', fontSize: 11 }}
+                      title="Sign in with Google OAuth"
+                    >
+                      <span>Google</span>
+                    </button>
+                  </div>
                 </form>
               )}
 

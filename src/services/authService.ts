@@ -32,8 +32,26 @@ export class AuthService {
             provider: 'supabase',
           };
           this.notifyListeners();
-          return this.currentUser;
         }
+
+        // Keep session synced across OAuth redirects & token refreshes
+        sb.auth.onAuthStateChange((_event, session) => {
+          if (session?.user) {
+            this.currentUser = {
+              id: session.user.id,
+              email: session.user.email || '',
+              displayName: session.user.user_metadata?.display_name || session.user.email?.split('@')[0] || 'Operator',
+              isAnonymous: session.user.is_anonymous || false,
+              provider: 'supabase',
+            };
+          } else if (_event === 'SIGNED_OUT') {
+            this.currentUser = null;
+            localStorage.removeItem(LOCAL_USER_KEY);
+          }
+          this.notifyListeners();
+        });
+
+        if (this.currentUser) return this.currentUser;
       } catch (err) {
         console.warn('[GrindOS Auth] Session restore error:', err);
       }
@@ -150,6 +168,44 @@ export class AuthService {
     localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(this.currentUser));
     this.notifyListeners();
     return { user: this.currentUser, error: null };
+  }
+
+  public static async signInWithMagicLink(email: string): Promise<{ success: boolean; error: string | null }> {
+    const sb = getSupabase();
+    if (!sb) {
+      return { success: false, error: 'Supabase database is not connected.' };
+    }
+    try {
+      const { error } = await sb.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) return { success: false, error: error.message };
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      return { success: false, error: err instanceof Error ? err.message : 'Magic link sign in failed' };
+    }
+  }
+
+  public static async signInWithOAuth(provider: 'google' | 'github'): Promise<{ error: string | null }> {
+    const sb = getSupabase();
+    if (!sb) {
+      return { error: 'Supabase database is not connected.' };
+    }
+    try {
+      const { error } = await sb.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    } catch (err: unknown) {
+      return { error: err instanceof Error ? err.message : 'OAuth sign in failed' };
+    }
   }
 
   public static async signInAsGuest(displayName: string = 'Operator'): Promise<AuthUser> {
