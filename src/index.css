@@ -1154,3 +1154,59 @@ h4:first-child {
   }
 }
 
+/* Mobile Bottom Bar for Modern UI */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .site-header {
+    padding: 8px 14px;
+  }
+  .site-header .nav-segment {
+    display: none;
+  }
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: 58px;
+    background: rgba(8, 9, 15, 0.94);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-default);
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  [data-theme="light"] .mobile-bottom-nav {
+    background: rgba(248, 250, 252, 0.94);
+  }
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+  }
+  .mobile-nav-item.active {
+    color: var(--text-accent);
+  }
+  .mobile-nav-item.active svg {
+    color: var(--text-accent);
+  }
+  main {
+    padding-bottom: 64px;
+  }
+}
+
+

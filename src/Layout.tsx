@@ -7,7 +7,7 @@ import { useProgress } from './context/ProgressContext';
 import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
 import { CURRICULUM } from './data/curriculumStats';
-import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search, Volume2, VolumeX } from 'lucide-react';
+import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search, Volume2, VolumeX, Compass, BookOpen, BarChart2, Award } from 'lucide-react';
 
 type Theme = 'dark' | 'light';
 type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | null;
@@ -327,6 +327,26 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
+
+      {/* ── MOBILE BOTTOM NAVIGATION ── */}
+      <nav className="mobile-bottom-nav">
+        <NavLink to="/dashboard" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <Compass size={18} />
+          <span>Today</span>
+        </NavLink>
+        <NavLink to="/curriculum" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <BookOpen size={18} />
+          <span>Syllabus</span>
+        </NavLink>
+        <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <BarChart2 size={18} />
+          <span>Analytics</span>
+        </NavLink>
+        <NavLink to="/leaderboard" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <Award size={18} />
+          <span>Ranks</span>
+        </NavLink>
+      </nav>
 
       {/* ── FOOTER STATUS BAR ── */}
       <footer style={{
