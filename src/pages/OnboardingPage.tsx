@@ -6,6 +6,8 @@ import { format, addDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '../config/appConfig';
 import { CURRICULUM } from '../data/curriculumStats';
+import confetti from 'canvas-confetti';
+import { sounds } from '../utils/audio';
 
 const SECONDARY_SKILL_OPTIONS = [
   { id: 'project', label: 'Personal Project', desc: 'Full-stack / systems build' },
@@ -55,6 +57,8 @@ export const OnboardingPage: React.FC = () => {
       restDay: restDay,
       secondarySkill: secondarySkill,
     };
+    sounds.playVictorySound();
+    confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
     updateProfile(profile);
   };
 
@@ -76,16 +80,17 @@ export const OnboardingPage: React.FC = () => {
     }}>
       <div style={{ width: '100%', maxWidth: 460 }}>
         {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 24 }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: 'var(--text-primary)', color: 'var(--text-inverse)',
+            width: 36, height: 36, borderRadius: 10,
+            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: '#ffffff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: 13, fontFamily: 'var(--font-mono)'
+            fontWeight: 800, fontSize: 13, fontFamily: 'var(--font-mono)',
+            boxShadow: '0 0 20px rgba(99, 102, 241, 0.45)'
           }}>
             {APP_CONFIG.shortName}
           </div>
-          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             {APP_CONFIG.name}
           </span>
         </div>
