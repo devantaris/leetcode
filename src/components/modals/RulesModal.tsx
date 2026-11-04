@@ -85,6 +85,34 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
+        {/* Global Keyboard Shortcuts */}
+        <div style={{
+          marginTop: 6, padding: '12px', background: 'var(--bg-card)',
+          border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-accent)', marginBottom: 8 }}>
+            ⚡ Global Hotkeys
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+              <span>Command Palette:</span>
+              <kbd style={{ padding: '1px 5px', borderRadius: 3, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>⌘K / Ctrl+K</kbd>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+              <span>Audio Mute / Play:</span>
+              <kbd style={{ padding: '1px 5px', borderRadius: 3, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>Ctrl+M</kbd>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+              <span>Rules &amp; Hotkeys:</span>
+              <kbd style={{ padding: '1px 5px', borderRadius: 3, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>?</kbd>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+              <span>Dismiss Modals:</span>
+              <kbd style={{ padding: '1px 5px', borderRadius: 3, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>ESC</kbd>
+            </div>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
           <button onClick={onClose} className="btn btn-default">
             Got It
