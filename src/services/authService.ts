@@ -107,8 +107,12 @@ export class AuthService {
           this.notifyListeners();
           return { user: this.currentUser, error: null };
         }
-      } catch (err: any) {
-        return { user: null, error: err.message || 'Authentication failed' };
+      } catch (err: unknown) {
+        const raw = err instanceof Error ? err.message : String(err);
+        const friendly = raw.includes('Failed to fetch')
+          ? 'Network Error: Cannot connect to Supabase. Please verify your Project URL format is https://<project-ref>.supabase.co (not the dashboard URL).'
+          : raw || 'Authentication failed';
+        return { user: null, error: friendly };
       }
     }
 
@@ -151,8 +155,12 @@ export class AuthService {
           this.notifyListeners();
           return { user: this.currentUser, error: null };
         }
-      } catch (err: any) {
-        return { user: null, error: err.message || 'Sign up failed' };
+      } catch (err: unknown) {
+        const raw = err instanceof Error ? err.message : String(err);
+        const friendly = raw.includes('Failed to fetch')
+          ? 'Network Error: Cannot connect to Supabase. Please verify your Project URL format is https://<project-ref>.supabase.co (not the dashboard URL).'
+          : raw || 'Sign up failed';
+        return { user: null, error: friendly };
       }
     }
 

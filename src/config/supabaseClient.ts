@@ -13,21 +13,42 @@ const STORAGE_ANON_KEY = 'grindos_supabase_anon_key';
 
 let _client: SupabaseClient | null = null;
 
+export function normalizeSupabaseUrl(rawUrl: string): string {
+  let u = rawUrl.trim();
+  // If user pasted dashboard URL: https://supabase.com/dashboard/project/ojyvn...
+  const dashboardMatch = u.match(/dashboard\/project\/([a-z0-9_-]+)/i);
+  if (dashboardMatch && dashboardMatch[1]) {
+    return `https://${dashboardMatch[1]}.supabase.co`;
+  }
+  // Strip trailing slashes
+  u = u.replace(/\/+$/, '');
+  // Add https:// if missing
+  if (u && !u.startsWith('http://') && !u.startsWith('https://')) {
+    u = 'https://' + u;
+  }
+  return u;
+}
+
 export function getActiveSupabaseCredentials(): { url: string; key: string; source: 'env' | 'custom' | 'none' } {
   if (ENV_URL && ENV_KEY && !ENV_URL.includes('your-project-id')) {
-    return { url: ENV_URL, key: ENV_KEY, source: 'env' };
+    return { url: normalizeSupabaseUrl(ENV_URL), key: ENV_KEY, source: 'env' };
   }
   const customUrl = localStorage.getItem(STORAGE_URL_KEY)?.trim();
   const customKey = localStorage.getItem(STORAGE_ANON_KEY)?.trim();
   if (customUrl && customKey) {
-    return { url: customUrl, key: customKey, source: 'custom' };
+    const clean = normalizeSupabaseUrl(customUrl);
+    if (clean !== customUrl) {
+      localStorage.setItem(STORAGE_URL_KEY, clean);
+    }
+    return { url: clean, key: customKey, source: 'custom' };
   }
   return { url: '', key: '', source: 'none' };
 }
 
 export function initializeSupabaseClient(customUrl?: string, customKey?: string): SupabaseClient | null {
   if (customUrl && customKey) {
-    localStorage.setItem(STORAGE_URL_KEY, customUrl.trim());
+    const clean = normalizeSupabaseUrl(customUrl);
+    localStorage.setItem(STORAGE_URL_KEY, clean);
     localStorage.setItem(STORAGE_ANON_KEY, customKey.trim());
   }
 
