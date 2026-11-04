@@ -1,3 +1,4 @@
+@import "./design-tokens.css";
 @import "tailwindcss";
 
 :root {
@@ -51,25 +52,22 @@
   box-sizing: border-box;
 }
 
-::selection {
-  background: var(--fg);
-  color: #000;
-}
-
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
+/* Default web mode styles (Landing page, Modern app) */
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--mono);
+  min-height: 100vh;
+  background-color: var(--bg-app, #000000);
+  color: var(--text-primary, #ffffff);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
   font-size: 13px;
   cursor: default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 button {
@@ -81,16 +79,32 @@ button {
   cursor: pointer;
 }
 
-/* Scanlines and Vignette Disable Overrides */
-body.no-scanlines::after {
+/* ============ RETRO OS MODE SCOPING ============ */
+body.os-mode,
+body.os-mode #root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+}
+
+body.os-mode ::selection {
+  background: var(--fg);
+  color: #000;
+}
+
+/* Scanlines and Vignette Disable Overrides in OS Mode */
+body.os-mode.no-scanlines::after {
   display: none !important;
 }
-body.no-vignette::before {
+body.os-mode.no-vignette::before {
   display: none !important;
 }
 
-/* CRT Scanlines overlay */
-body::after {
+/* CRT Scanlines overlay — active only in OS mode */
+body.os-mode::after {
   content: "";
   position: fixed;
   inset: 0;
@@ -100,8 +114,8 @@ body::after {
   mix-blend-mode: multiply;
 }
 
-/* Vignette overlay */
-body::before {
+/* Vignette overlay — active only in OS mode */
+body.os-mode::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -110,20 +124,217 @@ body::before {
   background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.55));
 }
 
-/* Retro CRT Scrollbar */
-::-webkit-scrollbar {
+/* Retro CRT Scrollbar — active only in OS mode */
+body.os-mode ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
-::-webkit-scrollbar-track {
+body.os-mode ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.4);
 }
-::-webkit-scrollbar-thumb {
+body.os-mode ::-webkit-scrollbar-thumb {
   background: var(--line);
   border: 1px solid var(--faint);
 }
-::-webkit-scrollbar-thumb:hover {
+body.os-mode ::-webkit-scrollbar-thumb:hover {
   background: var(--dim);
+}
+
+/* Modern clean scrollbar for non-OS modes */
+body:not(.os-mode) ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+body:not(.os-mode) ::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+body:not(.os-mode) ::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+body:not(.os-mode) ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ============ MODERN UI UTILITIES ============ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-app);
+  border-bottom: 1px solid var(--border-default);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-segment {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.nav-link {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-link.active {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border: 1px solid var(--text-primary);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-default {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}
+
+.btn-default:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.checkbox-minimal {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: all var(--transition-fast);
+}
+
+.checkbox-minimal.checked {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.checkbox-done {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: all var(--transition-fast);
+}
+
+.checkbox-done.checked {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.badge-mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.badge-neutral {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+.section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.progress-track {
+  height: 4px;
+  background: var(--border-subtle);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.progress-fill-success {
+  background: var(--color-success);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
 }
 
 /* ============ BOOT SCREEN ============ */

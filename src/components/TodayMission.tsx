@@ -5,6 +5,7 @@ import { ExternalLink, Check, Coffee, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { COMPANY_LABELS } from '../data/companyMappings';
+import { CURRICULUM } from '../data/curriculumStats';
 
 export const TodayMission: React.FC = () => {
   const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile } = useProgress();
@@ -38,7 +39,7 @@ export const TodayMission: React.FC = () => {
             fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
             display: 'flex', alignItems: 'center', gap: 6
           }}>
-            <span>Day {todayDayPlan.day} of 140</span>
+            <span>Day {todayDayPlan.day} of {CURRICULUM.totalDays}</span>
             <span>·</span>
             <span>Week {currentWeekPlan.week}</span>
             <span>·</span>

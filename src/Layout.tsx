@@ -14,9 +14,10 @@ type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile
 
 interface LayoutProps {
   onSwitchToOS?: () => void;
+  onGoToHome?: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS }) => {
+export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const { importJSON, isOnboarded, userProfile, stats, exportJSON } = useProgress();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -108,13 +109,16 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS }) => {
           </span>
         </Link>
 
-        {/* Segmented switcher (Today · Syllabus · Leaderboard) */}
+        {/* Segmented switcher (Today · Syllabus · Analytics · Leaderboard) */}
         <nav className="nav-segment">
           <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Today
           </NavLink>
           <NavLink to="/curriculum" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Syllabus
+          </NavLink>
+          <NavLink to="/analytics" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Analytics
           </NavLink>
           <NavLink to="/leaderboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Leaderboard
@@ -127,25 +131,35 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS }) => {
           {onSwitchToOS && (
             <button
               onClick={onSwitchToOS}
+              className="btn btn-default"
               style={{
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--border-default)',
-                cursor: 'pointer',
-                color: 'var(--text-primary)',
-                padding: '4px 8px',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
+                padding: '4px 9px',
                 fontSize: 11,
                 fontFamily: 'var(--font-mono)',
                 fontWeight: 600,
+                gap: 5,
               }}
-              title="Launch Retro Terminal Shell"
+              title="Switch to Retro Terminal OS"
             >
               <Terminal size={12} /> OS Shell
             </button>
           )}
+
+          {/* Mode Selector / Landing Page */}
+          <Link
+            to="/"
+            onClick={onGoToHome}
+            style={{
+              fontSize: 11,
+              color: 'var(--text-secondary)',
+              textDecoration: 'none',
+              padding: '4px 8px',
+              borderRadius: 'var(--radius-sm)',
+            }}
+            title="Switch Experience / Return to Landing"
+          >
+            Choose Mode
+          </Link>
 
           {/* Theme toggle */}
           <button
@@ -177,7 +191,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS }) => {
             {showSettings && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 190, background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                width: 200, background: 'var(--bg-card)', border: '1px solid var(--border-default)',
                 borderRadius: 'var(--radius-md)', padding: 4, boxShadow: 'var(--shadow-lg)',
                 zIndex: 60, display: 'flex', flexDirection: 'column', gap: 2
               }}>
@@ -202,6 +216,15 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS }) => {
                 >
                   <span>💼 Placement Pipeline</span>
                 </button>
+                {onSwitchToOS && (
+                  <button
+                    onClick={() => { setShowSettings(false); onSwitchToOS(); }}
+                    className="btn btn-ghost"
+                    style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px' }}
+                  >
+                    <Terminal size={13} /> Switch to Terminal OS
+                  </button>
+                )}
                 <div className="divider" style={{ margin: '3px 0' }} />
                 <button
                   onClick={() => { exportJSON(); setShowSettings(false); }}

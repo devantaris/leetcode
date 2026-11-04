@@ -9,6 +9,7 @@ interface ConfigWindowProps {
   onLog: (msg: string, type?: 'ok' | 'warn' | 'dim') => void;
   onOpenAuth?: () => void;
   onSwitchToWeb?: () => void;
+  onGoToHome?: () => void;
 }
 
 type ConfigTab = 'cloud' | 'display' | 'audio' | 'workstation' | 'storage';
@@ -19,6 +20,7 @@ export const ConfigWindow: React.FC<ConfigWindowProps> = ({
   onLog,
   onOpenAuth,
   onSwitchToWeb,
+  onGoToHome,
 }) => {
   const {
     userProfile,
@@ -300,19 +302,35 @@ export const ConfigWindow: React.FC<ConfigWindowProps> = ({
             </button>
           </div>
 
-          {onSwitchToWeb && (
+          {(onSwitchToWeb || onGoToHome) && (
             <div style={{ borderTop: '1px dashed var(--line)', paddingTop: 10, marginTop: 10 }}>
               <h4>▸ DUAL-MODE INTERFACE</h4>
-              <button
-                className="k small"
-                onClick={() => {
-                  sounds.playTickSound();
-                  onSwitchToWeb();
-                }}
-                style={{ color: 'var(--amb)', borderColor: 'var(--amb)' }}
-              >
-                SWITCH TO MODERN LINEAR WEB UI 🌐
-              </button>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {onSwitchToWeb && (
+                  <button
+                    className="k small"
+                    onClick={() => {
+                      sounds.playTickSound();
+                      onSwitchToWeb();
+                    }}
+                    style={{ color: 'var(--amb)', borderColor: 'var(--amb)' }}
+                  >
+                    SWITCH TO MODERN LINEAR WEB UI 🌐
+                  </button>
+                )}
+                {onGoToHome && (
+                  <button
+                    className="k small"
+                    onClick={() => {
+                      sounds.playTickSound();
+                      onGoToHome();
+                    }}
+                    style={{ color: 'var(--fg)', borderColor: 'var(--fg)' }}
+                  >
+                    RETURN TO PORTAL 🏠
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>

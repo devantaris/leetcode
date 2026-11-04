@@ -170,9 +170,10 @@ const ICONS_CONFIG: Array<{ id: AppId; name: string; glyph: string }> = [
 
 interface GrindOSDesktopProps {
   onSwitchToWeb?: () => void;
+  onGoToHome?: () => void;
 }
 
-export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb }) => {
+export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb, onGoToHome }) => {
   const { stats, streak, userProfile, soundEnabled, toggleSound, authUser, cloudSyncStatus, progress, solveHistory } = useProgress();
 
   // Boot state: check if already booted in session
@@ -831,6 +832,7 @@ export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb })
               onLog={addSysLog}
               onOpenAuth={() => openApp('auth')}
               onSwitchToWeb={onSwitchToWeb}
+              onGoToHome={onGoToHome}
             />
           </div>
         )}
@@ -989,6 +991,26 @@ export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb })
 
         {/* System Tray */}
         <div id="tray">
+          {onSwitchToWeb && (
+            <button
+              onClick={() => {
+                sounds.playTickSound();
+                onSwitchToWeb();
+              }}
+              style={{
+                fontSize: 11,
+                cursor: 'pointer',
+                color: 'var(--amb)',
+                border: '1px solid var(--amb)',
+                padding: '1px 7px',
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+              }}
+              title="Switch to Modern Web Interface"
+            >
+              🌐 MODERN UI
+            </button>
+          )}
           <button
             onClick={() => openApp('auth')}
             style={{
@@ -1068,6 +1090,19 @@ export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb })
             >
               <span>🌐 SWITCH TO MODERN WEB UI</span>
               <span className="k2">WEB</span>
+            </button>
+          )}
+          {onGoToHome && (
+            <button
+              onClick={() => {
+                sounds.playTickSound();
+                setIsStartMenuOpen(false);
+                onGoToHome();
+              }}
+              style={{ borderTop: '1px dashed var(--line)', color: 'var(--fg)' }}
+            >
+              <span>🏠 RETURN TO PORTAL / LANDING</span>
+              <span className="k2">PORTAL</span>
             </button>
           )}
           <div className="sm-h" style={{ borderTop: '1px solid var(--line)' }}>
