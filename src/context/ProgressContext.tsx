@@ -225,6 +225,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   });
 
+  // ── Auth & Live Cloud Sync State ───────────────────────────────────────────
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
+  const [lastCloudSync, setLastCloudSync] = useState<Date | null>(null);
+
   const { dailySolveLog, streak } = useMemo(
     () => computeLogAndStreak(solveHistory, userProfile?.restDay || 'sunday'),
     [solveHistory, userProfile?.restDay]
@@ -305,17 +310,31 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     setPlacements(prev => [newRec, ...prev]);
     toast.success(`Logged application for ${rec.company}! 🎯`);
-  }, []);
+
+    if (authUser && authUser.provider === 'supabase') {
+      CloudSyncService.savePlacement(authUser.id, newRec);
+    }
+  }, [authUser]);
 
   const updatePlacement = useCallback((id: string, updates: Partial<PlacementRecord>) => {
-    setPlacements(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    setPlacements(prev => {
+      const updated = prev.map(p => p.id === id ? { ...p, ...updates } : p);
+      const target = updated.find(p => p.id === id);
+      if (target && authUser && authUser.provider === 'supabase') {
+        CloudSyncService.savePlacement(authUser.id, target);
+      }
+      return updated;
+    });
     toast.success('Interview status updated! 🚀');
-  }, []);
+  }, [authUser]);
 
   const deletePlacement = useCallback((id: string) => {
     setPlacements(prev => prev.filter(p => p.id !== id));
     toast.success('Application record removed.');
-  }, []);
+    if (authUser && authUser.provider === 'supabase') {
+      CloudSyncService.deletePlacement(authUser.id, id);
+    }
+  }, [authUser]);
 
   const joinCohort = useCallback(async (code: string, name?: string): Promise<boolean> => {
     const cleanCode = code.trim().toUpperCase();
@@ -364,7 +383,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const normalized = normalizeUserProfile(profile) || DEFAULT_PROFILE;
     setUserProfile(normalized);
     toast.success(`Profile updated! Welcome, ${normalized.name} 👋`, { id: 'profile-update' });
-  }, []);
+
+    if (authUser && authUser.provider === 'supabase') {
+      CloudSyncService.saveProfile(authUser.id, normalized);
+    }
+  }, [authUser]);
 
   /**
    * Shift the program start date forward to recover from a travel gap.
@@ -412,7 +435,17 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
       return updated;
     });
-  }, [progress]);
+
+    // Authoritative Real-Time Cloud Persistence
+    if (authUser && authUser.provider === 'supabase') {
+      if (nextState) {
+        const prob = problemLookupMap.get(problemId);
+        CloudSyncService.recordSolve(authUser.id, problemId, prob?.difficulty || 'Medium');
+      } else {
+        CloudSyncService.removeSolve(authUser.id, problemId);
+      }
+    }
+  }, [progress, authUser]);
 
   // ── Day Completion ───────────────────────────────────────────────────────────
   const isDayComplete = useCallback((weekNum: number, dayNum: number): boolean => {
@@ -453,7 +486,17 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     toast.success(`Day ${dayNum} (${day.topic}) Fully Completed! 🚀`, {
       duration: 4000
     });
-  }, [progress, solveHistory]);
+
+    // Authoritative Real-Time Cloud Persistence
+    if (authUser && authUser.provider === 'supabase') {
+      const batchSolves = day.problems.map((p) => ({
+        problem_id: p.id,
+        difficulty: p.difficulty,
+        solved_at: nowIso,
+      }));
+      CloudSyncService.recordBatchSolves(authUser.id, batchSolves);
+    }
+  }, [progress, solveHistory, authUser]);
 
   // ── Stats ────────────────────────────────────────────────────────────────────
   const stats: AppStats = useMemo(() => {
@@ -648,18 +691,32 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     toast.error("All progress wiped.", { id: 'reset-toast' });
   }, []);
 
-  // ── Auth & Live Cloud Sync ──────────────────────────────────────────────────
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
-  const [lastCloudSync, setLastCloudSync] = useState<Date | null>(null);
-
+  // ── Auth & Live Cloud Sync Listener ─────────────────────────────────────────
   useEffect(() => {
     let unmounted = false;
-    AuthService.init().then(async (user) => {
+
+    const handleUserSync = async (user: AuthUser | null) => {
       if (unmounted) return;
       setAuthUser(user);
-      if (user) {
+
+      if (user && user.provider === 'supabase') {
         setCloudSyncStatus('syncing');
+
+        // 1. Merge any existing guest/local solves into newly authenticated cloud account
+        try {
+          const rawLocal = localStorage.getItem(STORAGE_KEYS.progress);
+          const rawHist = localStorage.getItem(STORAGE_KEYS.solveHistory);
+          const localProg = rawLocal ? JSON.parse(rawLocal) : {};
+          const localHist = rawHist ? JSON.parse(rawHist) : {};
+
+          if (Object.keys(localProg).length > 0) {
+            await CloudSyncService.mergeLocalProgressToCloud(user.id, localProg, localHist);
+          }
+        } catch {
+          // ignore localStorage parse issues
+        }
+
+        // 2. Authoritative pull from Supabase
         const pull = await CloudSyncService.pullFromCloud(user.id);
         if (pull.success && pull.data) {
           if (pull.data.progress && Object.keys(pull.data.progress).length > 0) {
@@ -673,14 +730,26 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
           if (pull.data.userProfile) {
             setUserProfile(pull.data.userProfile);
+          } else if (user.displayName) {
+            // Auto-provision profile from Google OAuth identity
+            const initialProfile: UserProfile = {
+              ...DEFAULT_PROFILE,
+              name: user.displayName,
+            };
+            setUserProfile(initialProfile);
+            await CloudSyncService.saveProfile(user.id, initialProfile);
           }
           setCloudSyncStatus('synced');
           setLastCloudSync(new Date());
         } else {
           setCloudSyncStatus('synced');
         }
+      } else {
+        setCloudSyncStatus('offline');
       }
-    });
+    };
+
+    AuthService.init().then(handleUserSync);
 
     const unsubscribe = AuthService.subscribe((u) => {
       if (!unmounted) setAuthUser(u);
@@ -700,33 +769,22 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return { success: false, error: res.error };
     }
     setAuthUser(res.user);
-    if (res.user) {
+    if (res.user && res.user.provider === 'supabase') {
+      // 1. Merge local solves
+      await CloudSyncService.mergeLocalProgressToCloud(res.user.id, progress, solveHistory);
+      // 2. Pull authoritative cloud state
       const pull = await CloudSyncService.pullFromCloud(res.user.id);
-      const cloudSolvesCount = Object.keys(pull.data?.progress || {}).length;
-      const localSolvesCount = Object.keys(progress).length;
-
-      if (pull.success && pull.data && cloudSolvesCount > 0) {
-        setProgress(pull.data.progress || {});
-        if (pull.data.solveHistory) setSolveHistory(pull.data.solveHistory);
+      if (pull.success && pull.data) {
+        if (pull.data.progress) setProgress((prev) => ({ ...prev, ...pull.data!.progress }));
+        if (pull.data.solveHistory) setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
         if (pull.data.placements) setPlacements(pull.data.placements);
         if (pull.data.userProfile) setUserProfile(pull.data.userProfile);
-      } else if (localSolvesCount > 0) {
-        // Auto-import local progress to newly linked cloud account
-        await CloudSyncService.pushToCloud({
-          userId: res.user.id,
-          userProfile: userProfile || DEFAULT_PROFILE,
-          progress,
-          solveHistory,
-          placements,
-          streak,
-          solvedCount: stats.solvedCount,
-        });
       }
       setCloudSyncStatus('synced');
       setLastCloudSync(new Date());
     }
     return { success: true };
-  }, [progress, solveHistory, placements, userProfile, streak, stats.solvedCount]);
+  }, [progress, solveHistory]);
 
   const signup = useCallback(async (email: string, pass: string, name: string) => {
     setCloudSyncStatus('syncing');
@@ -736,10 +794,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return { success: false, error: res.error };
     }
     setAuthUser(res.user);
-    if (res.user) {
+    if (res.user && res.user.provider === 'supabase') {
+      const newProfile: UserProfile = userProfile || { ...DEFAULT_PROFILE, name };
+      setUserProfile(newProfile);
       await CloudSyncService.pushToCloud({
         userId: res.user.id,
-        userProfile: userProfile || DEFAULT_PROFILE,
+        userProfile: newProfile,
         progress,
         solveHistory,
         placements,

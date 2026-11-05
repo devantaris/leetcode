@@ -389,9 +389,17 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                     type="button"
                     className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-border/70 hover:border-foreground/20 bg-background transition-all cursor-pointer text-left"
                   >
-                    <div className="size-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary shrink-0">
-                      {userInitials}
-                    </div>
+                    {authUser?.avatarUrl ? (
+                      <img
+                        src={authUser.avatarUrl}
+                        alt={displayName}
+                        className="size-8 rounded-full object-cover border border-border shrink-0"
+                      />
+                    ) : (
+                      <div className="size-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary shrink-0">
+                        {userInitials}
+                      </div>
+                    )}
                     <div className="hidden md:flex flex-col min-w-0 pr-1">
                       <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
                         {displayName}

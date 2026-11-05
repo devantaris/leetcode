@@ -3,6 +3,8 @@ import { Play, Pause, RotateCcw, Timer } from 'lucide-react';
 import { sounds } from '../utils/audio';
 import toast from 'react-hot-toast';
 import { STORAGE_KEYS } from '../config/storageKeys';
+import { useProgress } from '../context/ProgressContext';
+import { CloudSyncService } from '../services/cloudSync';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -27,6 +29,7 @@ function loadTimerState(): { secondsLeft: number; totalSeconds: number; isActive
 }
 
 export const DailyFocusTimer: React.FC = () => {
+  const { authUser } = useProgress();
   const initial = loadTimerState();
   const [secondsLeft, setSecondsLeft] = useState<number>(initial.secondsLeft);
   const [isActive, setIsActive] = useState<boolean>(initial.isActive);
@@ -55,12 +58,16 @@ export const DailyFocusTimer: React.FC = () => {
         setIsActive(false);
         sounds.playVictorySound();
         toast.success("Focus sprint completed. Take a short cognitive break.", { duration: 5000 });
+        if (authUser && authUser.provider === 'supabase') {
+          const durationMin = Math.max(1, Math.round(totalSeconds / 60));
+          CloudSyncService.recordFocusSession(authUser.id, durationMin);
+        }
       } else if (secondsLeft % 300 === 0) {
         sounds.playTickSound();
       }
     }
     prevSecondsRef.current = secondsLeft;
-  }, [secondsLeft, isActive]);
+  }, [secondsLeft, isActive, totalSeconds, authUser]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;

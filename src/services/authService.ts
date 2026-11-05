@@ -7,6 +7,7 @@ export interface AuthUser {
   id: string;
   email: string;
   displayName: string;
+  avatarUrl?: string;
   isAnonymous: boolean;
   provider: 'supabase' | 'local';
 }
@@ -24,10 +25,15 @@ export class AuthService {
       try {
         const { data: { session } } = await sb.auth.getSession();
         if (session?.user) {
+          const meta = session.user.user_metadata || {};
+          const name = meta.full_name || meta.name || meta.display_name || session.user.email?.split('@')[0] || 'Operator';
+          const avatar = meta.avatar_url || meta.picture || undefined;
+
           this.currentUser = {
             id: session.user.id,
             email: session.user.email || '',
-            displayName: session.user.user_metadata?.display_name || session.user.email?.split('@')[0] || 'Operator',
+            displayName: name,
+            avatarUrl: avatar,
             isAnonymous: session.user.is_anonymous || false,
             provider: 'supabase',
           };
@@ -37,10 +43,15 @@ export class AuthService {
         // Keep session synced across OAuth redirects & token refreshes
         sb.auth.onAuthStateChange((_event, session) => {
           if (session?.user) {
+            const meta = session.user.user_metadata || {};
+            const name = meta.full_name || meta.name || meta.display_name || session.user.email?.split('@')[0] || 'Operator';
+            const avatar = meta.avatar_url || meta.picture || undefined;
+
             this.currentUser = {
               id: session.user.id,
               email: session.user.email || '',
-              displayName: session.user.user_metadata?.display_name || session.user.email?.split('@')[0] || 'Operator',
+              displayName: name,
+              avatarUrl: avatar,
               isAnonymous: session.user.is_anonymous || false,
               provider: 'supabase',
             };
@@ -253,12 +264,22 @@ export class AuthService {
         provider,
         options: {
           redirectTo: window.location.origin,
+          queryParams: provider === 'google' ? {
+            access_type: 'offline',
+            prompt: 'select_account',
+          } : undefined,
         },
       });
       if (error) return { error: error.message };
       return { error: null };
     } catch (err: unknown) {
-      return { error: err instanceof Error ? err.message : 'OAuth sign in failed' };
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('Failed to fetch') || msg.toLowerCase().includes('fetch')) {
+        return {
+          error: 'Network Error: Cannot reach Supabase. If you are using Brave Browser, please disable Brave Shields for localhost.',
+        };
+      }
+      return { error: msg || 'OAuth sign in failed' };
     }
   }
 
