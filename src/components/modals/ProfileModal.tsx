@@ -5,6 +5,8 @@ import { ModalWrapper } from './ModalWrapper';
 import toast from 'react-hot-toast';
 import { format, addDays } from 'date-fns';
 import { APP_CONFIG } from '../../config/appConfig';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -35,119 +37,117 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       secondarySkill: editSecondarySkill,
     };
     updateProfile(profile);
+    toast.success("Profile saved!");
     onClose();
   };
 
   return (
     <ModalWrapper isOpen={isOpen} onClose={onClose} title="Edit Profile">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="flex flex-col gap-5">
         <div>
-          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px', color: 'var(--text-primary)' }}>
-            User Profile
+          <h2 className="text-base font-serif font-bold tracking-tight text-foreground">
+            User Profile & Goals
           </h2>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-            Update your display identity, target dates, and rest preferences.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Configure your candidate identity, timeline dates, and study preferences.
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
-              Your Name
+        <div className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-foreground">
+              Candidate Name / Callsign
             </label>
-            <input
+            <Input
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="input"
+              className="text-xs h-9"
             />
           </div>
 
-          <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-foreground">
               Tagline / Focus
             </label>
-            <input
+            <Input
               type="text"
               value={editTagline}
               onChange={(e) => setEditTagline(e.target.value)}
               placeholder="e.g. SDE Candidate"
-              className="input"
+              className="text-xs h-9"
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
-                Start Date
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-foreground">
+                Grind Start Date
               </label>
-              <input
+              <Input
                 type="date"
                 value={editStartDate}
                 onChange={(e) => setEditStartDate(e.target.value)}
-                className="input"
+                className="text-xs h-9"
               />
             </div>
 
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
-                Target Deadline
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-foreground">
+                Target Placement Date
               </label>
-              <input
+              <Input
                 type="date"
                 value={editTargetDate}
                 onChange={(e) => setEditTargetDate(e.target.value)}
-                className="input"
+                className="text-xs h-9"
               />
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
-                Weekly Rest Day
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-foreground">
+                Rest & Recovery Day
               </label>
               <select
                 value={editRestDay}
                 onChange={(e) => setEditRestDay(e.target.value)}
-                className="input"
-                style={{ cursor: 'pointer' }}
+                className="h-9 rounded-md border border-input bg-background px-3 text-xs text-foreground outline-none focus:border-ring"
               >
-                <option value="sunday">Sunday</option>
-                <option value="saturday">Saturday</option>
-                <option value="friday">Friday</option>
-                <option value="monday">Monday</option>
+                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(d => (
+                  <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+                ))}
               </select>
             </div>
 
-            <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', marginBottom: 4 }}>
-                Rest Day Focus
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-foreground">
+                Secondary Domain Skill
               </label>
               <select
                 value={editSecondarySkill}
                 onChange={(e) => setEditSecondarySkill(e.target.value)}
-                className="input"
-                style={{ cursor: 'pointer' }}
+                className="h-9 rounded-md border border-input bg-background px-3 text-xs text-foreground outline-none focus:border-ring"
               >
                 <option value="project">Personal Project</option>
-                <option value="research">Research / Thesis</option>
+                <option value="research">Research Paper / Thesis</option>
                 <option value="competitive">Competitive Programming</option>
-                <option value="systemdesign">System Design Reading</option>
-                <option value="openSource">Open Source Contribution</option>
-                <option value="other">Rest &amp; Recharge</option>
+                <option value="systemdesign">System Design</option>
+                <option value="openSource">Open Source Contributions</option>
+                <option value="other">Rest & Recharge</option>
               </select>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
-          <button onClick={onClose} className="btn btn-default">
+        <div className="flex justify-end gap-2.5 pt-2 border-t border-border/50">
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
             Cancel
-          </button>
-          <button onClick={handleSaveProfile} className="btn btn-primary">
+          </Button>
+          <Button size="sm" onClick={handleSaveProfile} className="text-xs">
             Save Changes
-          </button>
+          </Button>
         </div>
       </div>
     </ModalWrapper>

@@ -8,7 +8,24 @@ import { AuthModal } from './components/modals/AuthModal';
 import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
 import { CURRICULUM } from './data/curriculumStats';
-import { Sun, Moon, Settings, Download, Upload, RotateCcw, User, CalendarClock, Terminal, Search, Volume2, VolumeX, Compass, BookOpen, BarChart2, Award, Cloud, LogIn } from 'lucide-react';
+import {
+  Sun, Moon, Settings, Download, Upload, RotateCcw, User,
+  CalendarClock, Terminal, Search, Volume2, VolumeX, Compass,
+  BookOpen, BarChart2, Award, Cloud, LogIn, Briefcase, Flame, CheckCircle2
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuGroup
+} from '@/components/ui/dropdown-menu';
 
 type Theme = 'dark' | 'light';
 type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'auth' | null;
@@ -19,20 +36,27 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
-  const { importJSON, isOnboarded, userProfile, stats, exportJSON, soundEnabled, toggleSound, authUser, cloudSyncStatus } = useProgress();
+  const {
+    importJSON, isOnboarded, userProfile, stats, exportJSON,
+    soundEnabled, toggleSound, authUser, cloudSyncStatus
+  } = useProgress();
+
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('cadence-theme');
     return (saved as Theme) || 'dark';
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('cadence-theme', theme);
   }, [theme]);
 
@@ -57,25 +81,12 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
       }
       if (e.key === 'Escape') {
         setIsCommandPaletteOpen(false);
-        setShowSettings(false);
         setActiveModal(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSound]);
-
-  // Click outside settings
-  useEffect(() => {
-    if (!showSettings) return;
-    const handler = (e: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
-        setShowSettings(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showSettings]);
 
   const handleTriggerImport = () => fileInputRef.current?.click();
 
@@ -97,378 +108,340 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
   const openModal = (modal: ModalType) => {
     setActiveModal(modal);
-    setShowSettings(false);
   };
 
   if (!isOnboarded) return <OnboardingPage />;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* ── TOP NAV HEADER ── */}
-      <header className="site-header">
-        {/* Brand */}
-        <Link to="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: 'var(--radius-sm)',
-            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: '#ffffff',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11, fontWeight: 800, fontFamily: 'var(--font-mono)',
-            boxShadow: '0 0 12px rgba(99, 102, 241, 0.4)'
-          }}>
-            {APP_CONFIG.shortName}
-          </div>
-          <div>
-            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', display: 'block', lineHeight: 1.2 }}>
-              {APP_CONFIG.name}
-            </span>
-          </div>
-        </Link>
+    <TooltipProvider delay={200}>
+      <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+        {/* ── TOP NAV HEADER ── */}
+        <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/90 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
+            
+            {/* Left: Brand & Nav Links */}
+            <div className="flex items-center gap-6 lg:gap-8">
+              <Link to="/dashboard" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
+                <div className="size-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-mono font-bold text-xs shadow-xs">
+                  {APP_CONFIG.shortName}
+                </div>
+                <span className="font-serif font-bold text-base tracking-tight text-foreground hidden sm:inline-block">
+                  {APP_CONFIG.name}
+                </span>
+              </Link>
 
-        {/* Segmented switcher (Today · Syllabus · Analytics · Leaderboard) */}
-        <nav className="nav-segment">
-          <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Today
+              {/* Segmented Desktop Nav */}
+              <nav className="hidden md:flex items-center gap-1 rounded-lg bg-muted/60 p-1 border border-border/40 text-xs font-medium">
+                <NavLink
+                  to="/dashboard"
+                  className={({ isActive }) =>
+                    `px-3 py-1 rounded-md transition-all ${
+                      isActive
+                        ? 'bg-background text-foreground font-semibold shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`
+                  }
+                >
+                  Today
+                </NavLink>
+                <NavLink
+                  to="/curriculum"
+                  className={({ isActive }) =>
+                    `px-3 py-1 rounded-md transition-all ${
+                      isActive
+                        ? 'bg-background text-foreground font-semibold shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`
+                  }
+                >
+                  Syllabus
+                </NavLink>
+                <NavLink
+                  to="/analytics"
+                  className={({ isActive }) =>
+                    `px-3 py-1 rounded-md transition-all ${
+                      isActive
+                        ? 'bg-background text-foreground font-semibold shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`
+                  }
+                >
+                  Analytics
+                </NavLink>
+                <NavLink
+                  to="/leaderboard"
+                  className={({ isActive }) =>
+                    `px-3 py-1 rounded-md transition-all ${
+                      isActive
+                        ? 'bg-background text-foreground font-semibold shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`
+                  }
+                >
+                  Leaderboard
+                </NavLink>
+              </nav>
+            </div>
+
+            {/* Right: Quick actions, Stats, User Menu */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              {/* Command Palette Trigger */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCommandPaletteOpen(true)}
+                className="h-8 gap-2 px-2.5 text-xs text-muted-foreground hover:text-foreground bg-muted/30"
+                title="Search problems and commands (Ctrl+K)"
+              >
+                <Search className="size-3.5" />
+                <span className="hidden sm:inline">Search</span>
+                <kbd className="pointer-events-none hidden lg:inline-flex h-4.5 select-none items-center gap-1 rounded border border-border/60 bg-muted px-1.5 font-mono text-[9px] font-semibold text-muted-foreground">
+                  ⌘K
+                </kbd>
+              </Button>
+
+              {/* Streak Badge */}
+              {stats.streak > 0 && (
+                <Badge
+                  variant="outline"
+                  className="h-8 gap-1 px-2.5 font-mono text-xs border-amber-500/30 bg-amber-500/10 text-amber-500 font-semibold"
+                  title={`${stats.streak}-day streak active!`}
+                >
+                  <Flame className="size-3.5 fill-amber-500/20" />
+                  <span>{stats.streak}d</span>
+                </Badge>
+              )}
+
+              {/* Cloud / Auth Trigger */}
+              {authUser ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openModal('auth')}
+                  className={`h-8 gap-1.5 text-xs ${
+                    cloudSyncStatus === 'synced'
+                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+                      : 'border-border/60 text-muted-foreground'
+                  }`}
+                  title={`${authUser.displayName} · ${cloudSyncStatus}`}
+                >
+                  <Cloud className="size-3.5" />
+                  <span className="hidden sm:inline font-medium">{authUser.displayName.split(' ')[0]}</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openModal('auth')}
+                  className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <LogIn className="size-3.5" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </Button>
+              )}
+
+              {/* Terminal OS Switcher (if available) */}
+              {onSwitchToOS && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onSwitchToOS}
+                  className="h-8 gap-1.5 px-2.5 font-mono text-xs border-emerald-500/40 text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 hidden md:inline-flex"
+                  title="Switch to Retro Terminal OS"
+                >
+                  <Terminal className="size-3.5" />
+                  <span>OS</span>
+                </Button>
+              )}
+
+              {/* Audio toggle */}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={toggleSound}
+                className="text-muted-foreground hover:text-foreground"
+                title={soundEnabled ? 'Mute sound effects' : 'Enable tactile audio effects'}
+              >
+                {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4 opacity-50" />}
+              </Button>
+
+              {/* Theme toggle */}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={toggleTheme}
+                className="text-muted-foreground hover:text-foreground"
+                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+              </Button>
+
+              {/* Dropdown Menu for Settings & Modals */}
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground" />}>
+                  <Settings className="size-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>GrindOS Console</DropdownMenuLabel>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() => openModal('profile')}>
+                      <User className="size-4 mr-2" />
+                      <span>Profile ({userProfile.name})</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openModal('placements')}>
+                      <Briefcase className="size-4 mr-2" />
+                      <span>Placement Pipeline</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openModal('resume')}>
+                      <CalendarClock className="size-4 mr-2" />
+                      <span>Adjust Timeline / Day</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openModal('auth')}>
+                      <Cloud className="size-4 mr-2" />
+                      <span>{authUser ? 'Cloud Sync Status' : 'Sign In / Register'}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openModal('strategy')}>
+                      <BookOpen className="size-4 mr-2" />
+                      <span>Strategy Guide</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openModal('rules')}>
+                      <CheckCircle2 className="size-4 mr-2" />
+                      <span>Rules & Guidelines</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={exportJSON}>
+                      <Download className="size-4 mr-2" />
+                      <span>Export Backup (.json)</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleTriggerImport}>
+                      <Upload className="size-4 mr-2" />
+                      <span>Restore Backup</span>
+                    </DropdownMenuItem>
+                    {onGoToHome && (
+                      <DropdownMenuItem onClick={onGoToHome}>
+                        <Compass className="size-4 mr-2" />
+                        <span>Experience Portal</span>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => openModal('reset')}
+                  >
+                    <RotateCcw className="size-4 mr-2" />
+                    <span>Reset All Data</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        {/* ── MAIN VIEWPORT CONTENT ── */}
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mb-16 md:mb-0">
+          <Outlet />
+        </main>
+
+        {/* ── MOBILE BOTTOM NAVIGATION ── */}
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/40 flex items-center justify-around h-14 px-2">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
+                isActive ? 'text-primary' : 'text-muted-foreground'
+              }`
+            }
+          >
+            <Compass className="size-4.5" />
+            <span>Today</span>
           </NavLink>
-          <NavLink to="/curriculum" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Syllabus
+          <NavLink
+            to="/curriculum"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
+                isActive ? 'text-primary' : 'text-muted-foreground'
+              }`
+            }
+          >
+            <BookOpen className="size-4.5" />
+            <span>Syllabus</span>
           </NavLink>
-          <NavLink to="/analytics" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Analytics
+          <NavLink
+            to="/analytics"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
+                isActive ? 'text-primary' : 'text-muted-foreground'
+              }`
+            }
+          >
+            <BarChart2 className="size-4.5" />
+            <span>Analytics</span>
           </NavLink>
-          <NavLink to="/leaderboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Leaderboard
+          <NavLink
+            to="/leaderboard"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
+                isActive ? 'text-primary' : 'text-muted-foreground'
+              }`
+            }
+          >
+            <Award className="size-4.5" />
+            <span>Ranks</span>
           </NavLink>
         </nav>
 
-        {/* Right utility icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Quick Search / Command Palette trigger */}
-          <button
-            onClick={() => setIsCommandPaletteOpen(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-              padding: '4px 8px', borderRadius: 'var(--radius-md)',
-              fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer',
-              transition: 'all var(--transition-fast)'
-            }}
-            title="Search problems and commands (Ctrl+K)"
-          >
-            <Search size={13} style={{ color: 'var(--text-muted)' }} />
-            <span className="hidden sm:inline" style={{ fontSize: 11 }}>Search</span>
-            <kbd style={{
-              fontSize: 9, fontFamily: 'var(--font-mono)',
-              padding: '1px 4px', borderRadius: 3,
-              background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
-              color: 'var(--text-muted)'
-            }}>
-              ⌘K
-            </kbd>
-          </button>
-
-          {/* Active streak pill */}
-          {stats.streak > 0 && (
-            <div
-              style={{
-                fontSize: 11, fontFamily: 'var(--font-mono)',
-                color: 'var(--color-warning-text)', fontWeight: 700,
-                background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)',
-                padding: '3px 9px', borderRadius: 'var(--radius-full)',
-                display: 'flex', alignItems: 'center', gap: 4,
-                boxShadow: '0 0 10px rgba(245, 158, 11, 0.2)'
-              }}
-              title={`${stats.streak}-day streak active!`}
-            >
-              🔥 {stats.streak}d
-            </div>
-          )}
-
-          {/* Auth / Cloud Sync button */}
-          {authUser ? (
-            <button
-              onClick={() => openModal('auth')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                background: cloudSyncStatus === 'synced'
-                  ? 'rgba(16, 185, 129, 0.1)'
-                  : cloudSyncStatus === 'syncing'
-                  ? 'rgba(99, 102, 241, 0.1)'
-                  : 'var(--bg-elevated)',
-                border: `1px solid ${cloudSyncStatus === 'synced'
-                  ? 'var(--color-success-border)'
-                  : cloudSyncStatus === 'syncing'
-                  ? 'rgba(99,102,241,0.4)'
-                  : 'var(--border-default)'}`,
-                borderRadius: 'var(--radius-sm)',
-                padding: '4px 8px', cursor: 'pointer',
-                fontSize: 11, color: cloudSyncStatus === 'synced'
-                  ? 'var(--color-success-text)'
-                  : 'var(--text-secondary)',
-                transition: 'all var(--transition-fast)',
-              }}
-              title={`${authUser.displayName} · ${cloudSyncStatus}`}
-            >
-              <Cloud size={12} />
-              <span className="hidden sm:inline">{authUser.displayName.split(' ')[0]}</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => openModal('auth')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--border-default)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '4px 8px', cursor: 'pointer',
-                fontSize: 11, color: 'var(--text-secondary)',
-                transition: 'all var(--transition-fast)',
-              }}
-              title="Sign in to sync progress across devices"
-            >
-              <LogIn size={12} />
-              <span className="hidden sm:inline">Sign In</span>
-            </button>
-          )}
-
-          {/* Switch to Retro OS */}
-          {onSwitchToOS && (
-            <button
-              onClick={onSwitchToOS}
-              style={{
-                background: 'rgba(61, 220, 132, 0.08)',
-                border: '1px solid rgba(61, 220, 132, 0.35)',
-                color: '#3ddc84',
-                padding: '4px 10px',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 11,
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 0 10px rgba(61, 220, 132, 0.15)',
-                transition: 'all var(--transition-fast)'
-              }}
-              title="Switch to Retro Terminal OS"
-            >
-              <Terminal size={12} /> OS Shell
-            </button>
-          )}
-
-          {/* Mode Selector / Landing Page */}
-          <Link
-            to="/"
-            onClick={onGoToHome}
-            style={{
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              textDecoration: 'none',
-              padding: '4px 8px',
-              borderRadius: 'var(--radius-sm)',
-              fontWeight: 500
-            }}
-            title="Switch Experience / Return to Landing"
-          >
-            Portal
-          </Link>
-
-          {/* Sound toggle */}
-          <button
-            onClick={toggleSound}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--text-secondary)', padding: 6, display: 'flex',
-              borderRadius: 'var(--radius-sm)'
-            }}
-            title={soundEnabled ? 'Mute sound effects' : 'Enable tactile audio effects'}
-          >
-            {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} style={{ opacity: 0.5 }} />}
-          </button>
-
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--text-secondary)', padding: 6, display: 'flex',
-              borderRadius: 'var(--radius-sm)'
-            }}
-            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          >
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
-
-          {/* Settings dropdown */}
-          <div ref={settingsRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setShowSettings(s => !s)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--text-secondary)', padding: 6, display: 'flex',
-                borderRadius: 'var(--radius-sm)'
-              }}
-              title="Settings & Data"
-            >
-              <Settings size={14} />
-            </button>
-
-            {showSettings && (
-              <div style={{
-                position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                borderRadius: 'var(--radius-md)', padding: 4, boxShadow: 'var(--shadow-lg)',
-                zIndex: 60, display: 'flex', flexDirection: 'column', gap: 2
-              }}>
-                <button
-                  onClick={() => openModal('auth')}
-                  className="btn btn-ghost"
-                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px', color: authUser ? 'var(--color-success-text)' : 'var(--color-info-text)' }}
-                >
-                  {authUser ? <Cloud size={13} /> : <LogIn size={13} />}
-                  {authUser ? `Cloud: ${authUser.displayName.split(' ')[0]}` : 'Sign In / Register'}
-                </button>
-                <button
-                  onClick={() => openModal('profile')}
-                  className="btn btn-ghost"
-                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px' }}
-                >
-                  <User size={13} /> Edit Profile ({userProfile.name})
-                </button>
-                <button
-                  onClick={() => openModal('resume')}
-                  className="btn btn-ghost"
-                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px' }}
-                >
-                  <CalendarClock size={13} /> Adjust Dates
-                </button>
-                <button
-                  onClick={() => openModal('placements')}
-                  className="btn btn-ghost"
-                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px' }}
-                >
-                  <span>💼 Placement Pipeline</span>
-                </button>
-                {onSwitchToOS && (
-                  <button
-                    onClick={() => { setShowSettings(false); onSwitchToOS(); }}
-                    className="btn btn-ghost"
-                    style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px' }}
-                  >
-                    <Terminal size={13} /> Switch to Terminal OS
-                  </button>
-                )}
-                <div className="divider" style={{ margin: '3px 0' }} />
-                <button
-                  onClick={() => { exportJSON(); setShowSettings(false); }}
-                  className="btn btn-ghost"
-                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px' }}
-                >
-                  <Download size={13} /> Export Backup (.json)
-                </button>
-                <button
-                  onClick={() => { handleTriggerImport(); setShowSettings(false); }}
-                  className="btn btn-ghost"
-                  style={{ width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px' }}
-                >
-                  <Upload size={13} /> Restore File
-                </button>
-                <div className="divider" style={{ margin: '3px 0' }} />
-                <button
-                  onClick={() => openModal('reset')}
-                  className="btn btn-ghost"
-                  style={{
-                    width: '100%', justifyContent: 'flex-start', fontSize: 12, padding: '6px 8px',
-                    color: 'var(--color-danger-text)'
-                  }}
-                >
-                  <RotateCcw size={13} /> Reset All Data
-                </button>
-              </div>
+        {/* ── FOOTER STATUS BAR ── */}
+        <footer className="hidden md:flex items-center justify-between border-t border-border/40 bg-card/40 px-6 py-3 text-xs text-muted-foreground font-mono">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-foreground">{APP_CONFIG.name}</span>
+            <span>·</span>
+            <span>Day {stats.currentDay} of {CURRICULUM.totalDays}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span>
+              <strong className="text-foreground font-semibold">{stats.solvedCount}</strong> / {stats.totalProblems} solved
+            </span>
+            {stats.streak > 0 && (
+              <>
+                <span>·</span>
+                <span className="text-amber-500 font-medium">🔥 {stats.streak}d streak</span>
+              </>
+            )}
+            {authUser && (
+              <>
+                <span>·</span>
+                <span className="flex items-center gap-1.5 text-foreground/80">
+                  <Cloud className="size-3" />
+                  {cloudSyncStatus === 'synced' ? 'Synced' : cloudSyncStatus === 'syncing' ? 'Syncing…' : 'Offline'}
+                </span>
+              </>
             )}
           </div>
-        </div>
-      </header>
+        </footer>
 
-      {/* ── MAIN CONTENT OUTLET ── */}
-      <main style={{ flex: 1 }}>
-        <Outlet />
-      </main>
+        {/* Hidden file input */}
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
 
-      {/* ── MOBILE BOTTOM NAVIGATION ── */}
-      <nav className="mobile-bottom-nav">
-        <NavLink to="/dashboard" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-          <Compass size={18} />
-          <span>Today</span>
-        </NavLink>
-        <NavLink to="/curriculum" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-          <BookOpen size={18} />
-          <span>Syllabus</span>
-        </NavLink>
-        <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-          <BarChart2 size={18} />
-          <span>Analytics</span>
-        </NavLink>
-        <NavLink to="/leaderboard" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-          <Award size={18} />
-          <span>Ranks</span>
-        </NavLink>
-      </nav>
+        {/* Modals orchestrator */}
+        <Modals activeModal={activeModal} onClose={() => setActiveModal(null)} onTriggerImportFile={handleTriggerImport} />
 
-      {/* ── FOOTER STATUS BAR ── */}
-      <footer style={{
-        padding: '14px 24px', borderTop: '1px solid var(--border-subtle)',
-        fontSize: 12, color: 'var(--text-secondary)', display: 'flex',
-        alignItems: 'center', justifyContent: 'space-between', fontFamily: 'var(--font-mono)',
-        background: 'rgba(8, 9, 15, 0.6)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ color: 'var(--text-accent)', fontWeight: 700 }}>{APP_CONFIG.name} Pro</span>
-          <span>·</span>
-          <span>Day {stats.currentDay} / {CURRICULUM.totalDays}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span><strong style={{ color: 'var(--color-success-text)' }}>{stats.solvedCount}</strong> / {stats.totalProblems} solved</span>
-          {stats.streak > 0 && <span style={{ color: 'var(--color-warning-text)', fontWeight: 700 }}>· 🔥 {stats.streak}d streak</span>}
-          {authUser && (
-            <span style={{
-              color: cloudSyncStatus === 'synced' ? 'var(--color-success-text)' :
-                     cloudSyncStatus === 'syncing' ? '#818cf8' : 'var(--text-muted)',
-              display: 'flex', alignItems: 'center', gap: 4,
-            }}>
-              · <Cloud size={10} />
-              {cloudSyncStatus === 'synced' ? 'Synced' : cloudSyncStatus === 'syncing' ? 'Syncing…' : 'Offline'}
-            </span>
-          )}
-        </div>
-      </footer>
+        {/* Auth Modal */}
+        <AuthModal isOpen={activeModal === 'auth'} onClose={() => setActiveModal(null)} />
 
-      {/* Hidden file input */}
-      <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" style={{ display: 'none' }} />
+        {/* Command Palette */}
+        <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onOpenModal={openModal} />
 
-      {/* Modals */}
-      <Modals activeModal={activeModal} onClose={() => setActiveModal(null)} onTriggerImportFile={handleTriggerImport} />
-
-      {/* Auth Modal */}
-      <AuthModal isOpen={activeModal === 'auth'} onClose={() => setActiveModal(null)} />
-
-      {/* Command Palette */}
-      <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} onOpenModal={openModal} />
-
-      {/* Toast notifications */}
-      <Toaster
-        position="bottom-center"
-        toastOptions={{
-          style: {
-            background: 'var(--bg-card)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-default)',
-            borderRadius: '6px',
-            fontSize: '12px',
-            boxShadow: 'var(--shadow-lg)'
-          }
-        }}
-      />
-    </div>
+        {/* Toast notifications */}
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            className: '!bg-card !text-card-foreground !border !border-border !rounded-lg !text-xs !shadow-md',
+          }}
+        />
+      </div>
+    </TooltipProvider>
   );
 };

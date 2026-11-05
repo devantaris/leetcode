@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { useProgress } from '../../context/ProgressContext';
-import { X, Mail, Lock, User, LogIn, UserPlus, Cloud, Shield, RefreshCw } from 'lucide-react';
+import { Mail, Lock, User, LogIn, UserPlus, Cloud, Shield, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,8 +30,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,271 +103,181 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const syncLabel = {
-    synced: '✅ Synced to Cloud',
-    syncing: '⏳ Syncing…',
-    offline: '🔴 Local Cache / Offline',
-    error: '⚠️ Sync Error',
+    synced: 'Synced to Master Cloud',
+    syncing: 'Syncing in progress…',
+    offline: 'Local Cache / Offline',
+    error: 'Cloud Sync Warning',
   }[cloudSyncStatus];
 
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 16,
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-default)',
-        borderRadius: 'var(--radius-xl)',
-        width: '100%', maxWidth: 400,
-        boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
-        overflow: 'hidden',
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '20px 24px 16px',
-          borderBottom: '1px solid var(--border-subtle)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Cloud size={18} style={{ color: 'var(--text-accent)' }} />
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-                {authUser ? 'Your Account' : 'Account & Sync'}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
-                {authUser ? syncLabel : 'Save progress across all devices'}
-              </div>
-            </div>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-md p-6 gap-5">
+        <DialogHeader className="gap-1.5 text-left">
+          <div className="flex items-center gap-2 text-primary">
+            <Cloud className="size-5" />
+            <DialogTitle className="text-lg font-serif font-bold tracking-tight text-foreground">
+              {authUser ? 'Your Account' : 'Account & Cloud Sync'}
+            </DialogTitle>
           </div>
-          <button onClick={onClose} className="btn btn-ghost" style={{ padding: 6 }}>
-            <X size={16} />
-          </button>
-        </div>
+          <DialogDescription className="text-xs text-muted-foreground">
+            {authUser ? syncLabel : 'Save and synchronize your DSA progress across all devices.'}
+          </DialogDescription>
+        </DialogHeader>
 
-        <div style={{ padding: '20px 24px' }}>
-          {/* Signed-in state */}
-          {authUser ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{
-                padding: '14px 16px',
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: 'var(--radius-md)',
-                display: 'flex', flexDirection: 'column', gap: 6,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    background: 'var(--color-info-bg)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
-                    <User size={14} style={{ color: 'var(--color-info-text)' }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {authUser.displayName}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {authUser.email}
-                    </div>
-                  </div>
+        {authUser ? (
+          <div className="flex flex-col gap-4">
+            <div className="p-4 rounded-xl border border-border/50 bg-muted/30 flex items-center gap-3">
+              <div className="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold">
+                {authUser.displayName.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-foreground truncate">
+                  {authUser.displayName}
+                </div>
+                <div className="text-xs text-muted-foreground truncate font-mono">
+                  {authUser.email}
                 </div>
                 {lastCloudSync && (
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
+                  <div className="text-[10px] text-muted-foreground font-mono mt-1">
                     Last sync: {lastCloudSync.toLocaleTimeString()}
                   </div>
                 )}
               </div>
-
-              <div style={{
-                padding: '10px 14px',
-                background: 'rgba(16, 185, 129, 0.08)',
-                border: '1px solid var(--color-success-border)',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: 12, color: 'var(--color-success-text)',
-                display: 'flex', alignItems: 'center', gap: 8,
-              }}>
-                <Shield size={14} style={{ flexShrink: 0 }} />
-                <span>Your solves sync automatically across browsers and devices.</span>
-              </div>
-
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={handleManualSync}
-                  disabled={loading}
-                  className="btn btn-default"
-                  style={{ flex: 1, padding: '9px 12px', fontSize: 12 }}
-                >
-                  <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                  {loading ? 'Syncing...' : 'Sync Now'}
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-danger"
-                  style={{ flex: 1, padding: '9px 12px', fontSize: 12 }}
-                >
-                  Sign Out
-                </button>
-              </div>
             </div>
-          ) : (
-            /* Sign-in / Sign-up form (Clean consumer UI) */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {/* Tab switcher: Sign In vs Register only */}
-              <div style={{
-                display: 'flex', gap: 2,
-                background: 'var(--bg-elevated)',
-                padding: 3, borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-subtle)',
-              }}>
-                <button
-                  onClick={() => { setTab('login'); setError(null); setSuccess(null); }}
-                  style={{
-                    flex: 1, padding: '7px 8px',
-                    borderRadius: 'var(--radius-xs)',
-                    border: 'none', cursor: 'pointer',
-                    fontSize: 12, fontWeight: 600,
-                    background: tab === 'login' ? 'var(--bg-card)' : 'transparent',
-                    color: tab === 'login' ? 'var(--text-primary)' : 'var(--text-muted)',
-                    transition: 'all var(--transition-fast)',
-                  }}
-                >
-                  🔑 Sign In
-                </button>
-                <button
-                  onClick={() => { setTab('signup'); setError(null); setSuccess(null); }}
-                  style={{
-                    flex: 1, padding: '7px 8px',
-                    borderRadius: 'var(--radius-xs)',
-                    border: 'none', cursor: 'pointer',
-                    fontSize: 12, fontWeight: 600,
-                    background: tab === 'signup' ? 'var(--bg-card)' : 'transparent',
-                    color: tab === 'signup' ? 'var(--text-primary)' : 'var(--text-muted)',
-                    transition: 'all var(--transition-fast)',
-                  }}
-                >
-                  ✨ Create Account
-                </button>
-              </div>
 
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {tab === 'signup' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <User size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                    <input
-                      type="text"
-                      placeholder="Display Name (or Callsign)"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      className="input"
-                      style={{ fontSize: 13, flex: 1 }}
-                      autoComplete="name"
-                      required
-                    />
-                  </div>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Mail size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                  <input
-                    type="email"
-                    placeholder="Email address"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="input"
-                    style={{ fontSize: 13, flex: 1 }}
-                    autoComplete="email"
+            <div className="flex items-center gap-2 p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-xs text-emerald-500">
+              <Shield className="size-4 shrink-0" />
+              <span>Automatic real-time sync is active for all solved missions.</span>
+            </div>
+
+            <div className="flex gap-2.5 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManualSync}
+                disabled={loading}
+                className="flex-1 text-xs h-9 gap-1.5"
+              >
+                <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
+                <span>{loading ? 'Syncing...' : 'Sync Now'}</span>
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleLogout}
+                className="flex-1 text-xs h-9"
+              >
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {/* Tab Switcher */}
+            <Tabs value={tab} onValueChange={(v) => { setTab(v as AuthTab); setError(null); setSuccess(null); }} className="w-full">
+              <TabsList className="grid grid-cols-2 w-full h-9 bg-muted/60 p-1">
+                <TabsTrigger value="login" className="text-xs font-semibold">
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="text-xs font-semibold">
+                  Create Account
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              {tab === 'signup' && (
+                <div className="relative">
+                  <User className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Display Name (or Callsign)"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-9 text-xs h-9.5"
+                    autoComplete="name"
                     required
                   />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                  <input
-                    type="password"
-                    placeholder="Password (minimum 6 characters)"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="input"
-                    style={{ fontSize: 13, flex: 1 }}
-                    autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
-                    required
-                    minLength={6}
-                  />
-                </div>
+              )}
 
-                {error && (
-                  <div style={{
-                    padding: '8px 12px',
-                    background: 'var(--color-danger-bg)',
-                    border: '1px solid var(--color-danger-border)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: 12, color: 'var(--color-danger-text)',
-                  }}>
-                    {error}
-                  </div>
-                )}
-
-                {success && (
-                  <div style={{
-                    padding: '8px 12px',
-                    background: 'var(--color-success-bg)',
-                    border: '1px solid var(--color-success-border)',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: 12, color: 'var(--color-success-text)',
-                  }}>
-                    {success}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-primary"
-                  style={{ padding: '10px 16px', fontSize: 13, marginTop: 4 }}
-                >
-                  {loading ? (
-                    '…'
-                  ) : tab === 'login' ? (
-                    <><LogIn size={14} /> Sign In</>
-                  ) : (
-                    <><UserPlus size={14} /> Create Free Account</>
-                  )}
-                </button>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0' }}>
-                  <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>or passwordless</span>
-                  <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleMagicLink}
-                  disabled={loading}
-                  className="btn btn-default"
-                  style={{ width: '100%', padding: '8px 12px', fontSize: 12 }}
-                  title="Send a login link to your email without needing a password"
-                >
-                  <Mail size={12} /> Send Magic Sign-In Link
-                </button>
-              </form>
-
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
-                {tab === 'login'
-                  ? 'New grinder? Switch to Create Account above.'
-                  : 'Already have an account? Switch to Sign In above.'}
-                <br />
-                Guest mode works offline — your data stays safe in local cache until you sign in.
+              <div className="relative">
+                <Mail className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-9 text-xs h-9.5"
+                  autoComplete="email"
+                  required
+                />
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+
+              <div className="relative">
+                <Lock className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder="Password (minimum 6 characters)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-9 text-xs h-9.5"
+                  autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              {error && (
+                <Alert className="border-destructive/30 bg-destructive/10 text-destructive text-xs py-2 px-3">
+                  <AlertDescription className="text-xs font-medium m-0">{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {success && (
+                <Alert className="border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs py-2 px-3">
+                  <AlertDescription className="text-xs font-medium m-0">{success}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full text-xs h-9.5 font-semibold mt-1"
+              >
+                {loading ? (
+                  'Processing…'
+                ) : tab === 'login' ? (
+                  <><LogIn className="size-3.5 mr-1.5" /> Sign In</>
+                ) : (
+                  <><UserPlus className="size-3.5 mr-1.5" /> Create Free Account</>
+                )}
+              </Button>
+
+              <div className="flex items-center gap-3 my-1">
+                <div className="h-px bg-border/60 flex-1" />
+                <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">or passwordless</span>
+                <div className="h-px bg-border/60 flex-1" />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleMagicLink}
+                disabled={loading}
+                className="w-full text-xs h-9 text-muted-foreground hover:text-foreground"
+              >
+                <Mail className="size-3.5 mr-1.5" /> Send Magic Sign-In Link
+              </Button>
+            </form>
+
+            <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+              Guest mode works offline — your progress is safely cached until you sign in.
+            </p>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -4,73 +4,50 @@ import { WeekAccordion } from '../components/WeekAccordion';
 import { useProgress } from '../context/ProgressContext';
 import { CURRICULUM } from '../data/curriculumStats';
 import { BookOpen, CheckCircle2, Flame, Award } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export const CurriculumPage: React.FC = () => {
   const { stats } = useProgress();
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
 
   return (
-    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
       {/* ── Title & Quick Telemetry Header ── */}
-      <div style={{
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 16
-      }}>
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <div style={{
-              width: 24, height: 24, borderRadius: 6,
-              background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <BookOpen size={14} />
+          <div className="flex items-center gap-2 mb-1">
+            <div className="size-7 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+              <BookOpen className="size-3.5" />
             </div>
-            <h1 style={{
-              fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
-              letterSpacing: '-0.02em', margin: 0
-            }}>
-              Syllabus &amp; Curriculum
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-foreground">
+              Syllabus &amp; Problem Explorer
             </h1>
           </div>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-            25-week chronological progression through {CURRICULUM.totalProblems} foundational problems &amp; patterns.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            20-week structured progression covering {CURRICULUM.totalProblems} foundational patterns and interview questions.
           </p>
         </div>
 
         {/* Quick telemetry badges */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 6,
-            background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-            fontSize: 12, fontFamily: 'var(--font-mono)'
-          }}>
-            <CheckCircle2 size={13} style={{ color: 'var(--color-success-text)' }} />
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{stats.solvedCount}</span>
-            <span style={{ color: 'var(--text-muted)' }}>/ {CURRICULUM.totalProblems}</span>
-            <span style={{ color: 'var(--color-success-text)', fontWeight: 700 }}>({pct}%)</span>
-          </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="font-mono text-xs py-1 px-2.5 gap-1.5 border-border/60">
+            <CheckCircle2 className="size-3.5 text-emerald-500" />
+            <span>
+              <strong className="text-foreground">{stats.solvedCount}</strong> / {CURRICULUM.totalProblems} solved ({pct}%)
+            </span>
+          </Badge>
 
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 6,
-            background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-            fontSize: 12, fontFamily: 'var(--font-mono)'
-          }}>
-            <Flame size={13} style={{ color: '#f59e0b' }} />
-            <span style={{ color: '#f59e0b', fontWeight: 600 }}>{stats.streak}d streak</span>
-          </div>
+          {stats.streak > 0 && (
+            <Badge variant="outline" className="font-mono text-xs py-1 px-2.5 gap-1.5 border-amber-500/30 text-amber-500 bg-amber-500/10">
+              <Flame className="size-3.5 fill-amber-500/20" />
+              <span>{stats.streak}d streak</span>
+            </Badge>
+          )}
 
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 6,
-            background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-            fontSize: 12, fontFamily: 'var(--font-mono)'
-          }}>
-            <Award size={13} style={{ color: '#818cf8' }} />
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{stats.top150Count}</span>
-            <span style={{ color: 'var(--text-muted)' }}>/ 150 Top</span>
-          </div>
+          <Badge variant="outline" className="font-mono text-xs py-1 px-2.5 gap-1.5 border-purple-500/30 text-purple-400 bg-purple-500/10">
+            <Award className="size-3.5" />
+            <span>Top 150 Set</span>
+          </Badge>
         </div>
       </div>
 

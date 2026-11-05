@@ -10,7 +10,7 @@ import { CatchUpQueueCard } from '../components/CatchUpQueueCard';
 
 export const DashboardPage: React.FC = () => {
   return (
-    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6 sm:gap-8 w-full">
       {/* Dynamic Motivation & Streak Alert */}
       <BrutalityBanner />
 
@@ -18,47 +18,31 @@ export const DashboardPage: React.FC = () => {
       <CatchUpQueueCard />
 
       {/* Primary Operations Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-        gap: 24,
-        alignItems: 'start'
-      }}>
-        {/* Left Column: Today's Mission */}
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left / Primary: Today's Mission */}
+        <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
           <TodayMission />
         </div>
 
-        {/* Right Column: AI Placement Coach & Deep-Work Stopwatch */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <div className="modern-card">
-            <AICoachCard />
-          </div>
-          <div className="modern-card">
-            <DailyFocusTimer />
-          </div>
+        {/* Right / Secondary: AI Placement Coach & Deep-Work Stopwatch */}
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
+          <AICoachCard />
+          <DailyFocusTimer />
         </div>
       </div>
 
       {/* Intelligence & Benchmark Strip */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-        gap: 24,
-        alignItems: 'start'
-      }}>
-        <div className="modern-card">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-5 xl:col-span-4">
           <Top150Card />
         </div>
-        <div>
+        <div className="lg:col-span-7 xl:col-span-8">
           <StatsAnalyticsDashboard />
         </div>
       </div>
 
-      {/* 25-Week Curriculum Matrix */}
-      <div className="modern-card">
-        <HeatmapGrid />
-      </div>
+      {/* 140-Day Curriculum Matrix */}
+      <HeatmapGrid />
     </div>
   );
 };

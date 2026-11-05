@@ -1,11 +1,15 @@
 import React from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { ExternalLink, Check, Coffee, ArrowRight } from 'lucide-react';
+import { ExternalLink, Check, Coffee, ArrowRight, Flame, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { COMPANY_LABELS } from '../data/companyMappings';
 import { CURRICULUM } from '../data/curriculumStats';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 export const TodayMission: React.FC = () => {
   const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile, catchUpQueue } = useProgress();
@@ -28,242 +32,194 @@ export const TodayMission: React.FC = () => {
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
 
   return (
-    <div className="modern-card" style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '24px' }}>
+    <Card className="shadow-xs border-border/60">
       {/* ── HEADER ── */}
-      <div>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: 10, flexWrap: 'wrap', gap: 8
-        }}>
-          <div style={{
-            fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)',
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'var(--bg-elevated)', padding: '3px 10px',
-            borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)'
-          }}>
-            <span style={{ color: 'var(--text-accent)', fontWeight: 700 }}>Day {todayDayPlan.day}</span>
+      <CardHeader className="gap-3 pb-4">
+        <div className="flex items-center justify-between flex-wrap gap-2.5">
+          {/* Day & Week tag */}
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 border border-border/40 px-2.5 py-1 text-xs font-mono text-muted-foreground">
+            <span className="font-bold text-foreground">Day {todayDayPlan.day}</span>
             <span>of {CURRICULUM.totalDays}</span>
             <span>·</span>
-            <span>Week {currentWeekPlan.week}</span>
+            <span>W{currentWeekPlan.week}</span>
             <span>·</span>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{todayDayPlan.weekday}</span>
+            <span className="font-semibold text-foreground">{todayDayPlan.weekday}</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Badges: Backlog, Streak, Completion */}
+          <div className="flex items-center gap-2">
             {catchUpQueue && catchUpQueue.length > 0 && (
-              <span
-                style={{
-                  fontSize: 11, fontFamily: 'var(--font-mono)',
-                  color: 'var(--color-warning-text)',
-                  background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)',
-                  padding: '3px 8px', borderRadius: 'var(--radius-full)',
-                }}
-                title={`${catchUpQueue.length} previous days have uncompleted missions`}
-              >
-                ⚠ {catchUpQueue.length}d backlog
-              </span>
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-500 font-mono text-xs">
+                <AlertCircle className="size-3 mr-1" />
+                {catchUpQueue.length}d backlog
+              </Badge>
             )}
             {stats.streak > 0 && (
-              <span style={{
-                fontSize: 12, fontFamily: 'var(--font-mono)',
-                color: 'var(--color-warning-text)', fontWeight: 700,
-                background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)',
-                padding: '3px 10px', borderRadius: 'var(--radius-full)',
-                boxShadow: '0 0 12px rgba(245, 158, 11, 0.2)'
-              }}>
-                🔥 {stats.streak} day streak
-              </span>
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-500 font-mono text-xs">
+                <Flame className="size-3 mr-1 fill-amber-500/20" />
+                {stats.streak}d streak
+              </Badge>
             )}
             {isComplete && (
-              <span style={{
-                fontSize: 11, fontWeight: 700, color: 'var(--color-success-text)',
-                padding: '3px 10px', borderRadius: 'var(--radius-full)',
-                background: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)',
-                boxShadow: '0 0 12px rgba(16, 185, 129, 0.25)'
-              }}>
-                ✓ Day Complete
-              </span>
+              <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs">
+                <Check className="size-3 mr-1 stroke-[3]" />
+                Day Solved
+              </Badge>
             )}
           </div>
         </div>
 
-        <h1 style={{
-          fontSize: 26, fontWeight: 800, color: 'var(--text-primary)',
-          letterSpacing: '-0.02em', margin: '0 0 8px', lineHeight: 1.2
-        }}>
-          {todayDayPlan.topic}
-        </h1>
-
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-          {todayDayPlan.type === 'rest'
-            ? `Rest day — dedicated to ${restActivity}. Recharge your mental focus.`
-            : `Completed ${solvedToday} of ${totalToday} problem${totalToday !== 1 ? 's' : ''} today to maintain your algorithmic velocity.`}
-        </p>
-      </div>
+        <div>
+          <CardTitle className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-foreground">
+            {todayDayPlan.topic}
+          </CardTitle>
+          <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
+            {todayDayPlan.type === 'rest'
+              ? `Scheduled focus day — dedicated to ${restActivity}. Active recovery builds enduring technical stamina.`
+              : `Completed ${solvedToday} of ${totalToday} problem${totalToday !== 1 ? 's' : ''} to maintain algorithmic velocity.`}
+          </CardDescription>
+        </div>
+      </CardHeader>
 
       {/* ── TODAY'S PROBLEMS LIST ── */}
-      {todayDayPlan.type === 'rest' ? (
-        <div style={{
-          padding: '24px 20px', borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-default)', background: 'var(--bg-elevated)',
-          display: 'flex', alignItems: 'center', gap: 14
-        }}>
-          <Coffee size={24} style={{ color: 'var(--color-warning-text)' }} />
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Scheduled Rest & Recovery</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-              Spend today on {restActivity}. Deliberate recovery builds enduring technical problem-solving stamina.
+      <CardContent className="flex flex-col gap-3">
+        {todayDayPlan.type === 'rest' ? (
+          <div className="flex items-center gap-4 p-5 rounded-xl border border-border/50 bg-muted/30">
+            <div className="size-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+              <Coffee className="size-5" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-foreground">Scheduled Rest & Deep Synthesis</div>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                Use today for {restActivity}. Deliberate recovery allows deep pattern consolidation.
+              </p>
             </div>
           </div>
-        </div>
-      ) : (
-        <div style={{
-          border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-elevated)',
-          overflow: 'hidden'
-        }}>
-          {todayDayPlan.problems.map((p, idx) => {
-            const isChecked = !!progress[p.id];
-            const diffClass = p.difficulty === 'Easy'
-              ? 'diff-easy'
-              : p.difficulty === 'Hard'
-              ? 'diff-hard'
-              : 'diff-medium';
+        ) : (
+          <div className="rounded-xl border border-border/50 divide-y divide-border/40 overflow-hidden bg-card">
+            {todayDayPlan.problems.map((p) => {
+              const isChecked = !!progress[p.id];
+              const diffVariant =
+                p.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/10' :
+                p.difficulty === 'Hard' ? 'border-destructive/30 text-destructive bg-destructive/10' :
+                'border-amber-500/30 text-amber-500 bg-amber-500/10';
 
-            return (
-              <div
-                key={p.id}
-                onClick={() => toggleProblem(p.id)}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
-                  padding: '14px 18px',
-                  borderBottom: idx < todayDayPlan.problems.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                  background: isChecked ? 'rgba(16, 185, 129, 0.06)' : 'transparent',
-                  cursor: 'pointer', transition: 'all var(--transition-fast)'
-                }}
-                onMouseOver={(e) => {
-                  if (!isChecked) e.currentTarget.style.background = 'var(--bg-hover)';
-                }}
-                onMouseOut={(e) => {
-                  if (!isChecked) e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                {/* Checkbox */}
-                <div style={{ marginTop: 2 }}>
-                  <div className={`checkbox-minimal ${isChecked ? 'checked' : ''}`}>
-                    {isChecked && <Check size={12} strokeWidth={3} />}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <a
-                        href={p.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          fontSize: 14, fontWeight: 600,
-                          color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)',
-                          textDecoration: isChecked ? 'line-through' : 'none',
-                          display: 'inline-flex', alignItems: 'center', gap: 5,
-                          transition: 'color var(--transition-fast)'
-                        }}
-                      >
-                        {p.name}
-                        <ExternalLink size={12} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                      </a>
-
-                      {p.lcNumber > 0 && (
-                        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                          #{p.lcNumber}
-                        </span>
-                      )}
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => toggleProblem(p.id)}
+                  className={`flex items-start gap-3.5 p-3.5 sm:p-4 transition-all cursor-pointer group ${
+                    isChecked ? 'bg-muted/30' : 'hover:bg-muted/50'
+                  }`}
+                >
+                  {/* Custom Checkbox */}
+                  <div className="mt-0.5 shrink-0">
+                    <div
+                      className={`size-5 rounded-md flex items-center justify-center border transition-all ${
+                        isChecked
+                          ? 'bg-primary border-primary text-primary-foreground shadow-xs'
+                          : 'border-border/80 group-hover:border-foreground/40 bg-background'
+                      }`}
+                    >
+                      {isChecked && <Check className="size-3.5 stroke-[3]" />}
                     </div>
+                  </div>
 
-                    {/* Metadata tags */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                      <span className={diffClass}>
-                        {p.difficulty}
-                      </span>
+                  {/* Problem Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <a
+                          href={p.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className={`text-sm sm:text-base font-medium inline-flex items-center gap-1.5 transition-colors hover:text-primary ${
+                            isChecked ? 'line-through text-muted-foreground' : 'text-foreground'
+                          }`}
+                        >
+                          <span>{p.name}</span>
+                          <ExternalLink className="size-3.5 text-muted-foreground shrink-0" />
+                        </a>
 
-                      {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
-                        <span className="badge-top150">
-                          Top 150
-                        </span>
-                      )}
-
-                      {p.companyTags?.slice(0, 3).map((tag) => {
-                        const meta = COMPANY_LABELS[tag];
-                        return meta ? (
-                          <span key={tag} className="badge-company">
-                            {meta.badge}
+                        {p.lcNumber > 0 && (
+                          <span className="font-mono text-xs text-muted-foreground">
+                            #{p.lcNumber}
                           </span>
-                        ) : null;
-                      })}
+                        )}
+                      </div>
+
+                      {/* Tags */}
+                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                        <span className={`font-mono text-[11px] font-semibold px-2 py-0.5 rounded-md border ${diffVariant}`}>
+                          {p.difficulty}
+                        </span>
+
+                        {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
+                          <span className="font-mono text-[11px] font-medium px-2 py-0.5 rounded-md border border-purple-500/30 text-purple-400 bg-purple-500/10">
+                            Top 150
+                          </span>
+                        )}
+
+                        {p.companyTags?.slice(0, 3).map((tag) => {
+                          const meta = COMPANY_LABELS[tag];
+                          return meta ? (
+                            <span key={tag} className="font-mono text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/60 bg-muted/60 text-muted-foreground">
+                              {meta.badge}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
                     </div>
+
+                    {p.note && (
+                      <p className="text-xs text-muted-foreground italic mt-1.5 leading-relaxed">
+                        💡 {p.note}
+                      </p>
+                    )}
                   </div>
-
-                  {p.note && (
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '5px 0 0', lineHeight: 1.4, fontStyle: 'italic' }}>
-                      💡 {p.note}
-                    </p>
-                  )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
 
-      {/* ── ACTIONS & OVERALL PROGRESS BAR ── */}
-      <div style={{
-        paddingTop: 16, borderTop: '1px solid var(--border-subtle)',
-        display: 'flex', flexDirection: 'column', gap: 12
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
-            Curriculum Progress: <strong style={{ color: 'var(--text-primary)' }}>{stats.solvedCount}</strong> / {stats.totalProblems} solved <span style={{ color: 'var(--color-success-text)', fontWeight: 700 }}>({pct}%)</span>
+      {/* ── FOOTER & PROGRESS ── */}
+      <CardFooter className="flex flex-col gap-3 pt-2">
+        <div className="w-full flex items-center justify-between flex-wrap gap-2 text-xs">
+          <div className="font-mono text-muted-foreground">
+            Curriculum: <strong className="text-foreground">{stats.solvedCount}</strong> / {stats.totalProblems} solved{' '}
+            <span className="font-semibold text-emerald-500">({pct}%)</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="flex items-center gap-2">
             {todayDayPlan.type !== 'rest' && !isComplete && (
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => markDayComplete(currentWeekPlan.week, todayDayPlan.day)}
-                className="btn btn-default"
-                style={{
-                  fontSize: 12, padding: '6px 12px',
-                  background: 'var(--color-success-bg)',
-                  color: 'var(--color-success-text)',
-                  borderColor: 'var(--color-success-border)'
-                }}
+                className="h-8 text-xs border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10"
               >
+                <Check className="size-3.5 mr-1" />
                 Mark Day Complete
-              </button>
+              </Button>
             )}
 
             <Link
               to="/curriculum"
               onClick={() => setActiveWeek(currentWeekPlan.week)}
-              className="btn btn-ghost"
-              style={{ fontSize: 12, padding: '6px 12px' }}
             >
-              All Weeks <ArrowRight size={12} />
+              <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground">
+                <span>All Weeks</span>
+                <ArrowRight className="size-3.5 ml-1" />
+              </Button>
             </Link>
           </div>
         </div>
 
-        {/* Hairline progress bar */}
-        <div className="progress-track" style={{ height: 6 }}>
-          <div
-            className="progress-fill-gradient"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      </div>
-    </div>
+        <Progress value={pct} className="h-1.5 w-full bg-muted/60" />
+      </CardFooter>
+    </Card>
   );
 };

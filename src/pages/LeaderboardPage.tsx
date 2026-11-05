@@ -2,8 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { AuthModal } from '../components/modals/AuthModal';
-import { RefreshCw, Users, Globe, Lock, Copy, Check, Eye, EyeOff, LogIn, Cloud } from 'lucide-react';
+import { RefreshCw, Users, Globe, Copy, Check, Eye, EyeOff, LogIn, Cloud } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell
+} from '@/components/ui/table';
 
 export const LeaderboardPage: React.FC = () => {
   const { stats, userProfile, activeCohort, joinCohort, leaveCohort, authUser } = useProgress();
@@ -46,344 +58,287 @@ export const LeaderboardPage: React.FC = () => {
   }, [isOptedIn, handleSync]);
 
   const renderRankBadge = (rank: number) => {
-    if (rank === 1) return <span style={{ color: '#f59e0b', fontWeight: 800 }}>#1</span>;
-    if (rank === 2) return <span style={{ color: '#94a3b8', fontWeight: 800 }}>#2</span>;
-    if (rank === 3) return <span style={{ color: '#d97706', fontWeight: 800 }}>#3</span>;
-    return <span style={{ color: 'var(--text-muted)' }}>#{rank}</span>;
+    if (rank === 1) return <Badge className="bg-amber-500 text-amber-950 font-mono font-bold text-xs">#1</Badge>;
+    if (rank === 2) return <Badge variant="secondary" className="font-mono font-bold text-xs">#2</Badge>;
+    if (rank === 3) return <Badge variant="outline" className="border-amber-600/40 text-amber-600 font-mono font-bold text-xs">#3</Badge>;
+    return <span className="font-mono text-xs text-muted-foreground font-semibold">#{rank}</span>;
+  };
+
+  const handleJoinCohortSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cohortInput.trim()) return;
+    setIsJoining(true);
+    await joinCohort(cohortInput.trim().toUpperCase());
+    setIsJoining(false);
+    setCohortInput('');
+    toast.success('Joined cohort!');
   };
 
   return (
-    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
       {/* ── Title & Switcher Row ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 style={{
-            fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
-            letterSpacing: '-0.02em', margin: '0 0 4px'
-          }}>
-            Leaderboard
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-foreground">
+            Competitive Leaderboard
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-            Compare consistency with global peers or compete in private cohorts.
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Compare algorithmic velocity with engineers preparing for top tech roles.
           </p>
         </div>
 
         {/* Tab switcher: Global vs Cohort */}
-        <div style={{
-          display: 'inline-flex', gap: 2, background: 'var(--bg-elevated)',
-          padding: 2, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)'
-        }}>
-          <button
+        <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-1 border border-border/40 text-xs font-medium">
+          <Button
+            variant={boardType === 'global' ? 'default' : 'ghost'}
+            size="xs"
             onClick={() => setBoardType('global')}
-            style={{
-              padding: '4px 10px', borderRadius: 'var(--radius-sm)', border: 'none',
-              fontSize: 12, fontWeight: 500, cursor: 'pointer',
-              background: boardType === 'global' ? 'var(--bg-card)' : 'transparent',
-              color: boardType === 'global' ? 'var(--text-primary)' : 'var(--text-muted)'
-            }}
+            className="h-7 gap-1 text-xs"
           >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Globe size={12} /> Global
-            </span>
-          </button>
-          <button
+            <Globe className="size-3.5" />
+            <span>Global</span>
+          </Button>
+          <Button
+            variant={boardType === 'cohort' ? 'default' : 'ghost'}
+            size="xs"
             onClick={() => setBoardType('cohort')}
-            style={{
-              padding: '4px 10px', borderRadius: 'var(--radius-sm)', border: 'none',
-              fontSize: 12, fontWeight: 500, cursor: 'pointer',
-              background: boardType === 'cohort' ? 'var(--bg-card)' : 'transparent',
-              color: boardType === 'cohort' ? 'var(--text-primary)' : 'var(--text-muted)'
-            }}
+            className="h-7 gap-1 text-xs"
           >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Users size={12} /> Cohort {activeCohort ? `(${activeCohort.code})` : ''}
-            </span>
-          </button>
+            <Users className="size-3.5" />
+            <span>Cohort {activeCohort ? `(${activeCohort.code})` : ''}</span>
+          </Button>
         </div>
       </div>
+
+      {/* Guest Mode Banner */}
+      {!authUser && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <Cloud className="size-5 text-primary shrink-0" />
+              <div>
+                <div className="text-xs font-semibold text-foreground">Guest Mode Active</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  Sign in to register your rank on the live cloud leaderboard and sync across browsers.
+                </div>
+              </div>
+            </div>
+            <Button size="xs" onClick={() => setIsAuthModalOpen(true)} className="text-xs h-7.5 gap-1.5">
+              <LogIn className="size-3.5" />
+              <span>Sign In / Create Account</span>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── User Status & Sync Bar ── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 14px', background: 'var(--bg-card)',
-        border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)',
-        fontSize: 12, flexWrap: 'wrap', gap: 10,
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '3px 8px', borderRadius: 4, background: 'rgba(99, 102, 241, 0.12)',
-            color: '#818cf8', fontWeight: 600, fontSize: 11
-          }}>
-            <span>Rank</span>
-            <strong style={{ fontFamily: 'var(--font-mono)' }}>#{myRank || '—'}</strong>
+      <Card className="shadow-xs border-border/60">
+        <CardContent className="p-4 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary font-mono text-xs py-1">
+              Rank #{myRank || '—'}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              <strong className="text-foreground">{stats.solvedCount}</strong> solved ·{' '}
+              <span className="text-amber-500 font-medium">🔥 {stats.streak}d streak</span> ·{' '}
+              <span className="text-primary font-semibold">{stats.oddsPercentage}% readiness</span>
+            </span>
           </div>
-          <span style={{ color: 'var(--border-default)' }}>|</span>
-          <span style={{ color: 'var(--text-secondary)' }}>
-            <strong style={{ color: 'var(--text-primary)' }}>{stats.solvedCount}</strong> solved · <span style={{ color: '#f59e0b' }}>🔥 {stats.streak}d streak</span> · <span style={{ color: 'var(--color-success-text)' }}>{stats.oddsPercentage}% readiness</span>
-          </span>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {isOptedIn && (
-            <button
-              onClick={toggleAnonymous}
-              className="btn btn-ghost"
-              style={{ fontSize: 11, padding: '4px 8px', color: 'var(--text-muted)' }}
-              title={isAnonymous ? "Currently Anonymous" : "Showing your name"}
+          <div className="flex items-center gap-2">
+            {isOptedIn && (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={toggleAnonymous}
+                className="text-xs text-muted-foreground hover:text-foreground h-7 gap-1"
+                title={isAnonymous ? "Currently Anonymous" : "Showing your name"}
+              >
+                {isAnonymous ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                <span>{isAnonymous ? 'Anon' : 'Public'}</span>
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={toggleOptIn}
+              className="text-xs h-7"
             >
-              {isAnonymous ? <EyeOff size={12} /> : <Eye size={12} />}
-              {isAnonymous ? 'Anon' : 'Public'}
-            </button>
-          )}
+              {isOptedIn ? 'Opt Out' : 'Join Board'}
+            </Button>
 
-          <button
-            onClick={toggleOptIn}
-            className="btn btn-ghost"
-            style={{ fontSize: 11, padding: '4px 8px', color: isOptedIn ? 'var(--text-muted)' : 'var(--color-info-text)' }}
-          >
-            {isOptedIn ? 'Opt out' : 'Join board'}
-          </button>
-
-          <button
-            onClick={fetchEntries}
-            disabled={isFetching}
-            className="btn btn-default"
-            style={{ fontSize: 11, padding: '4px 8px' }}
-            title="Refresh"
-          >
-            <RefreshCw size={11} className={isFetching || isSyncing ? 'animate-spin' : ''} />
-          </button>
-        </div>
-      </div>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              onClick={fetchEntries}
+              disabled={isFetching}
+              className="size-7"
+              title="Refresh"
+            >
+              <RefreshCw className={`size-3.5 ${isFetching || isSyncing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── BOARD CONTENT ── */}
       {boardType === 'cohort' ? (
         activeCohort ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '10px 14px', background: 'var(--bg-elevated)',
-              border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
-            }}>
+          <div className="flex flex-col gap-4">
+            <div className="p-3.5 rounded-xl border border-border/50 bg-muted/20 flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{activeCohort.name}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8, fontFamily: 'var(--font-mono)' }}>
-                  Code: {activeCohort.code}
+                <span className="font-semibold text-foreground text-sm">{activeCohort.name}</span>
+                <span className="font-mono text-xs text-muted-foreground ml-3">
+                  Invite Code: <strong className="text-foreground">{activeCohort.code}</strong>
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="xs"
                   onClick={() => {
                     navigator.clipboard.writeText(activeCohort.code);
                     setCopied(true);
                     toast.success(`Copied invite code: ${activeCohort.code}`);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="btn btn-default"
-                  style={{ fontSize: 11, padding: '3px 8px' }}
+                  className="text-xs h-7 gap-1"
                 >
-                  {copied ? <Check size={11} /> : <Copy size={11} />}
-                  {copied ? 'Copied' : 'Share'}
-                </button>
-                <button
+                  {copied ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                  <span>{copied ? 'Copied' : 'Share Code'}</span>
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="xs"
                   onClick={leaveCohort}
-                  className="btn btn-danger"
-                  style={{ fontSize: 11, padding: '3px 8px' }}
+                  className="text-xs h-7"
                 >
                   Leave
-                </button>
+                </Button>
               </div>
             </div>
 
             {/* Members table */}
-            <div style={{
-              border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
-              overflow: 'hidden', background: 'var(--bg-card)'
-            }}>
-              {/* You */}
-              <div className="data-row" style={{ background: 'var(--color-info-bg)' }}>
-                <span style={{ width: 36, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-                  {renderRankBadge(1)}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontWeight: 600, color: 'var(--color-info-text)' }}>{userProfile.name} (You)</span>
-                </div>
-                <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-                  <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>{stats.solvedCount} solved</span>
-                  <span style={{ color: '#f59e0b' }}>🔥 {stats.streak}d</span>
-                  <span style={{ color: '#818cf8', fontWeight: 600 }}>{stats.oddsPercentage}%</span>
-                </div>
-              </div>
+            <Card className="shadow-xs border-border/60 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="text-xs">
+                    <TableHead className="w-16">Rank</TableHead>
+                    <TableHead>Candidate</TableHead>
+                    <TableHead className="text-right">Solves</TableHead>
+                    <TableHead className="text-right">Streak</TableHead>
+                    <TableHead className="text-right">Readiness</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow className="bg-primary/5 font-semibold text-xs">
+                    <TableCell>{renderRankBadge(1)}</TableCell>
+                    <TableCell className="text-primary">{userProfile.name} (You)</TableCell>
+                    <TableCell className="text-right font-mono text-emerald-500">{stats.solvedCount}</TableCell>
+                    <TableCell className="text-right font-mono text-amber-500">🔥 {stats.streak}d</TableCell>
+                    <TableCell className="text-right font-mono text-primary">{stats.oddsPercentage}%</TableCell>
+                  </TableRow>
 
-              {/* Real Cohort Peers */}
-              {isEnabled && entries.filter(e => e.user_id !== myEntry?.user_id).map((peer, idx) => (
-                <div key={peer.id || peer.user_id} className="data-row">
-                  <span style={{ width: 36, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-                    {renderRankBadge(idx + 2)}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
-                      {peer.is_anonymous ? 'Anonymous Grinder 🎭' : peer.display_name}
-                    </span>
-                    {peer.tagline && !peer.is_anonymous && (
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{peer.tagline}</span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexShrink: 0 }}>
-                    <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>{peer.solved_count} solved</span>
-                    <span style={{ color: '#f59e0b' }}>🔥 {peer.streak}d</span>
-                    <span style={{ color: '#818cf8' }}>{peer.readiness_pct}%</span>
-                  </div>
-                </div>
-              ))}
-
-              {(!isEnabled || entries.filter(e => e.user_id !== myEntry?.user_id).length === 0) && (
-                <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.6 }}>
-                  No other grinders have joined this cohort yet.<br />
-                  <span style={{ color: 'var(--text-secondary)' }}>Share your code <strong>{activeCohort.code}</strong> with peers to compare live progress!</span>
-                </div>
-              )}
-            </div>
+                  {isEnabled && entries.filter(e => e.user_id !== myEntry?.user_id).map((peer, idx) => (
+                    <TableRow key={peer.id || peer.user_id} className="text-xs">
+                      <TableCell>{renderRankBadge(idx + 2)}</TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        {peer.is_anonymous ? 'Anonymous Grinder 🎭' : peer.display_name}
+                        {peer.tagline && !peer.is_anonymous && (
+                          <span className="text-muted-foreground text-[11px] ml-2 font-normal">
+                            {peer.tagline}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-emerald-500">{peer.solved_count}</TableCell>
+                      <TableCell className="text-right font-mono text-amber-500">🔥 {peer.streak}d</TableCell>
+                      <TableCell className="text-right font-mono text-primary">{peer.readiness_pct}%</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
           </div>
         ) : (
-          /* Join or create cohort */
-          <div style={{
-            padding: '24px 16px', background: 'var(--bg-card)',
-            border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
-            display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 380, margin: '0 auto', width: '100%'
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
-              Join or Create a Private Cohort
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
-              Enter a 6-character code from a classmate, or type a new name to create one.
-            </div>
+          /* Join Cohort Form */
+          <Card className="border-border/60">
+            <CardContent className="p-8 flex flex-col items-center text-center max-w-md mx-auto gap-4">
+              <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                <Users className="size-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-serif font-bold text-foreground">Join a Study Cohort</h3>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  Compete with your university batchmates, campus study circle, or placement discord group.
+                </p>
+              </div>
 
-            <div style={{ display: 'flex', gap: 6 }}>
-              <input
-                type="text"
-                placeholder="Code or group name"
-                value={cohortInput}
-                onChange={(e) => setCohortInput(e.target.value)}
-                className="input"
-                style={{ fontSize: 12 }}
-              />
-              <button
-                onClick={async () => {
-                  if (!cohortInput.trim()) return;
-                  setIsJoining(true);
-                  const isCode = cohortInput.trim().length <= 6 && !cohortInput.includes(' ');
-                  if (isCode) {
-                    await joinCohort(cohortInput.toUpperCase());
-                  } else {
-                    const code = cohortInput.replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase() + Math.floor(10 + Math.random() * 89);
-                    await joinCohort(code, cohortInput.trim());
-                  }
-                  setIsJoining(false);
-                }}
-                disabled={!cohortInput.trim() || isJoining}
-                className="btn btn-primary"
-                style={{ fontSize: 12 }}
-              >
-                Join
-              </button>
-            </div>
-          </div>
+              <form onSubmit={handleJoinCohortSubmit} className="flex gap-2 w-full mt-2">
+                <Input
+                  placeholder="Enter 6-char code (e.g. GRIND1)"
+                  value={cohortInput}
+                  onChange={(e) => setCohortInput(e.target.value.toUpperCase())}
+                  className="text-xs h-9 font-mono"
+                  maxLength={10}
+                />
+                <Button type="submit" disabled={isJoining || !cohortInput.trim()} className="text-xs h-9">
+                  {isJoining ? 'Joining…' : 'Join'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         )
       ) : (
-        /* Global Board */
-        <>
-          {!isEnabled && (
-            <div style={{
-              padding: '32px 16px', textAlign: 'center', background: 'var(--bg-card)',
-              border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)'
-            }}>
-              <Lock size={18} style={{ color: 'var(--text-muted)', margin: '0 auto 8px' }} />
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Supabase Database Not Connected</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                Leaderboard rankings will activate once Supabase environment variables are configured.
-              </div>
-            </div>
-          )}
+        /* Global Leaderboard Table */
+        <Card className="shadow-xs border-border/60 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="text-xs">
+                <TableHead className="w-16">Rank</TableHead>
+                <TableHead>Candidate</TableHead>
+                <TableHead className="text-right">Total Solves</TableHead>
+                <TableHead className="text-right">Streak</TableHead>
+                <TableHead className="text-right">Readiness</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {entries.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-12 text-xs text-muted-foreground">
+                    {isFetching ? 'Fetching live entries from cloud...' : 'No public leaderboard entries yet. Be the first to join above!'}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                entries.map((entry, idx) => {
+                  const isMe = entry.user_id === myEntry?.user_id;
 
-          {isEnabled && entries.length === 0 && (
-            <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
-              No entries logged yet. Be the first to join the leaderboard!
-            </div>
-          )}
-
-          {isEnabled && entries.length > 0 && (
-            <div style={{
-              border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
-              overflow: 'hidden', background: 'var(--bg-card)'
-            }}>
-              {entries.map((entry, idx) => {
-                const isMe = entry.user_id === myEntry?.user_id;
-                return (
-                  <div
-                    key={entry.id}
-                    className="data-row"
-                    style={{ background: isMe ? 'var(--color-info-bg)' : 'transparent' }}
-                  >
-                    <span style={{ width: 36, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-                      {renderRankBadge(idx + 1)}
-                    </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontWeight: 500, color: isMe ? 'var(--color-info-text)' : 'var(--text-primary)' }}>
-                        {entry.is_anonymous ? 'Anonymous' : entry.display_name} {isMe && '(You)'}
-                      </span>
-                      {entry.tagline && !entry.is_anonymous && (
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
-                          {entry.tagline}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', gap: 12, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', flexShrink: 0 }}>
-                      <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>{entry.solved_count} solved</span>
-                      <span style={{ color: '#f59e0b' }}>🔥 {entry.streak}d</span>
-                      <span style={{ color: '#818cf8' }}>{entry.readiness_pct}%</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
+                  return (
+                    <TableRow key={entry.id || entry.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
+                      <TableCell>{renderRankBadge(idx + 1)}</TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        <div className="flex items-center gap-2">
+                          <span>{entry.is_anonymous ? 'Anonymous Grinder 🎭' : entry.display_name}</span>
+                          {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
+                        </div>
+                        {entry.tagline && !entry.is_anonymous && (
+                          <div className="text-[11px] text-muted-foreground font-normal mt-0.5">
+                            {entry.tagline}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-emerald-500 font-semibold">{entry.solved_count}</TableCell>
+                      <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {entry.streak}d</TableCell>
+                      <TableCell className="text-right font-mono text-primary font-semibold">{entry.readiness_pct}%</TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </Card>
       )}
 
-      {/* Auth Banner if Guest */}
-      {!authUser && (
-        <div style={{
-          padding: '16px 20px',
-          background: 'rgba(99, 102, 241, 0.08)',
-          border: '1px solid rgba(99, 102, 241, 0.25)',
-          borderRadius: 'var(--radius-lg)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Cloud size={20} style={{ color: '#818cf8', flexShrink: 0 }} />
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                Sync across devices & claim your rank
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                Sign in to save your solves to the cloud and keep your rank when switching browsers.
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="btn btn-primary"
-            style={{ fontSize: 12, padding: '6px 14px' }}
-          >
-            <LogIn size={13} /> Sign In / Register
-          </button>
-        </div>
-      )}
-
-      {/* Auth Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );

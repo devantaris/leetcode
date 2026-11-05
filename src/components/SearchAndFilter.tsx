@@ -1,7 +1,9 @@
 import React from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { Search, X } from 'lucide-react';
+import { Search, X, RotateCcw } from 'lucide-react';
 import type { CompanyTag } from '../types';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export const SearchAndFilter: React.FC = () => {
   const {
@@ -17,66 +19,56 @@ export const SearchAndFilter: React.FC = () => {
 
   const hasActiveFilters = searchQuery || selectedDifficulty !== 'All' || statusFilter !== 'all' || companyFilter !== 'all';
 
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedDifficulty('All');
+    setStatusFilter('all');
+    setCompanyFilter('all');
+  };
+
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', gap: 10,
-      paddingBottom: 16, borderBottom: '1px solid var(--border-default)'
-    }}>
+    <div className="flex flex-col gap-3 pb-4 border-b border-border/50">
       {/* Search Input */}
-      <div style={{ position: 'relative' }}>
-        <Search size={14} style={{
-          position: 'absolute', left: 10, top: '50%',
-          transform: 'translateY(-50%)', color: 'var(--text-muted)'
-        }} />
-        <input
+      <div className="relative">
+        <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter problems, patterns, topics, or numbers..."
-          className="input"
-          style={{ paddingLeft: 30, fontSize: 13 }}
+          placeholder="Filter by problem name, topic, LeetCode #, or algorithmic pattern..."
+          className="pl-9 pr-9 text-xs sm:text-sm h-10"
         />
         {searchQuery && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setSearchQuery('')}
-            style={{
-              position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
-              padding: 4, display: 'flex'
-            }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hover:text-foreground"
           >
-            <X size={13} />
-          </button>
+            <X className="size-3.5" />
+          </Button>
         )}
       </div>
 
       {/* Filter Row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <div className="flex items-center justify-between flex-wrap gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Difficulty pills */}
-          <div style={{
-            display: 'inline-flex', gap: 2, background: 'var(--bg-elevated)',
-            padding: 2, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-default)'
-          }}>
+          <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-1 border border-border/40 text-xs">
             {['All', 'Easy', 'Medium', 'Hard'].map((diff) => {
               const active = selectedDifficulty === diff;
-              const activeColor = diff === 'Easy' ? '#34d399' : diff === 'Medium' ? '#fbbf24' : diff === 'Hard' ? '#fb7185' : 'var(--text-primary)';
-              const activeBg = diff === 'Easy' ? 'rgba(16, 185, 129, 0.15)' : diff === 'Medium' ? 'rgba(245, 158, 11, 0.15)' : diff === 'Hard' ? 'rgba(244, 63, 94, 0.15)' : 'var(--bg-card)';
               return (
-                <button
+                <Button
                   key={diff}
+                  variant={active ? 'secondary' : 'ghost'}
+                  size="xs"
                   onClick={() => setSelectedDifficulty(diff)}
-                  style={{
-                    fontSize: 11, fontWeight: 600, padding: '4px 10px',
-                    borderRadius: 'var(--radius-xs)', border: 'none', cursor: 'pointer',
-                    background: active ? activeBg : 'transparent',
-                    color: active ? activeColor : 'var(--text-muted)',
-                    boxShadow: active ? 'var(--shadow-sm)' : 'none',
-                    transition: 'all var(--transition-fast)'
-                  }}
+                  className={`text-xs h-7 px-2.5 ${
+                    active ? 'font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
                   {diff}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -85,11 +77,7 @@ export const SearchAndFilter: React.FC = () => {
           <select
             value={companyFilter}
             onChange={(e) => setCompanyFilter(e.target.value as CompanyTag | 'all')}
-            style={{
-              background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-              color: 'var(--text-primary)', borderRadius: 'var(--radius-sm)',
-              padding: '4px 8px', fontSize: 11, outline: 'none', cursor: 'pointer'
-            }}
+            className="h-8 rounded-md border border-input bg-background px-3 text-xs text-foreground outline-none focus:border-ring"
           >
             <option value="all">All Companies</option>
             <option value="amazon">Amazon</option>
@@ -98,38 +86,33 @@ export const SearchAndFilter: React.FC = () => {
             <option value="meta">Meta</option>
             <option value="uber">Uber</option>
             <option value="apple">Apple</option>
+            <option value="adobe">Adobe</option>
+            <option value="netflix">Netflix</option>
           </select>
 
           {/* Status filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'solved' | 'unsolved' | 'review' | 'top150')}
-            style={{
-              background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-              color: 'var(--text-primary)', borderRadius: 'var(--radius-sm)',
-              padding: '4px 8px', fontSize: 11, outline: 'none', cursor: 'pointer'
-            }}
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'solved' | 'unsolved' | 'top150')}
+            className="h-8 rounded-md border border-input bg-background px-3 text-xs text-foreground outline-none focus:border-ring"
           >
-            <option value="all">All Statuses</option>
-            <option value="top150">Top 150 Only</option>
-            <option value="unsolved">Unsolved</option>
-            <option value="solved">Solved</option>
+            <option value="all">All Status</option>
+            <option value="unsolved">Unsolved Only</option>
+            <option value="solved">Solved Only</option>
+            <option value="top150">Top 150 Benchmark</option>
           </select>
         </div>
 
         {hasActiveFilters && (
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedDifficulty('All');
-              setStatusFilter('all');
-              setCompanyFilter('all');
-            }}
-            className="btn btn-ghost"
-            style={{ fontSize: 11, padding: '3px 6px' }}
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={clearFilters}
+            className="text-xs text-muted-foreground hover:text-foreground h-8 gap-1"
           >
-            Clear Filters
-          </button>
+            <RotateCcw className="size-3" />
+            <span>Reset Filters</span>
+          </Button>
         )}
       </div>
     </div>

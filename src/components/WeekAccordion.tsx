@@ -4,7 +4,9 @@ import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { ChevronDown, ExternalLink, Check, Coffee } from 'lucide-react';
 import type { Problem } from '../types';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
-import { COMPANY_LABELS } from '../data/companyMappings';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export const WeekAccordion: React.FC = () => {
   const {
@@ -27,8 +29,26 @@ export const WeekAccordion: React.FC = () => {
     setOpenWeeks(prev => ({ ...prev, [weekNum]: !prev[weekNum] }));
   };
 
+  const matchesFilter = (p: Problem): boolean => {
+    if (selectedDifficulty !== 'All' && p.difficulty !== selectedDifficulty) return false;
+    if (statusFilter === 'solved' && !progress[p.id]) return false;
+    if (statusFilter === 'unsolved' && progress[p.id]) return false;
+    if (statusFilter === 'top150' && !TOP_150_LC_NUMBERS.has(p.lcNumber)) return false;
+    if (companyFilter !== 'all' && !p.companyTags?.includes(companyFilter)) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        p.name.toLowerCase().includes(q) ||
+        p.lcNumber.toString().includes(q) ||
+        (p.companyTags && p.companyTags.some(t => t.includes(q))) ||
+        (p.note && p.note.toLowerCase().includes(q))
+      );
+    }
+    return true;
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="flex flex-col gap-3">
       {PLAN_DATA.map((w) => {
         let totalProblems = 0;
         let solvedProblems = 0;
@@ -44,209 +64,149 @@ export const WeekAccordion: React.FC = () => {
         const isOpen = openWeeks[w.week] ?? (w.week === activeWeek || searchQuery.trim().length > 0);
 
         return (
-          <div
+          <Card
             key={w.week}
             id={`week-anchor-${w.week}`}
-            style={{
-              border: '1px solid var(--border-default)',
-              borderRadius: 'var(--radius-lg)',
-              background: 'var(--bg-card)',
-              overflow: 'hidden'
-            }}
+            className="overflow-hidden border-border/50 shadow-xs"
           >
             {/* Week Row Header */}
             <div
               onClick={() => toggleWeek(w.week)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '12px 16px', cursor: 'pointer', userSelect: 'none',
-                background: isOpen ? 'var(--bg-elevated)' : 'transparent',
-                transition: 'background var(--transition-fast)'
-              }}
+              className={`flex items-center justify-between p-3.5 sm:p-4 cursor-pointer select-none transition-colors ${
+                isOpen ? 'bg-muted/30 border-b border-border/40' : 'hover:bg-muted/40'
+              }`}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span className="badge-mono" style={{
-                  color: isWeekComplete ? 'var(--color-success-text)' : 'var(--text-primary)',
-                  borderColor: isWeekComplete ? 'var(--color-success-border)' : 'var(--border-default)'
-                }}>
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant={isWeekComplete ? 'default' : 'outline'}
+                  className={`font-mono text-xs px-2 py-0.5 ${
+                    isWeekComplete ? 'bg-emerald-500 text-white' : 'border-border/60 text-foreground'
+                  }`}
+                >
                   W{w.week}
-                </span>
-
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                </Badge>
+                <span className="text-sm sm:text-base font-semibold text-foreground">
                   {w.topic}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                  {solvedProblems} / {totalProblems}
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-muted-foreground">
+                  <strong className={isWeekComplete ? 'text-emerald-500' : 'text-foreground'}>
+                    {solvedProblems}
+                  </strong>{' '}
+                  / {totalProblems}
                 </span>
 
                 <ChevronDown
-                  size={14}
-                  style={{
-                    color: 'var(--text-muted)',
-                    transform: isOpen ? 'rotate(180deg)' : 'none',
-                    transition: 'transform var(--transition-fast)'
-                  }}
+                  className={`size-4 text-muted-foreground transition-transform duration-200 ${
+                    isOpen ? 'rotate-180' : ''
+                  }`}
                 />
               </div>
             </div>
 
             {/* Week Content */}
             {isOpen && (
-              <div style={{ borderTop: '1px solid var(--border-default)' }}>
+              <div className="divide-y divide-border/30">
                 {w.days.map((d) => {
                   const complete = isDayComplete(w.week, d.day);
+                  const filteredProblems = d.problems.filter(matchesFilter);
 
-                  const filteredProblems = d.problems.filter((p: Problem) => {
-                    if (selectedDifficulty !== 'All' && p.difficulty !== selectedDifficulty) return false;
-                    if (statusFilter === 'top150' && (!TOP_150_LC_NUMBERS.has(p.lcNumber) || p.isReview)) return false;
-                    if (statusFilter === 'solved' && !progress[p.id]) return false;
-                    if (statusFilter === 'unsolved' && progress[p.id]) return false;
-                    if (companyFilter !== 'all' && (!p.companyTags || !p.companyTags.includes(companyFilter))) return false;
-                    if (searchQuery.trim()) {
-                      const q = searchQuery.toLowerCase();
-                      return (
-                        p.name.toLowerCase().includes(q) ||
-                        p.note.toLowerCase().includes(q) ||
-                        p.lcNumber.toString().includes(q) ||
-                        d.topic.toLowerCase().includes(q)
-                      );
-                    }
-                    return true;
-                  });
-
-                  if (searchQuery.trim() && filteredProblems.length === 0 && d.type !== 'rest') {
-                    return null;
-                  }
+                  if (searchQuery.trim() && filteredProblems.length === 0) return null;
 
                   return (
-                    <div
-                      key={d.day}
-                      style={{
-                        padding: '10px 16px',
-                        borderBottom: '1px solid var(--border-subtle)',
-                        background: complete ? 'var(--color-success-bg)' : 'transparent'
-                      }}
-                    >
-                      {/* Day summary line */}
-                      <div style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        marginBottom: d.type === 'rest' ? 0 : 8, fontSize: 11
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontWeight: 600 }}>
-                            D{d.day} · {d.weekday}
+                    <div key={d.day} className="p-3.5 sm:p-4 bg-card/40 flex flex-col gap-2.5">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-foreground">
+                            Day {d.day} ({d.weekday})
                           </span>
-                          <span style={{ color: 'var(--text-secondary)' }}>
+                          <span className="text-muted-foreground text-xs">·</span>
+                          <span className="text-xs text-muted-foreground font-medium">
                             {d.topic}
                           </span>
-                          {d.type === 'rest' && (
-                            <span className="badge-mono">Rest</span>
-                          )}
-                          {d.type === 'review' && (
-                            <span className="badge-mono" style={{ color: 'var(--color-warning-text)' }}>Review</span>
-                          )}
                         </div>
 
-                        {!complete && d.type !== 'rest' && (
-                          <button
+                        {d.type !== 'rest' && !complete && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
                             onClick={() => markDayComplete(w.week, d.day)}
-                            className="btn btn-ghost"
-                            style={{ fontSize: 11, padding: '2px 6px', color: 'var(--text-muted)' }}
+                            className="text-xs h-6.5 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10"
                           >
-                            Mark Done
-                          </button>
-                        )}
-                        {complete && (
-                          <span style={{ color: 'var(--color-success-text)', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <Check size={11} /> Done
-                          </span>
+                            <Check className="size-3 mr-1" />
+                            Mark Day Solved
+                          </Button>
                         )}
                       </div>
 
-                      {/* Day Problems */}
                       {d.type === 'rest' ? (
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, paddingTop: 4 }}>
-                          <Coffee size={12} /> Scheduled recovery day
+                        <div className="flex items-center gap-2.5 text-xs text-muted-foreground p-2 rounded-lg bg-muted/20">
+                          <Coffee className="size-4 text-amber-500 shrink-0" />
+                          <span>Scheduled Recovery Day</span>
                         </div>
                       ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div className="flex flex-col gap-1.5">
                           {filteredProblems.map((p) => {
                             const isChecked = !!progress[p.id];
-                            const diffClass = p.difficulty === 'Easy'
-                              ? 'diff-easy'
-                              : p.difficulty === 'Hard'
-                              ? 'diff-hard'
-                              : 'diff-medium';
+                            const diffVariant =
+                              p.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/10' :
+                              p.difficulty === 'Hard' ? 'border-destructive/30 text-destructive bg-destructive/10' :
+                              'border-amber-500/30 text-amber-500 bg-amber-500/10';
 
                             return (
                               <div
                                 key={p.id}
                                 onClick={() => toggleProblem(p.id)}
-                                style={{
-                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                  padding: '6px 10px', borderRadius: 'var(--radius-sm)',
-                                  background: isChecked ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-elevated)',
-                                  border: `1px solid ${isChecked ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-subtle)'}`,
-                                  cursor: 'pointer', gap: 8, transition: 'all var(--transition-fast)'
-                                }}
-                                onMouseOver={(e) => {
-                                  if (!isChecked) e.currentTarget.style.background = 'var(--bg-hover)';
-                                }}
-                                onMouseOut={(e) => {
-                                  if (!isChecked) e.currentTarget.style.background = 'var(--bg-elevated)';
-                                }}
+                                className={`flex items-center justify-between gap-3 p-2.5 rounded-lg border border-border/40 transition-colors cursor-pointer group ${
+                                  isChecked ? 'bg-muted/20' : 'hover:bg-muted/40'
+                                }`}
                               >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-                                  <div className={`checkbox-minimal ${isChecked ? 'checked' : ''}`}>
-                                    {isChecked && <Check size={11} strokeWidth={3} />}
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div
+                                    className={`size-4.5 rounded flex items-center justify-center border transition-all ${
+                                      isChecked
+                                        ? 'bg-primary border-primary text-primary-foreground'
+                                        : 'border-border/80 group-hover:border-foreground/50 bg-background'
+                                    }`}
+                                  >
+                                    {isChecked && <Check className="size-3 stroke-[3]" />}
                                   </div>
+
+                                  <div className="flex items-center gap-2 truncate">
+                                    <span className={`text-xs sm:text-sm font-medium truncate ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                                      {p.name}
+                                    </span>
+                                    {p.lcNumber > 0 && (
+                                      <span className="font-mono text-[10px] text-muted-foreground">
+                                        #{p.lcNumber}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className={`font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded border ${diffVariant}`}>
+                                    {p.difficulty}
+                                  </span>
+
+                                  {TOP_150_LC_NUMBERS.has(p.lcNumber) && (
+                                    <span className="font-mono text-[10px] font-medium px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-400 bg-purple-500/10 hidden sm:inline">
+                                      Top 150
+                                    </span>
+                                  )}
 
                                   <a
                                     href={p.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    style={{
-                                      fontSize: 12, fontWeight: 500,
-                                      color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)',
-                                      textDecoration: isChecked ? 'line-through' : 'none',
-                                      display: 'inline-flex', alignItems: 'center', gap: 4,
-                                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
-                                    }}
+                                    onClick={e => e.stopPropagation()}
+                                    className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                                    title="Open on LeetCode"
                                   >
-                                    {p.name}
-                                    <ExternalLink size={10} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                                    <ExternalLink className="size-3.5" />
                                   </a>
-
-                                  {p.lcNumber > 0 && (
-                                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                                      #{p.lcNumber}
-                                    </span>
-                                  )}
-                                </div>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                                  <span className={diffClass}>
-                                    {p.difficulty}
-                                  </span>
-
-                                  {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
-                                    <span className="badge-top150">
-                                      Top 150
-                                    </span>
-                                  )}
-
-                                  {p.companyTags?.slice(0, 2).map((tag) => {
-                                    const meta = COMPANY_LABELS[tag];
-                                    return meta ? (
-                                      <span key={tag} className="badge-company">
-                                        {meta.badge}
-                                      </span>
-                                    ) : null;
-                                  })}
                                 </div>
                               </div>
                             );
@@ -258,7 +218,7 @@ export const WeekAccordion: React.FC = () => {
                 })}
               </div>
             )}
-          </div>
+          </Card>
         );
       })}
     </div>

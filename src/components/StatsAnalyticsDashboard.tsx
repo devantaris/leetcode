@@ -1,20 +1,15 @@
 import React, { useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { AnimatedCounter } from './AnimatedCounter';
-
-const CARD_STYLE: React.CSSProperties = {
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border-default)',
-  borderRadius: 'var(--radius-lg)',
-  padding: '16px 18px',
-};
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export const StatsAnalyticsDashboard: React.FC = () => {
-  const { stats, progress, userProfile } = useProgress();
+  const { stats, progress } = useProgress();
 
-  const { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap } = useMemo(() => {
+  const { topicDataMap } = useMemo(() => {
     let easySolved = 0, easyTotal = 0;
     let medSolved = 0, medTotal = 0;
     let hardSolved = 0, hardTotal = 0;
@@ -35,12 +30,6 @@ export const StatsAnalyticsDashboard: React.FC = () => {
     return { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap };
   }, [progress]);
 
-  const diffChartData = useMemo(() => [
-    { name: 'Easy', solved: easySolved, total: easyTotal, color: '#10b981' },
-    { name: 'Medium', solved: medSolved, total: medTotal, color: '#f59e0b' },
-    { name: 'Hard', solved: hardSolved, total: hardTotal, color: '#f43f5e' },
-  ], [easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal]);
-
   const topicChartData = useMemo(() => {
     return Object.keys(topicDataMap)
       .map((topic) => ({
@@ -52,212 +41,86 @@ export const StatsAnalyticsDashboard: React.FC = () => {
   }, [topicDataMap]);
 
   const solvedPct = Math.round((stats.solvedCount / (stats.totalProblems || 1)) * 100);
-  const targetStr = userProfile?.targetDate
-    ? new Date(userProfile.targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    : 'Target Date';
-
-  const readinessColor = stats.oddsPercentage >= 75
-    ? 'var(--color-success-text)'
-    : stats.oddsPercentage >= 50
-    ? 'var(--color-warning-text)'
-    : 'var(--color-danger-text)';
-
-  const readinessLabel = stats.oddsPercentage >= 75 ? 'Placement Ready' : stats.oddsPercentage >= 50 ? 'On Track' : 'Building';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-      {/* Section header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Analytics</h2>
-        <span className="section-label">Week {stats.currentWeek} · Day {stats.currentDay}</span>
-      </div>
-
-      {/* ── Stat cards row ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
-        {/* Problems Solved */}
-        <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 8 }}>Solved</div>
-          <div className="stat-number">
-            <AnimatedCounter value={stats.solvedCount} />
-            <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{stats.totalProblems}</span>
-          </div>
-          <div className="progress-track" style={{ marginTop: 10 }}>
-            <div className="progress-fill progress-fill-success" style={{ width: `${solvedPct}%` }} />
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{solvedPct}% complete</div>
+    <Card className="shadow-xs border-border/60">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+        <div>
+          <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+            Interview Readiness Analytics
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Real-time algorithmic velocity
+          </p>
         </div>
+        <Badge variant="outline" className="font-mono text-xs">
+          W{stats.currentWeek} · Day {stats.currentDay}
+        </Badge>
+      </CardHeader>
 
-        {/* Streak */}
-        <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 8 }}>Streak</div>
-          <div className="stat-number" style={{ color: stats.streak > 0 ? 'var(--color-warning-text)' : 'var(--text-primary)' }}>
-            <AnimatedCounter value={stats.streak} />
+      <CardContent className="pt-0 flex flex-col gap-4">
+        {/* Metric Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">Solved</span>
+            <span className="font-mono text-2xl font-bold tracking-tight text-foreground tabular-nums mt-0.5">
+              <AnimatedCounter value={stats.solvedCount} />
+            </span>
+            <span className="text-[10px] text-muted-foreground mt-1">of {stats.totalProblems} ({solvedPct}%)</span>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-            {stats.streak >= 7 ? 'Excellent consistency!' : 'consecutive days'}
-          </div>
-        </div>
 
-        {/* Countdown */}
-        <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 8 }}>Countdown</div>
-          <div className="stat-number">
-            <AnimatedCounter value={stats.daysLeft} />
+          <div className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">Streak</span>
+            <span className="font-mono text-2xl font-bold tracking-tight text-amber-500 tabular-nums mt-0.5">
+              <AnimatedCounter value={stats.streak} />d
+            </span>
+            <span className="text-[10px] text-muted-foreground mt-1">consecutive grind</span>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-            days to {targetStr}
-          </div>
-        </div>
 
-        {/* Readiness */}
-        <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 8 }}>Readiness</div>
-          <div className="stat-number" style={{ color: readinessColor }}>
-            <AnimatedCounter value={stats.oddsPercentage} suffix="%" />
+          <div className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">Readiness</span>
+            <span className="font-mono text-2xl font-bold tracking-tight text-primary tabular-nums mt-0.5">
+              <AnimatedCounter value={stats.oddsPercentage} />%
+            </span>
+            <span className="text-[10px] text-muted-foreground mt-1">benchmark score</span>
           </div>
-          <div style={{ fontSize: 11, color: readinessColor, marginTop: 4 }}>
-            {readinessLabel}
+
+          <div className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">Remaining</span>
+            <span className="font-mono text-2xl font-bold tracking-tight text-foreground tabular-nums mt-0.5">
+              <AnimatedCounter value={stats.daysLeft} />d
+            </span>
+            <span className="text-[10px] text-muted-foreground mt-1">until target date</span>
           </div>
         </div>
 
-        {/* Missed */}
-        <div style={CARD_STYLE}>
-          <div className="section-label" style={{ marginBottom: 8 }}>Missed</div>
-          <div className="stat-number" style={{ color: stats.missedDaysCount === 0 ? 'var(--color-success-text)' : 'var(--color-danger-text)' }}>
-            <AnimatedCounter value={stats.missedDaysCount} />
+        {/* Topic Breakdown Bar Chart */}
+        <div className="p-3.5 rounded-xl border border-border/50 bg-card">
+          <div className="text-xs font-semibold text-foreground mb-3 flex items-center justify-between">
+            <span>High-Frequency Topic Distribution</span>
+            <span className="text-[10px] text-muted-foreground font-normal">Active vs Solved</span>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-            {stats.missedDaysCount === 0 ? 'Perfect record!' : 'days off-track'}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Readiness breakdown ── */}
-      <div style={{
-        ...CARD_STYLE,
-        padding: '16px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-          <div>
-            <div className="section-label" style={{ marginBottom: 2 }}>Readiness Breakdown</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-              Score: {stats.oddsPercentage}/100
-            </div>
-          </div>
-          <div style={{
-            fontSize: 12, color: 'var(--text-secondary)',
-            background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-md)', padding: '6px 10px', maxWidth: 320
-          }}>
-            {stats.readinessBreakdown.actionableAdvice}
+          <div className="h-44 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={topicChartData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
+                <XAxis dataKey="name" stroke="currentColor" className="text-[10px] text-muted-foreground" tickLine={false} />
+                <YAxis stroke="currentColor" className="text-[10px] text-muted-foreground" tickLine={false} />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--card)',
+                    borderColor: 'var(--border)',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <Bar dataKey="Solved" fill="oklch(0.606 0.25 292.717)" radius={[4, 4, 0, 0]} stackId="a" />
+                <Bar dataKey="Remaining" fill="oklch(0.275 0.011 216.9)" radius={[4, 4, 0, 0]} stackId="a" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
-          {[
-            { label: 'Coverage', score: stats.readinessBreakdown.coverageScore, max: 40, color: 'var(--color-success-text)' },
-            { label: 'Streak', score: stats.readinessBreakdown.streakScore, max: 25, color: 'var(--color-warning-text)' },
-            { label: 'Pace', score: stats.readinessBreakdown.paceScore, max: 25, color: 'var(--color-info-text)' },
-            { label: 'Breadth', score: stats.readinessBreakdown.breadthScore, max: 10, color: 'var(--text-secondary)' },
-          ].map(({ label, score, max, color }) => (
-            <div key={label} style={{
-              padding: '10px 12px',
-              background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-              borderRadius: 'var(--radius-md)'
-            }}>
-              <div className="section-label" style={{ marginBottom: 4 }}>{label}</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 18, fontWeight: 700, color, lineHeight: 1 }}>{score}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/ {max}</span>
-              </div>
-              <div className="progress-track" style={{ marginTop: 6 }}>
-                <div style={{
-                  height: '100%', borderRadius: 99,
-                  background: color, width: `${(score / max) * 100}%`,
-                  transition: 'width 0.5s ease'
-                }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Charts ── */}
-      {stats.solvedCount === 0 ? (
-        <div style={{
-          ...CARD_STYLE, padding: '40px 20px',
-          textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8
-        }}>
-          <div style={{ fontSize: 32 }}>📊</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>No data yet</div>
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 300 }}>
-            Complete your first problems and charts will appear here automatically.
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
-          {/* Difficulty chart */}
-          <div style={CARD_STYLE}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Difficulty</div>
-              <span className="section-label">Easy / Med / Hard</span>
-            </div>
-            <div style={{ height: 180 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={diffChartData} cx="50%" cy="50%"
-                    innerRadius={48} outerRadius={72} paddingAngle={4} dataKey="solved">
-                    {diffChartData.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
-                    }}
-                    formatter={(value: any, name: any) => [`${value} solved`, name]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, paddingTop: 10, borderTop: '1px solid var(--border-default)', textAlign: 'center' }}>
-              {[
-                { label: 'Easy', s: easySolved, t: easyTotal, color: 'var(--diff-easy)' },
-                { label: 'Med', s: medSolved, t: medTotal, color: 'var(--diff-medium)' },
-                { label: 'Hard', s: hardSolved, t: hardTotal, color: 'var(--diff-hard)' },
-              ].map(({ label, s, t, color }) => (
-                <div key={label}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color }}>{s}/{t}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Topic chart */}
-          <div style={CARD_STYLE}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Topics</div>
-            <div style={{ height: 210 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topicChartData} margin={{ top: 4, right: 4, left: -24, bottom: 20 }}>
-                  <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={9} angle={-30} textAnchor="end" />
-                  <YAxis stroke="var(--text-muted)" fontSize={10} />
-                  <Tooltip
-                    contentStyle={{
-                      background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12
-                    }}
-                  />
-                  <Bar dataKey="Solved" stackId="a" fill="var(--color-info)" radius={[0, 0, 0, 0]} />
-                  <Bar dataKey="Remaining" stackId="a" fill="var(--border-default)" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };

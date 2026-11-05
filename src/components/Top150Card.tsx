@@ -5,6 +5,9 @@ import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { Trophy, ArrowRight } from 'lucide-react';
 import { AnimatedCounter } from './AnimatedCounter';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 const top150ProblemsMap = new Map<number, { id: string; difficulty: string }>();
 let easyTotal = 0, medTotal = 0, hardTotal = 0;
@@ -57,93 +60,72 @@ export const Top150Card: React.FC = () => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 'var(--radius-md)',
-            background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-primary)'
-          }}>
-            <Trophy size={14} />
+    <Card className="shadow-xs border-border/60">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+            <Trophy className="size-4" />
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+            <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
               LeetCode Top 150
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.2, marginTop: 2 }}>
-              Industry benchmark curated set
-            </div>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Industry benchmark problem set
+            </p>
           </div>
         </div>
 
-        <button
+        <Button
+          variant="ghost"
+          size="xs"
           onClick={() => {
             setStatusFilter('top150');
             navigate('/curriculum');
           }}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)',
-            display: 'flex', alignItems: 'center', gap: 3
-          }}
+          className="text-xs text-muted-foreground hover:text-foreground h-7 gap-1"
         >
-          Filter <ArrowRight size={11} />
-        </button>
-      </div>
+          <span>Explore</span>
+          <ArrowRight className="size-3" />
+        </Button>
+      </CardHeader>
 
-      {/* Big number & bar */}
-      <div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-          <span style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
-            <AnimatedCounter value={solvedTop150} />
-          </span>
-          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>/ {totalTop150}</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-info-text)', marginLeft: 'auto' }}>
-            {pct}%
-          </span>
+      <CardContent className="pt-0 flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-4">
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-3xl font-bold tracking-tight text-foreground tabular-nums">
+              <AnimatedCounter value={solvedTop150} />
+            </span>
+            <span className="text-xs text-muted-foreground font-mono">
+              / {totalTop150} solved ({pct}%)
+            </span>
+          </div>
         </div>
 
-        <div className="progress-track" style={{ height: 6 }}>
-          <div className="progress-fill-info" style={{ width: `${pct}%`, height: '100%', borderRadius: 99 }} />
-        </div>
-      </div>
+        <Progress value={pct} className="h-1.5 w-full bg-muted/60" />
 
-      {/* Difficulty breakdown */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8,
-        paddingTop: 12, borderTop: '1px solid var(--border-subtle)', textAlign: 'center'
-      }}>
-        <div style={{
-          background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)',
-          borderRadius: 'var(--radius-md)', padding: '6px 4px'
-        }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: '#34d399' }}>
-            {easySolved}<span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/{easyTotal}</span>
+        {/* Breakdown row */}
+        <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border/40 text-center">
+          <div className="flex flex-col">
+            <span className="font-mono text-xs font-semibold text-emerald-500">
+              {easySolved} / {easyTotal}
+            </span>
+            <span className="text-[10px] text-muted-foreground">Easy</span>
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2, fontWeight: 600 }}>Easy</div>
-        </div>
-        <div style={{
-          background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)',
-          borderRadius: 'var(--radius-md)', padding: '6px 4px'
-        }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24' }}>
-            {medSolved}<span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/{medTotal}</span>
+          <div className="flex flex-col">
+            <span className="font-mono text-xs font-semibold text-amber-500">
+              {medSolved} / {medTotal}
+            </span>
+            <span className="text-[10px] text-muted-foreground">Medium</span>
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2, fontWeight: 600 }}>Med</div>
-        </div>
-        <div style={{
-          background: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.25)',
-          borderRadius: 'var(--radius-md)', padding: '6px 4px'
-        }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: '#fb7185' }}>
-            {hardSolved}<span style={{ fontSize: 11, color: 'var(--text-muted)' }}>/{hardTotal}</span>
+          <div className="flex flex-col">
+            <span className="font-mono text-xs font-semibold text-rose-500">
+              {hardSolved} / {hardTotal}
+            </span>
+            <span className="text-[10px] text-muted-foreground">Hard</span>
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 2, fontWeight: 600 }}>Hard</div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

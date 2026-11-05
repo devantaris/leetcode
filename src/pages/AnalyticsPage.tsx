@@ -1,17 +1,11 @@
 import React, { useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
 import { CURRICULUM } from '../data/curriculumStats';
 import { TrendingUp, Zap, Target, Award, Calendar } from 'lucide-react';
-
-const CARD_STYLE: React.CSSProperties = {
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border-default)',
-  borderRadius: 'var(--radius-lg)',
-  padding: '20px',
-  boxShadow: 'var(--shadow-sm)',
-};
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export const AnalyticsPage: React.FC = () => {
   const { stats, progress, dailySolveLog } = useProgress();
@@ -71,310 +65,192 @@ export const AnalyticsPage: React.FC = () => {
   }, [progress]);
 
   return (
-    <div className="app-container" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
       {/* Title */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 style={{
-            fontSize: 24, fontWeight: 800, color: 'var(--text-primary)',
-            letterSpacing: '-0.02em', margin: '0 0 4px'
-          }}>
-            Analytics & Velocity
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-foreground">
+            Velocity &amp; Progress Analytics
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>
-            Solve speed, category completion ratios, and historical consistency.
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Solve speed, category completion ratios, and historical pace telemetry.
           </p>
         </div>
 
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '8px 14px', background: 'var(--bg-card)',
-          border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
-          fontSize: 12, fontFamily: 'var(--font-mono)', boxShadow: 'var(--shadow-sm)'
-        }}>
-          <Calendar size={14} style={{ color: 'var(--text-accent)' }} />
-          <span style={{ color: 'var(--text-muted)' }}>Projected Finish:</span>
-          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stats.projectedCompletionDate}</span>
-        </div>
+        <Badge variant="outline" className="font-mono text-xs py-1 px-3 gap-1.5 border-border/60">
+          <Calendar className="size-3.5 text-primary" />
+          <span className="text-muted-foreground">Projected Target:</span>
+          <strong className="text-foreground">{stats.projectedCompletionDate}</strong>
+        </Badge>
       </div>
 
       {/* Metric summary strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
-        <div style={CARD_STYLE}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span className="section-label">Solve Velocity</span>
-            <div style={{
-              width: 24, height: 24, borderRadius: 6,
-              background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Zap size={13} />
-            </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <Card className="shadow-xs border-border/60 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Solve Velocity</span>
+            <Zap className="size-4 text-primary" />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+          <div className="text-2xl font-mono font-bold text-foreground tabular-nums mt-1">
             {((stats.solvedCount / Math.max(1, stats.currentDay)) * 7).toFixed(1)}
-            <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)' }}> / wk</span>
+            <span className="text-xs font-normal text-muted-foreground"> / wk</span>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-            Problems solved per 7 days
+          <div className="text-[11px] text-muted-foreground mt-1">
+            Problems per 7 days
           </div>
-        </div>
+        </Card>
 
-        <div style={CARD_STYLE}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span className="section-label">Pace Status</span>
-            <div style={{
-              width: 24, height: 24, borderRadius: 6,
-              background: stats.isOnTrack ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-              color: stats.isOnTrack ? '#34d399' : '#fbbf24',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <TrendingUp size={13} />
-            </div>
+        <Card className="shadow-xs border-border/60 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Pace Status</span>
+            <TrendingUp className={`size-4 ${stats.isOnTrack ? 'text-emerald-500' : 'text-amber-500'}`} />
           </div>
-          <div style={{
-            color: stats.isOnTrack ? 'var(--color-success-text)' : 'var(--color-warning-text)',
-            fontSize: 22, fontWeight: 800, lineHeight: 1
-          }}>
+          <div className={`text-xl font-bold font-serif tracking-tight mt-1 ${stats.isOnTrack ? 'text-emerald-500' : 'text-amber-500'}`}>
             {stats.isOnTrack ? 'On Schedule' : 'Behind Pace'}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+          <div className="text-[11px] text-muted-foreground mt-1 font-mono">
             Target: ~{CURRICULUM.dailyTarget} problems / day
           </div>
-        </div>
+        </Card>
 
-        <div style={CARD_STYLE}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span className="section-label">Easy Ratio</span>
-            <div style={{
-              width: 24, height: 24, borderRadius: 6,
-              background: 'rgba(16, 185, 129, 0.15)', color: '#34d399',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Award size={13} />
-            </div>
+        <Card className="shadow-xs border-border/60 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Easy Mastery</span>
+            <Award className="size-4 text-emerald-500" />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--diff-easy)', lineHeight: 1 }}>
+          <div className="text-2xl font-mono font-bold text-emerald-500 tabular-nums mt-1">
             {Math.round((easySolved / (easyTotal || 1)) * 100)}%
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-            {easySolved} of {easyTotal} problems
+          <div className="text-[11px] text-muted-foreground mt-1 font-mono">
+            {easySolved} / {easyTotal} problems
           </div>
-        </div>
+        </Card>
 
-        <div style={CARD_STYLE}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span className="section-label">Med &amp; Hard Ratio</span>
-            <div style={{
-              width: 24, height: 24, borderRadius: 6,
-              background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Target size={13} />
-            </div>
+        <Card className="shadow-xs border-border/60 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Med / Hard Ratio</span>
+            <Target className="size-4 text-purple-400" />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--diff-medium)', lineHeight: 1 }}>
+          <div className="text-2xl font-mono font-bold text-purple-400 tabular-nums mt-1">
             {Math.round(((medSolved + hardSolved) / ((medTotal + hardTotal) || 1)) * 100)}%
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-            {medSolved + hardSolved} of {medTotal + hardTotal} problems
+          <div className="text-[11px] text-muted-foreground mt-1 font-mono">
+            {medSolved + hardSolved} / {medTotal + hardTotal} problems
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Charts row 1: Weekly trajectory & daily velocity */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Trajectory */}
-        <div style={CARD_STYLE}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {CURRICULUM.totalWeeks}-Week Completion Trajectory
-            </span>
-            <span className="section-label">Target vs Solved</span>
-          </div>
+        <Card className="shadow-xs border-border/60">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+            <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+              {CURRICULUM.totalWeeks}-Week Target Trajectory
+            </CardTitle>
+            <Badge variant="outline" className="text-[10px] font-mono">Target vs Solved</Badge>
+          </CardHeader>
 
-          <div style={{ height: 230 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weekTrajectoryData} margin={{ top: 5, right: 10, left: -24, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
-                <XAxis dataKey="week" stroke="var(--text-muted)" fontSize={10} />
-                <YAxis stroke="var(--text-muted)" fontSize={10} />
-                <Tooltip
-                  contentStyle={{
-                    background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
-                    borderRadius: 8, color: 'var(--text-primary)', fontSize: 12,
-                    boxShadow: 'var(--shadow-md)'
-                  }}
-                />
-                <Line type="monotone" dataKey="Target" stroke="rgba(255, 255, 255, 0.2)" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
-                <Line type="monotone" dataKey="Solved" stroke="#818cf8" strokeWidth={2.5} dot={{ r: 3, fill: '#818cf8' }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Daily Velocity */}
-        <div style={CARD_STYLE}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-              Recent Solves Velocity
-            </span>
-            <span className="section-label">Last 14 days</span>
-          </div>
-
-          {dailySolveLog.length === 0 ? (
-            <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
-              No solves logged yet.
-            </div>
-          ) : (
-            <div style={{ height: 220 }}>
+          <CardContent className="pt-0">
+            <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[...dailySolveLog].reverse().slice(-14).map((g) => ({
-                    date: g.dateStr.slice(5),
-                    Solved: g.items.length,
-                  }))}
-                  margin={{ top: 5, right: 10, left: -24, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
-                  <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={10} />
-                  <YAxis stroke="var(--text-muted)" fontSize={10} allowDecimals={false} />
-                  <Tooltip
+                <LineChart data={weekTrajectoryData} margin={{ top: 5, right: 10, left: -24, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
+                  <XAxis dataKey="week" stroke="currentColor" className="text-[10px] text-muted-foreground" tickLine={false} />
+                  <YAxis stroke="currentColor" className="text-[10px] text-muted-foreground" tickLine={false} />
+                  <RechartsTooltip
                     contentStyle={{
-                      background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
-                      borderRadius: 8, color: 'var(--text-primary)', fontSize: 12,
-                      boxShadow: 'var(--shadow-md)'
+                      backgroundColor: 'var(--card)',
+                      borderColor: 'var(--border)',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                     }}
                   />
-                  <Bar dataKey="Solved" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <Line type="monotone" dataKey="Target" stroke="oklch(0.56 0.021 213.5)" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
+                  <Line type="monotone" dataKey="Solved" stroke="oklch(0.606 0.25 292.717)" strokeWidth={2.5} dot={{ r: 3, fill: 'oklch(0.606 0.25 292.717)' }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily Velocity */}
+        <Card className="shadow-xs border-border/60">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+            <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+              Recent Solve Velocity
+            </CardTitle>
+            <Badge variant="outline" className="text-[10px] font-mono">Last 14 Days</Badge>
+          </CardHeader>
+
+          <CardContent className="pt-0">
+            {dailySolveLog.length === 0 ? (
+              <div className="h-56 flex items-center justify-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl">
+                No solves logged in the last 14 days. Start today&apos;s mission to build your curve!
+              </div>
+            ) : (
+              <div className="h-56 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[...dailySolveLog].reverse().slice(-14).map((g) => ({
+                      date: g.dateStr.slice(5),
+                      Solved: g.items.length,
+                    }))}
+                    margin={{ top: 5, right: 10, left: -24, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
+                    <XAxis dataKey="date" stroke="currentColor" className="text-[10px] text-muted-foreground" tickLine={false} />
+                    <YAxis stroke="currentColor" className="text-[10px] text-muted-foreground" tickLine={false} allowDecimals={false} />
+                    <RechartsTooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--card)',
+                        borderColor: 'var(--border)',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }}
+                    />
+                    <Bar dataKey="Solved" fill="oklch(0.811 0.111 293.571)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Topic breakdown */}
-      <div style={CARD_STYLE}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
-            Topic Mastery Distribution
-          </span>
-          <span className="section-label">{CURRICULUM.totalTopics} Categories</span>
-        </div>
-
-        <div style={{ height: 260 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={topicChartData} margin={{ top: 5, right: 10, left: -20, bottom: 40 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
-              <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} angle={-30} textAnchor="end" />
-              <YAxis stroke="var(--text-muted)" fontSize={10} />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
-                  borderRadius: 8, color: 'var(--text-primary)', fontSize: 12,
-                  boxShadow: 'var(--shadow-md)'
-                }}
-              />
-              <Bar dataKey="Solved" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="Remaining" stackId="a" fill="rgba(255, 255, 255, 0.08)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Date-wise solve history */}
-      <div style={CARD_STYLE}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-              Activity History
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              Log of solved problems by date and time
-            </div>
+      <Card className="shadow-xs border-border/60">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+          <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+            Complete Curriculum Topic Mastery
+          </CardTitle>
+          <Badge variant="outline" className="text-[10px] font-mono">All 25 Topics</Badge>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={topicChartData} margin={{ top: 5, right: 10, left: -24, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
+                <XAxis dataKey="name" angle={-30} textAnchor="end" interval={0} stroke="currentColor" className="text-[9px] text-muted-foreground" />
+                <YAxis stroke="currentColor" className="text-[10px] text-muted-foreground" tickLine={false} />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--card)',
+                    borderColor: 'var(--border)',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <Bar dataKey="Solved" fill="oklch(0.606 0.25 292.717)" radius={[4, 4, 0, 0]} stackId="a" />
+                <Bar dataKey="Remaining" fill="oklch(0.275 0.011 216.9)" radius={[4, 4, 0, 0]} stackId="a" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-
-          <div style={{ display: 'flex', gap: 8 }}>
-            <span className="badge badge-warning">🔥 {stats.streak}d streak</span>
-            <span className="badge badge-neutral">{dailySolveLog.length} active days</span>
-          </div>
-        </div>
-
-        {dailySolveLog.length === 0 ? (
-          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
-            No problem solves logged yet. Mark problems solved to begin recording your timeline.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {dailySolveLog.map((group) => (
-              <div
-                key={group.dateStr}
-                style={{
-                  background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-md)', padding: '10px 12px'
-                }}
-              >
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--border-subtle)'
-                }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                    {group.displayDate}
-                  </span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    {group.items.length} {group.items.length === 1 ? 'problem' : 'problems'}
-                  </span>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 6 }}>
-                  {group.items.map((item) => {
-                    const diffColor = item.difficulty === 'Easy'
-                      ? 'var(--color-success-text)'
-                      : item.difficulty === 'Hard'
-                      ? 'var(--color-danger-text)'
-                      : 'var(--color-warning-text)';
-
-                    return (
-                      <div
-                        key={`${group.dateStr}-${item.problemId}`}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '6px 8px', background: 'var(--bg-card)',
-                          border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)',
-                          fontSize: 12
-                        }}
-                      >
-                        <div style={{ minWidth: 0, paddingRight: 6 }}>
-                          <a
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              color: 'var(--text-primary)', textDecoration: 'none',
-                              fontWeight: 500, display: 'block', overflow: 'hidden',
-                              textOverflow: 'ellipsis', whiteSpace: 'nowrap'
-                            }}
-                          >
-                            {item.name}
-                          </a>
-                          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                            {item.timeFormatted}
-                          </div>
-                        </div>
-
-                        <span style={{ fontSize: 10, fontWeight: 600, color: diffColor, flexShrink: 0 }}>
-                          {item.difficulty}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

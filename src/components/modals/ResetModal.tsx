@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useProgress } from '../../context/ProgressContext';
 import { ModalWrapper } from './ModalWrapper';
 import toast from 'react-hot-toast';
+import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ResetModalProps {
   isOpen: boolean;
@@ -16,54 +20,63 @@ export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose }) => {
     if (resetInput.trim() === 'RESET') {
       resetAll();
       setResetInput('');
+      toast.success('All progress successfully reset.');
       onClose();
     } else {
-      toast.error("Type RESET to confirm.");
+      toast.error('Type RESET to confirm.');
     }
   };
 
   return (
     <ModalWrapper isOpen={isOpen} onClose={onClose} title="Reset All Data">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div>
-          <h2 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 4px', color: 'var(--color-danger-text)' }}>
-            Reset All Data
-          </h2>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-            This action permanently erases your locally stored progress.
-          </p>
-        </div>
-
-        <div style={{
-          padding: '12px', background: 'var(--color-danger-bg)',
-          border: '1px solid var(--color-danger-border)', borderRadius: 'var(--radius-md)',
-          fontSize: 12, color: 'var(--color-danger-text)', lineHeight: 1.5
-        }}>
-          Warning: Erasing <strong style={{ color: 'var(--text-primary)' }}>{stats.solvedCount} solved problems</strong>, your <strong style={{ color: 'var(--text-primary)' }}>{stats.streak}-day streak</strong>, and all placement tracking records.
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center gap-3">
+          <div className="size-9 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive shrink-0">
+            <AlertTriangle className="size-4.5" />
+          </div>
           <div>
-            <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>
-              Type <strong style={{ color: 'var(--color-danger-text)' }}>RESET</strong> to confirm:
+            <h2 className="text-base font-serif font-bold tracking-tight text-destructive">
+              Danger Zone: Reset All Data
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              This action permanently clears all stored progress, streaks, and placement logs.
+            </p>
+          </div>
+        </div>
+
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive text-xs py-3">
+          <AlertDescription className="text-xs leading-relaxed m-0">
+            You are about to erase <strong className="font-semibold text-foreground">{stats.solvedCount} solved problems</strong>, your <strong className="font-semibold text-foreground">{stats.streak}-day streak</strong>, and all company interview pipeline records.
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-foreground">
+              Type <span className="font-mono font-bold text-destructive">RESET</span> to confirm:
             </label>
-            <input
+            <Input
               type="text"
               value={resetInput}
               onChange={(e) => setResetInput(e.target.value)}
               placeholder="RESET"
-              className="input"
-              style={{ fontFamily: 'var(--font-mono)' }}
+              className="text-xs h-9 font-mono"
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
-            <button onClick={onClose} className="btn btn-default">
+          <div className="flex justify-end gap-2.5 pt-2 border-t border-border/50">
+            <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
               Cancel
-            </button>
-            <button onClick={handleConfirmReset} className="btn btn-danger">
-              Erase Everything
-            </button>
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleConfirmReset}
+              disabled={resetInput.trim() !== 'RESET'}
+              className="text-xs"
+            >
+              Permanently Erase
+            </Button>
           </div>
         </div>
       </div>

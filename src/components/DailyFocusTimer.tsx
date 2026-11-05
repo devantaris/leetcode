@@ -3,6 +3,9 @@ import { Play, Pause, RotateCcw, Timer } from 'lucide-react';
 import { sounds } from '../utils/audio';
 import toast from 'react-hot-toast';
 import { STORAGE_KEYS } from '../config/storageKeys';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 function loadTimerState(): { secondsLeft: number; totalSeconds: number; isActive: boolean; startedAt: number | null } {
   try {
@@ -51,7 +54,7 @@ export const DailyFocusTimer: React.FC = () => {
       if (secondsLeft === 0) {
         setIsActive(false);
         sounds.playVictorySound();
-        toast.success("Focus session completed. Take a short break.", { duration: 5000 });
+        toast.success("Focus sprint completed. Take a short cognitive break.", { duration: 5000 });
       } else if (secondsLeft % 300 === 0) {
         sounds.playTickSound();
       }
@@ -88,90 +91,69 @@ export const DailyFocusTimer: React.FC = () => {
   const progressPct = Math.round(((totalSeconds - secondsLeft) / (totalSeconds || 1)) * 100);
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      flexWrap: 'wrap', gap: 16
-    }}>
-      {/* Title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: 'var(--radius-md)',
-          background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--text-primary)'
-        }}>
-          <Timer size={16} />
-        </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-              Focus Stopwatch
-            </span>
-            {isActive && (
-              <span className="badge badge-success" style={{ fontSize: 10, padding: '1px 6px' }}>
-                Running
-              </span>
-            )}
+    <Card className="shadow-xs border-border/60">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <Timer className="size-4" />
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
-            Dedicated deep-work practice session
-          </div>
-        </div>
-      </div>
-
-      {/* Clock display & Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{
-            fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 700,
-            color: 'var(--text-primary)', letterSpacing: '0.05em', lineHeight: 1
-          }}>
-            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-          </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-            {progressPct}% elapsed
+          <div>
+            <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+              Deep Work Timer
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Simulate interview pressure
+            </p>
           </div>
         </div>
 
-        {/* Presets */}
-        <div style={{ display: 'flex', gap: 4 }}>
+        {/* Preset quick buttons */}
+        <div className="flex items-center gap-1">
           {[25, 45, 60].map((m) => (
-            <button
+            <Button
               key={m}
+              variant={totalSeconds === m * 60 ? "secondary" : "ghost"}
+              size="xs"
               onClick={() => resetTimer(m)}
-              style={{
-                fontSize: 11, fontFamily: 'var(--font-mono)', padding: '4px 8px',
-                borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-default)',
-                background: totalSeconds === m * 60 ? 'var(--bg-hover)' : 'var(--bg-card)',
-                color: totalSeconds === m * 60 ? 'var(--text-primary)' : 'var(--text-muted)',
-                cursor: 'pointer'
-              }}
+              className="text-xs h-6 px-2"
             >
               {m}m
-            </button>
+            </Button>
           ))}
         </div>
+      </CardHeader>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <button
-            onClick={toggleTimer}
-            className="btn btn-primary"
-            style={{ padding: '6px 12px', fontSize: 12 }}
-          >
-            {isActive ? <Pause size={12} /> : <Play size={12} />}
-            {isActive ? 'Pause' : 'Start'}
-          </button>
-          <button
-            onClick={() => resetTimer(totalSeconds / 60)}
-            className="btn btn-default"
-            style={{ padding: '6px 8px' }}
-            title="Reset"
-          >
-            <RotateCcw size={12} />
-          </button>
+      <CardContent className="pt-0 flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="font-mono text-3xl font-bold tracking-tight text-foreground tabular-nums">
+            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isActive ? "secondary" : "default"}
+              size="sm"
+              onClick={toggleTimer}
+              className="h-8 gap-1.5 text-xs px-3"
+            >
+              {isActive ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+              <span>{isActive ? 'Pause' : 'Start'}</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={() => resetTimer(Math.round(totalSeconds / 60))}
+              className="h-8 size-8 text-muted-foreground hover:text-foreground"
+              title="Reset timer"
+            >
+              <RotateCcw className="size-3.5" />
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
+
+        <Progress value={progressPct} className="h-1.5 w-full bg-muted/60" />
+      </CardContent>
+    </Card>
   );
 };

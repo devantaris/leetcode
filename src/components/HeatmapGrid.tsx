@@ -3,6 +3,8 @@ import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { CURRICULUM } from '../data/curriculumStats';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export const HeatmapGrid: React.FC = () => {
   const { isDayComplete, setActiveWeek, stats } = useProgress();
@@ -14,117 +16,104 @@ export const HeatmapGrid: React.FC = () => {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+    <Card className="shadow-xs border-border/60">
+      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3 pb-3">
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
-            {CURRICULUM.totalDays}-Day Matrix
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            Click any week to jump to curriculum
-          </div>
+          <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+            {CURRICULUM.totalDays}-Day Algorithmic Matrix
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Click any week column to navigate directly into its syllabus
+          </p>
         </div>
-        {/* Legend */}
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          {[
-            { color: 'var(--color-success)', label: 'Done' },
-            { color: '#818cf8', label: 'Active Day' },
-            { color: 'rgba(239, 68, 68, 0.7)', label: 'Backlog' },
-            { color: 'var(--color-warning)', opacity: 0.4, label: 'Review' },
-            { color: 'var(--border-default)', label: 'Pending' },
-          ].map(({ color, label }) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <div style={{
-                width: 10, height: 10, borderRadius: 2,
-                background: color, flexShrink: 0
-              }} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Grid */}
-      <div style={{ overflowX: 'auto', paddingBottom: 6 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${PLAN_DATA.length}, minmax(28px, 1fr))`, gap: 6, minWidth: 780 }}>
+        {/* Legend */}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <div className="size-2.5 rounded-xs bg-emerald-500 shadow-xs" />
+            <span className="text-[11px]">Solved</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="size-2.5 rounded-xs bg-primary shadow-xs" />
+            <span className="text-[11px]">Active</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="size-2.5 rounded-xs bg-rose-500/80" />
+            <span className="text-[11px]">Backlog</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="size-2.5 rounded-xs bg-amber-500/50" />
+            <span className="text-[11px]">Review</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="size-2.5 rounded-xs bg-muted/60 border border-border/60" />
+            <span className="text-[11px]">Pending</span>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-0 overflow-x-auto pb-4">
+        <div className="grid gap-1.5 min-w-[760px]" style={{ gridTemplateColumns: `repeat(${PLAN_DATA.length}, minmax(30px, 1fr))` }}>
           {PLAN_DATA.map((w) => {
             const isCurrentWeek = w.week === stats.currentWeek;
+
             return (
               <div
                 key={w.week}
                 onClick={() => handleWeekClick(w.week)}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  padding: '8px 4px',
-                  borderRadius: 8, cursor: 'pointer',
-                  border: `1px solid ${isCurrentWeek ? 'rgba(99, 102, 241, 0.5)' : 'var(--border-subtle)'}`,
-                  background: isCurrentWeek ? 'rgba(99, 102, 241, 0.08)' : 'var(--bg-elevated)',
-                  boxShadow: isCurrentWeek ? '0 0 12px rgba(99, 102, 241, 0.2)' : 'none',
-                  transition: 'all var(--transition-fast)',
-                }}
-                onMouseOver={e => !isCurrentWeek && (e.currentTarget.style.background = 'var(--bg-hover)')}
-                onMouseOut={e => !isCurrentWeek && (e.currentTarget.style.background = 'var(--bg-elevated)')}
+                className={`flex flex-col items-center gap-1 p-1.5 rounded-lg border transition-all cursor-pointer ${
+                  isCurrentWeek
+                    ? 'border-primary/50 bg-primary/5 shadow-xs'
+                    : 'border-border/30 hover:border-border hover:bg-muted/40'
+                }`}
               >
-                <span style={{
-                  fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-mono)',
-                  color: isCurrentWeek ? '#818cf8' : 'var(--text-muted)',
-                  letterSpacing: '0.02em'
-                }}>
+                <span className={`font-mono text-[9px] font-bold ${isCurrentWeek ? 'text-primary' : 'text-muted-foreground'}`}>
                   W{w.week}
                 </span>
 
-                {w.days.map((d) => {
-                  const complete = isDayComplete(w.week, d.day);
-                  const isActive = d.day === stats.currentDay;
-                  const isBacklog = d.day < stats.currentDay && !complete && d.type !== 'rest';
-                  let bg = 'rgba(255, 255, 255, 0.04)';
-                  let border = 'var(--border-subtle)';
-                  let shadow = 'none';
+                <div className="flex flex-col gap-1 w-full items-center">
+                  {w.days.map((d) => {
+                    const complete = isDayComplete(w.week, d.day);
+                    const isActive = d.day === stats.currentDay;
+                    const isBacklog = d.day < stats.currentDay && !complete && d.type !== 'rest';
 
-                  if (complete) {
-                    bg = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-                    border = '#10b981';
-                    shadow = '0 0 6px rgba(16, 185, 129, 0.35)';
-                  } else if (isActive) {
-                    bg = 'rgba(99, 102, 241, 0.25)';
-                    border = '#818cf8';
-                    shadow = '0 0 8px rgba(99, 102, 241, 0.5)';
-                  } else if (isBacklog) {
-                    bg = 'rgba(239, 68, 68, 0.15)';
-                    border = 'rgba(239, 68, 68, 0.5)';
-                  } else if (d.type === 'review') {
-                    bg = 'rgba(245, 158, 11, 0.2)';
-                    border = 'rgba(245, 158, 11, 0.4)';
-                  } else if (d.type === 'contest') {
-                    bg = 'rgba(99, 102, 241, 0.2)';
-                    border = 'rgba(99, 102, 241, 0.4)';
-                  } else if (d.type === 'rest') {
-                    bg = 'rgba(255, 255, 255, 0.02)';
-                  }
+                    let cellColor = 'bg-muted/40 border border-border/40';
+                    let statusLabel = 'Pending';
 
-                  const statusLabel = complete ? 'Done' : isActive ? 'Active Day' : isBacklog ? 'Backlog / Missed' : 'Pending';
+                    if (complete) {
+                      cellColor = 'bg-emerald-500 border border-emerald-400 text-white shadow-xs';
+                      statusLabel = 'Completed';
+                    } else if (isActive) {
+                      cellColor = 'bg-primary border border-primary/80 ring-2 ring-primary/30';
+                      statusLabel = 'Active Target';
+                    } else if (isBacklog) {
+                      cellColor = 'bg-rose-500/30 border border-rose-500/60';
+                      statusLabel = 'Backlog';
+                    } else if (d.type === 'review') {
+                      cellColor = 'bg-amber-500/25 border border-amber-500/40';
+                      statusLabel = 'Review Day';
+                    } else if (d.type === 'contest') {
+                      cellColor = 'bg-purple-500/25 border border-purple-500/40';
+                      statusLabel = 'Contest Simulation';
+                    }
 
-                  return (
-                    <div
-                      key={d.day}
-                      title={`Day ${d.day} (${d.weekday}) — ${d.topic} — ${statusLabel}`}
-                      style={{
-                        width: '100%', height: 12, borderRadius: 3,
-                        background: bg, border: `1px solid ${border}`,
-                        boxShadow: shadow,
-                        transition: 'transform var(--transition-fast)',
-                      }}
-                      onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.15)')}
-                      onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
-                    />
-                  );
-                })}
+                    return (
+                      <Tooltip key={d.day}>
+                        <TooltipTrigger render={<div className={`size-4 sm:size-4.5 rounded-xs transition-transform hover:scale-115 ${cellColor}`} />}>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          <p className="font-semibold text-foreground">Day {d.day} ({d.weekday}) · {statusLabel}</p>
+                          <p className="text-[10px] text-muted-foreground">{d.topic}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
