@@ -46,7 +46,7 @@ export const CatchUpQueueCard: React.FC = () => {
         </Link>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-2 pt-0">
+      <CardContent className="flex flex-col gap-2 pt-1">
         <div className="flex flex-col gap-1.5">
           {visibleItems.map((item) =>
             item.problems

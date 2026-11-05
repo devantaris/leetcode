@@ -1,7 +1,7 @@
 import React from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { ExternalLink, Check, Coffee, ArrowRight, Flame, AlertCircle } from 'lucide-react';
+import { ExternalLink, Check, Coffee, ArrowRight, Flame, AlertCircle, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { COMPANY_LABELS } from '../data/companyMappings';
@@ -32,17 +32,17 @@ export const TodayMission: React.FC = () => {
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
 
   return (
-    <Card className="shadow-xs border-border/60">
+    <Card className="border border-border/80 bg-card text-card-foreground shadow-xs">
       {/* ── HEADER ── */}
-      <CardHeader className="gap-3 pb-4">
+      <CardHeader className="gap-3 pb-2">
         <div className="flex items-center justify-between flex-wrap gap-2.5">
           {/* Day & Week tag */}
-          <div className="flex items-center gap-2 rounded-lg bg-muted/60 border border-border/40 px-2.5 py-1 text-xs font-mono text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 border border-border/50 px-2.5 py-1 text-xs font-mono text-muted-foreground">
             <span className="font-bold text-foreground">Day {todayDayPlan.day}</span>
             <span>of {CURRICULUM.totalDays}</span>
-            <span>·</span>
+            <span className="opacity-40">/</span>
             <span>W{currentWeekPlan.week}</span>
-            <span>·</span>
+            <span className="opacity-40">/</span>
             <span className="font-semibold text-foreground">{todayDayPlan.weekday}</span>
           </div>
 
@@ -82,9 +82,9 @@ export const TodayMission: React.FC = () => {
       </CardHeader>
 
       {/* ── TODAY'S PROBLEMS LIST ── */}
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-3 pt-2">
         {todayDayPlan.type === 'rest' ? (
-          <div className="flex items-center gap-4 p-5 rounded-xl border border-border/50 bg-muted/30">
+          <div className="flex items-center gap-4 p-5 rounded-xl border border-border/60 bg-muted/30">
             <div className="size-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
               <Coffee className="size-5" />
             </div>
@@ -96,29 +96,29 @@ export const TodayMission: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-border/50 divide-y divide-border/40 overflow-hidden bg-card">
+          <div className="rounded-xl border border-border/70 divide-y divide-border/40 overflow-hidden bg-card/60 shadow-xs">
             {todayDayPlan.problems.map((p) => {
               const isChecked = !!progress[p.id];
               const diffVariant =
-                p.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/10' :
-                p.difficulty === 'Hard' ? 'border-destructive/30 text-destructive bg-destructive/10' :
-                'border-amber-500/30 text-amber-500 bg-amber-500/10';
+                p.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' :
+                p.difficulty === 'Hard' ? 'border-rose-500/30 text-rose-400 bg-rose-500/10' :
+                'border-amber-500/30 text-amber-400 bg-amber-500/10';
 
               return (
                 <div
                   key={p.id}
                   onClick={() => toggleProblem(p.id)}
-                  className={`flex items-start gap-3.5 p-3.5 sm:p-4 transition-all cursor-pointer group ${
-                    isChecked ? 'bg-muted/30' : 'hover:bg-muted/50'
+                  className={`flex items-start gap-3.5 p-3.5 sm:p-4 transition-all duration-150 cursor-pointer group ${
+                    isChecked ? 'bg-muted/20 opacity-80' : 'hover:bg-muted/40'
                   }`}
                 >
                   {/* Custom Checkbox */}
                   <div className="mt-0.5 shrink-0">
                     <div
-                      className={`size-5 rounded-md flex items-center justify-center border transition-all ${
+                      className={`size-5 rounded-md flex items-center justify-center border transition-all duration-150 ${
                         isChecked
-                          ? 'bg-primary border-primary text-primary-foreground shadow-xs'
-                          : 'border-border/80 group-hover:border-foreground/40 bg-background'
+                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+                          : 'border-border/80 group-hover:border-foreground/50 bg-background'
                       }`}
                     >
                       {isChecked && <Check className="size-3.5 stroke-[3]" />}
@@ -139,7 +139,7 @@ export const TodayMission: React.FC = () => {
                           }`}
                         >
                           <span>{p.name}</span>
-                          <ExternalLink className="size-3.5 text-muted-foreground shrink-0" />
+                          <ExternalLink className="size-3.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" />
                         </a>
 
                         {p.lcNumber > 0 && (
@@ -149,7 +149,7 @@ export const TodayMission: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Tags */}
+                      {/* Badges / Tags */}
                       <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                         <span className={`font-mono text-[11px] font-semibold px-2 py-0.5 rounded-md border ${diffVariant}`}>
                           {p.difficulty}
@@ -173,9 +173,10 @@ export const TodayMission: React.FC = () => {
                     </div>
 
                     {p.note && (
-                      <p className="text-xs text-muted-foreground italic mt-1.5 leading-relaxed">
-                        💡 {p.note}
-                      </p>
+                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground/90 bg-muted/40 px-2.5 py-1 rounded-md border border-border/40 w-fit">
+                        <Lightbulb className="size-3 text-amber-500 shrink-0" />
+                        <span>{p.note}</span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -186,7 +187,7 @@ export const TodayMission: React.FC = () => {
       </CardContent>
 
       {/* ── FOOTER & PROGRESS ── */}
-      <CardFooter className="flex flex-col gap-3 pt-2">
+      <CardFooter className="flex flex-col gap-3 pt-3">
         <div className="w-full flex items-center justify-between flex-wrap gap-2 text-xs">
           <div className="font-mono text-muted-foreground">
             Curriculum: <strong className="text-foreground">{stats.solvedCount}</strong> / {stats.totalProblems} solved{' '}

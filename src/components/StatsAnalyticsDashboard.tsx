@@ -43,8 +43,8 @@ export const StatsAnalyticsDashboard: React.FC = () => {
   const solvedPct = Math.round((stats.solvedCount / (stats.totalProblems || 1)) * 100);
 
   return (
-    <Card className="shadow-xs border-border/60">
-      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+    <Card className="border border-border/80 bg-card text-card-foreground shadow-xs">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
         <div>
           <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
             Interview Readiness Analytics
@@ -53,12 +53,12 @@ export const StatsAnalyticsDashboard: React.FC = () => {
             Real-time algorithmic velocity
           </p>
         </div>
-        <Badge variant="outline" className="font-mono text-xs">
+        <Badge variant="outline" className="font-mono text-xs border-border/70">
           W{stats.currentWeek} · Day {stats.currentDay}
         </Badge>
       </CardHeader>
 
-      <CardContent className="pt-0 flex flex-col gap-4">
+      <CardContent className="pt-2 flex flex-col gap-4">
         {/* Metric Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <div className="p-3 rounded-lg border border-border/50 bg-muted/20 flex flex-col">

@@ -44,8 +44,9 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('cadence-theme');
-    return (saved as Theme) || 'dark';
+    const saved = localStorage.getItem('grindos-theme');
+    if (saved === 'light') return 'light';
+    return 'dark';
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,10 +55,12 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
     document.documentElement.setAttribute('data-theme', theme);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
     }
-    localStorage.setItem('cadence-theme', theme);
+    localStorage.setItem('grindos-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
@@ -116,26 +119,31 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
     <TooltipProvider delay={200}>
       <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
         {/* ── TOP NAV HEADER ── */}
-        <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/90 backdrop-blur-md">
+        <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
           <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
             
             {/* Left: Brand & Nav Links */}
             <div className="flex items-center gap-6 lg:gap-8">
               <Link to="/dashboard" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
-                <div className="size-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-mono font-bold text-xs shadow-xs">
+                <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-mono font-bold text-xs shadow-xs">
                   {APP_CONFIG.shortName}
                 </div>
-                <span className="font-serif font-bold text-base tracking-tight text-foreground hidden sm:inline-block">
-                  {APP_CONFIG.name}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-sans font-bold text-base tracking-tight text-foreground hidden sm:inline-block">
+                    {APP_CONFIG.name}
+                  </span>
+                  <span className="hidden sm:inline-block font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/80 text-muted-foreground border border-border/60">
+                    PRO
+                  </span>
+                </div>
               </Link>
 
               {/* Segmented Desktop Nav */}
-              <nav className="hidden md:flex items-center gap-1 rounded-lg bg-muted/60 p-1 border border-border/40 text-xs font-medium">
+              <nav className="hidden md:flex items-center gap-1 rounded-lg bg-muted/60 p-1 border border-border/60 text-xs font-medium">
                 <NavLink
                   to="/dashboard"
                   className={({ isActive }) =>
-                    `px-3 py-1 rounded-md transition-all ${
+                    `px-3 py-1.5 rounded-md transition-all ${
                       isActive
                         ? 'bg-background text-foreground font-semibold shadow-xs'
                         : 'text-muted-foreground hover:text-foreground'
@@ -147,7 +155,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 <NavLink
                   to="/curriculum"
                   className={({ isActive }) =>
-                    `px-3 py-1 rounded-md transition-all ${
+                    `px-3 py-1.5 rounded-md transition-all ${
                       isActive
                         ? 'bg-background text-foreground font-semibold shadow-xs'
                         : 'text-muted-foreground hover:text-foreground'
@@ -159,7 +167,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 <NavLink
                   to="/analytics"
                   className={({ isActive }) =>
-                    `px-3 py-1 rounded-md transition-all ${
+                    `px-3 py-1.5 rounded-md transition-all ${
                       isActive
                         ? 'bg-background text-foreground font-semibold shadow-xs'
                         : 'text-muted-foreground hover:text-foreground'
@@ -171,7 +179,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 <NavLink
                   to="/leaderboard"
                   className={({ isActive }) =>
-                    `px-3 py-1 rounded-md transition-all ${
+                    `px-3 py-1.5 rounded-md transition-all ${
                       isActive
                         ? 'bg-background text-foreground font-semibold shadow-xs'
                         : 'text-muted-foreground hover:text-foreground'
@@ -190,7 +198,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsCommandPaletteOpen(true)}
-                className="h-8 gap-2 px-2.5 text-xs text-muted-foreground hover:text-foreground bg-muted/30"
+                className="h-8.5 gap-2 px-3 text-xs text-muted-foreground hover:text-foreground bg-muted/30 border-border/60 hover:border-border"
                 title="Search problems and commands (Ctrl+K)"
               >
                 <Search className="size-3.5" />

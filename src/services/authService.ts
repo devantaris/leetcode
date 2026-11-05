@@ -95,13 +95,20 @@ export class AuthService {
       try {
         const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
         if (error) {
-          if (error.message.toLowerCase().includes('email not confirmed')) {
+          const rawMsg = error.message || '';
+          if (rawMsg.toLowerCase().includes('email not confirmed')) {
             return {
               user: null,
               error: 'Email not confirmed yet! Check your inbox, or in Supabase Dashboard → Authentication → Providers → Email, turn OFF "Confirm email" for instant login.',
             };
           }
-          return { user: null, error: error.message };
+          if (rawMsg.includes('Failed to fetch') || rawMsg.toLowerCase().includes('fetch')) {
+            return {
+              user: null,
+              error: 'Network Error: Cannot reach Supabase. If using Brave Browser, please disable Brave Shields for localhost so API requests are not blocked.',
+            };
+          }
+          return { user: null, error: rawMsg };
         }
         if (data.user) {
           this.currentUser = {
@@ -151,13 +158,20 @@ export class AuthService {
           },
         });
         if (error) {
-          if (error.message.toLowerCase().includes('rate limit')) {
+          const rawMsg = error.message || '';
+          if (rawMsg.toLowerCase().includes('rate limit')) {
             return {
               user: null,
               error: 'Email rate limit reached. In your Supabase Dashboard → Authentication → Providers → Email, turn OFF "Confirm email" for instant login.',
             };
           }
-          return { user: null, error: error.message };
+          if (rawMsg.includes('Failed to fetch') || rawMsg.toLowerCase().includes('fetch')) {
+            return {
+              user: null,
+              error: 'Network Error: Cannot reach Supabase. If using Brave Browser, please disable Brave Shields for localhost so API requests are not blocked.',
+            };
+          }
+          return { user: null, error: rawMsg };
         }
         if (data.user) {
           // If user exists, Supabase returns user with empty identities

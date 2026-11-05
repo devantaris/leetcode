@@ -3,16 +3,16 @@
 
 export const APP_CONFIG = {
   // Brand Identity
-  name: 'Cadence',
-  tagline: 'Rhythmic interview preparation.',
-  shortName: 'CD',
+  name: 'GrindOS',
+  tagline: '140-Day Algorithmic Placement Operating System',
+  shortName: 'G//',
   description: 'A minimal, distraction-free 140-day algorithmic preparation system for technical interviews.',
 
   // Favicon config (used in index.html SVG)
   favicon: {
-    text: 'CD',
-    bg: '#000000',
-    color: '#ffffff',
+    text: 'G//',
+    bg: '#020403',
+    color: '#3ddc84',
   },
 
   // Track naming
@@ -32,7 +32,7 @@ export const APP_CONFIG = {
 
   // Export config
   exports: {
-    filenamePrefix: 'cadence_backup',
+    filenamePrefix: 'grindos_backup',
     fileExtension: '.json',
   },
 

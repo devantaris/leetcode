@@ -16,8 +16,8 @@ export const HeatmapGrid: React.FC = () => {
   };
 
   return (
-    <Card className="shadow-xs border-border/60">
-      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3 pb-3">
+    <Card className="border border-border/80 bg-card text-card-foreground shadow-xs">
+      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3 pb-2">
         <div>
           <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
             {CURRICULUM.totalDays}-Day Algorithmic Matrix
@@ -52,7 +52,7 @@ export const HeatmapGrid: React.FC = () => {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0 overflow-x-auto pb-4">
+      <CardContent className="pt-2 overflow-x-auto pb-4">
         <div className="grid gap-1.5 min-w-[760px]" style={{ gridTemplateColumns: `repeat(${PLAN_DATA.length}, minmax(30px, 1fr))` }}>
           {PLAN_DATA.map((w) => {
             const isCurrentWeek = w.week === stats.currentWeek;

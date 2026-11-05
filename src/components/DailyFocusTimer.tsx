@@ -91,11 +91,11 @@ export const DailyFocusTimer: React.FC = () => {
   const progressPct = Math.round(((totalSeconds - secondsLeft) / (totalSeconds || 1)) * 100);
 
   return (
-    <Card className="shadow-xs border-border/60">
-      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+    <Card className="border border-border/80 bg-card text-card-foreground shadow-xs">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
         <div className="flex items-center gap-3">
-          <div className="size-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-            <Timer className="size-4" />
+          <div className="size-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-xs">
+            <Timer className="size-4.5" />
           </div>
           <div>
             <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
@@ -115,7 +115,7 @@ export const DailyFocusTimer: React.FC = () => {
               variant={totalSeconds === m * 60 ? "secondary" : "ghost"}
               size="xs"
               onClick={() => resetTimer(m)}
-              className="text-xs h-6 px-2"
+              className="text-xs h-6 px-2 font-mono"
             >
               {m}m
             </Button>
@@ -123,7 +123,7 @@ export const DailyFocusTimer: React.FC = () => {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0 flex flex-col gap-3">
+      <CardContent className="pt-2 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-4">
           <div className="font-mono text-3xl font-bold tracking-tight text-foreground tabular-nums">
             {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}

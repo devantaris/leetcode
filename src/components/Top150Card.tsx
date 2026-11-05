@@ -60,11 +60,11 @@ export const Top150Card: React.FC = () => {
   }
 
   return (
-    <Card className="shadow-xs border-border/60">
-      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+    <Card className="border border-border/80 bg-card text-card-foreground shadow-xs">
+      <CardHeader className="flex flex-row items-center justify-between gap-3 pb-2">
         <div className="flex items-center gap-3">
-          <div className="size-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
-            <Trophy className="size-4" />
+          <div className="size-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 shadow-xs">
+            <Trophy className="size-4.5" />
           </div>
           <div>
             <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
@@ -90,7 +90,7 @@ export const Top150Card: React.FC = () => {
         </Button>
       </CardHeader>
 
-      <CardContent className="pt-0 flex flex-col gap-3">
+      <CardContent className="pt-2 flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-4">
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-3xl font-bold tracking-tight text-foreground tabular-nums">
