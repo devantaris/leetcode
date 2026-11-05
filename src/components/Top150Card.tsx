@@ -107,7 +107,7 @@ export const Top150Card: React.FC = () => {
         {/* Breakdown row */}
         <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border/40 text-center">
           <div className="flex flex-col">
-            <span className="font-mono text-xs font-semibold text-emerald-500">
+            <span className="font-mono text-xs font-semibold text-primary">
               {easySolved} / {easyTotal}
             </span>
             <span className="text-[10px] text-muted-foreground">Easy</span>

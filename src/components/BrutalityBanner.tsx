@@ -29,7 +29,7 @@ export const BrutalityBanner: React.FC = () => {
   })();
 
   return (
-    <div className="relative flex items-center justify-between gap-4 px-4 py-3 rounded-xl border border-border/80 bg-card/80 backdrop-blur-md shadow-xs transition-all">
+    <div className="relative flex items-center justify-between gap-4 px-5 py-3.5 rounded-2xl border border-border bg-card shadow-xs transition-all">
       <div className="flex items-center gap-3 min-w-0">
         <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 border ${
           isStreakHigh

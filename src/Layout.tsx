@@ -9,9 +9,10 @@ import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
 import { CURRICULUM } from './data/curriculumStats';
 import {
-  Sun, Moon, Settings, Download, Upload, RotateCcw, User,
-  CalendarClock, Terminal, Search, Volume2, VolumeX, Compass,
-  BookOpen, BarChart2, Award, Cloud, LogIn, Briefcase, Flame, CheckCircle2
+  Sun, Moon, Settings, RotateCcw, User,
+  CalendarClock, Terminal, Search, Volume2, VolumeX,
+  BookOpen, BarChart2, Award, Cloud, Briefcase, Flame,
+  LayoutDashboard, Menu, ArrowUpRight, Zap
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuGroup
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 type Theme = 'dark' | 'light';
 type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'auth' | null;
@@ -37,16 +39,17 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const {
-    importJSON, isOnboarded, userProfile, stats, exportJSON,
+    importJSON, isOnboarded, userProfile, stats,
     soundEnabled, toggleSound, authUser, cloudSyncStatus
   } = useProgress();
 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('grindos-theme');
-    if (saved === 'light') return 'light';
-    return 'dark';
+    if (saved === 'dark' || saved === 'light') return saved;
+    return 'light'; // Donezo / ACRU default clean light aesthetic
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -115,154 +118,249 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
   if (!isOnboarded) return <OnboardingPage />;
 
+  const displayName = authUser?.displayName || userProfile.name || 'Devansh Kumar';
+  const displayEmail = authUser?.email || (userProfile.name ? `${userProfile.name.toLowerCase().replace(/\s+/g, '')}@placement.io` : 'operator@grindos.dev');
+  const userInitials = displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'OP';
+
+  const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <div className="flex flex-col justify-between h-full gap-6">
+      <div className="flex flex-col gap-6">
+        {/* Brand Header */}
+        <Link
+          to="/dashboard"
+          onClick={onNavigate}
+          className="flex items-center gap-3 px-2 py-1 transition-opacity hover:opacity-90"
+        >
+          <div className="size-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-mono font-bold text-sm shadow-xs shrink-0">
+            {APP_CONFIG.shortName}
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="font-sans font-bold text-lg tracking-tight text-foreground">
+                {APP_CONFIG.name}
+              </span>
+              <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-primary/10 text-primary font-semibold border border-primary/20">
+                PRO
+              </span>
+            </div>
+            <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+              {userProfile.targetCompany ? `Target: ${userProfile.targetCompany}` : '140-Day System'}
+            </span>
+          </div>
+        </Link>
+
+        {/* Section: MENU */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-3 mb-1">
+            Menu
+          </span>
+
+          <NavLink
+            to="/dashboard"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
+                isActive
+                  ? 'bg-primary/10 text-primary font-semibold relative before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-primary before:rounded-r'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              }`
+            }
+          >
+            <div className="flex items-center gap-3">
+              <LayoutDashboard className="size-4.5 shrink-0" />
+              <span>Dashboard</span>
+            </div>
+          </NavLink>
+
+          <NavLink
+            to="/curriculum"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
+                isActive
+                  ? 'bg-primary/10 text-primary font-semibold relative before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-primary before:rounded-r'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              }`
+            }
+          >
+            <div className="flex items-center gap-3">
+              <BookOpen className="size-4.5 shrink-0" />
+              <span>Syllabus</span>
+            </div>
+            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold">
+              {CURRICULUM.totalDays}d
+            </span>
+          </NavLink>
+
+          <NavLink
+            to="/analytics"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
+                isActive
+                  ? 'bg-primary/10 text-primary font-semibold relative before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-primary before:rounded-r'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              }`
+            }
+          >
+            <div className="flex items-center gap-3">
+              <BarChart2 className="size-4.5 shrink-0" />
+              <span>Analytics</span>
+            </div>
+          </NavLink>
+
+          <NavLink
+            to="/leaderboard"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
+                isActive
+                  ? 'bg-primary/10 text-primary font-semibold relative before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-primary before:rounded-r'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              }`
+            }
+          >
+            <div className="flex items-center gap-3">
+              <Award className="size-4.5 shrink-0" />
+              <span>Leaderboard</span>
+            </div>
+          </NavLink>
+
+          <button
+            type="button"
+            onClick={() => { openModal('placements'); onNavigate?.(); }}
+            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-150 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <Briefcase className="size-4.5 shrink-0" />
+              <span>Applications</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Section: GENERAL */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-3 mb-1">
+            General
+          </span>
+
+          <button
+            type="button"
+            onClick={() => { openModal('profile'); onNavigate?.(); }}
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-150 text-left"
+          >
+            <Settings className="size-4.5 shrink-0" />
+            <span>Settings</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { openModal('auth'); onNavigate?.(); }}
+            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-150 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <Cloud className="size-4.5 shrink-0" />
+              <span>Cloud Sync</span>
+            </div>
+            <span className={`size-2 rounded-full ${cloudSyncStatus === 'synced' ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
+          </button>
+
+          {onSwitchToOS && (
+            <button
+              type="button"
+              onClick={() => { onSwitchToOS(); onNavigate?.(); }}
+              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-150 text-left"
+            >
+              <Terminal className="size-4.5 shrink-0" />
+              <span>Terminal OS</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Sidebar Bottom Banner Widget (Donezo Style) */}
+      <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-xs flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="size-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+              <Zap className="size-4" />
+            </div>
+            <span className="font-semibold text-xs text-foreground">Target Velocity</span>
+          </div>
+          <span className="font-mono text-xs font-bold text-primary">{stats.streak}d streak</span>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Maintain 3 problems daily to secure placement offers by Day 140.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => { openModal('strategy'); onNavigate?.(); }}
+          className="w-full text-xs h-8 gap-1 border-primary/30 text-primary hover:bg-primary/10"
+        >
+          <span>View Strategy</span>
+          <ArrowUpRight className="size-3" />
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <TooltipProvider delay={200}>
-      <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20 selection:text-primary">
-        {/* ── TOP NAV HEADER ── */}
-        <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/80 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8">
-            
-            {/* Left: Brand & Nav Links */}
-            <div className="flex items-center gap-6 lg:gap-8">
-              <Link to="/dashboard" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
-                <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-mono font-bold text-xs shadow-xs">
-                  {APP_CONFIG.shortName}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-sans font-bold text-base tracking-tight text-foreground hidden sm:inline-block">
-                    {APP_CONFIG.name}
-                  </span>
-                  <span className="hidden sm:inline-block font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted/80 text-muted-foreground border border-border/60">
-                    PRO
-                  </span>
-                </div>
-              </Link>
+      <div className="min-h-screen flex bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+        {/* ── DESKTOP SIDEBAR ── */}
+        <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-card p-5 sticky top-0 h-screen overflow-y-auto">
+          <NavContent />
+        </aside>
 
-              {/* Segmented Desktop Nav */}
-              <nav className="hidden md:flex items-center gap-1 rounded-lg bg-muted/60 p-1 border border-border/60 text-xs font-medium">
-                <NavLink
-                  to="/dashboard"
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 rounded-md transition-all ${
-                      isActive
-                        ? 'bg-background text-foreground font-semibold shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`
-                  }
-                >
-                  Today
-                </NavLink>
-                <NavLink
-                  to="/curriculum"
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 rounded-md transition-all ${
-                      isActive
-                        ? 'bg-background text-foreground font-semibold shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`
-                  }
-                >
-                  Syllabus
-                </NavLink>
-                <NavLink
-                  to="/analytics"
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 rounded-md transition-all ${
-                      isActive
-                        ? 'bg-background text-foreground font-semibold shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`
-                  }
-                >
-                  Analytics
-                </NavLink>
-                <NavLink
-                  to="/leaderboard"
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 rounded-md transition-all ${
-                      isActive
-                        ? 'bg-background text-foreground font-semibold shadow-xs'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`
-                  }
-                >
-                  Leaderboard
-                </NavLink>
-              </nav>
-            </div>
+        {/* ── MAIN WORKSPACE ── */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top Header */}
+          <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 sm:px-6 lg:px-8">
+            {/* Left: Mobile trigger & Search Bar */}
+            <div className="flex items-center gap-3 flex-1 max-w-md">
+              {/* Mobile Drawer */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger render={
+                  <Button variant="ghost" size="icon-sm" className="lg:hidden text-muted-foreground hover:text-foreground">
+                    <Menu className="size-5" />
+                  </Button>
+                } />
+                <SheetContent side="left" className="w-72 p-5 bg-card">
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                  </SheetHeader>
+                  <NavContent onNavigate={() => setMobileMenuOpen(false)} />
+                </SheetContent>
+              </Sheet>
 
-            {/* Right: Quick actions, Stats, User Menu */}
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              {/* Command Palette Trigger */}
-              <Button
-                variant="outline"
-                size="sm"
+              {/* Search Bar (Donezo / ACRU Search style) */}
+              <div
                 onClick={() => setIsCommandPaletteOpen(true)}
-                className="h-8.5 gap-2 px-3 text-xs text-muted-foreground hover:text-foreground bg-muted/30 border-border/60 hover:border-border"
-                title="Search problems and commands (Ctrl+K)"
+                className="flex items-center gap-2.5 px-3 py-1.5 w-full rounded-xl border border-border/80 bg-background text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all cursor-pointer text-xs"
               >
-                <Search className="size-3.5" />
-                <span className="hidden sm:inline">Search</span>
-                <kbd className="pointer-events-none hidden lg:inline-flex h-4.5 select-none items-center gap-1 rounded border border-border/60 bg-muted px-1.5 font-mono text-[9px] font-semibold text-muted-foreground">
+                <Search className="size-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1 truncate">Search problems, patterns, topics...</span>
+                <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[9px] font-semibold text-muted-foreground">
                   ⌘K
                 </kbd>
-              </Button>
+              </div>
+            </div>
 
+            {/* Right: Quick actions, Controls & Profile */}
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Streak Badge */}
               {stats.streak > 0 && (
                 <Badge
                   variant="outline"
-                  className="h-8 gap-1 px-2.5 font-mono text-xs border-amber-500/30 bg-amber-500/10 text-amber-500 font-semibold"
-                  title={`${stats.streak}-day streak active!`}
+                  className="hidden sm:inline-flex h-8 gap-1.5 px-2.5 font-mono text-xs border-primary/30 bg-primary/10 text-primary font-semibold"
                 >
-                  <Flame className="size-3.5 fill-amber-500/20" />
-                  <span>{stats.streak}d</span>
+                  <Flame className="size-3.5 fill-primary/20" />
+                  <span>{stats.streak}d streak</span>
                 </Badge>
               )}
 
-              {/* Cloud / Auth Trigger */}
-              {authUser ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openModal('auth')}
-                  className={`h-8 gap-1.5 text-xs ${
-                    cloudSyncStatus === 'synced'
-                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
-                      : 'border-border/60 text-muted-foreground'
-                  }`}
-                  title={`${authUser.displayName} · ${cloudSyncStatus}`}
-                >
-                  <Cloud className="size-3.5" />
-                  <span className="hidden sm:inline font-medium">{authUser.displayName.split(' ')[0]}</span>
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openModal('auth')}
-                  className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  <LogIn className="size-3.5" />
-                  <span className="hidden sm:inline">Sign In</span>
-                </Button>
-              )}
-
-              {/* Terminal OS Switcher (if available) */}
-              {onSwitchToOS && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onSwitchToOS}
-                  className="h-8 gap-1.5 px-2.5 font-mono text-xs border-emerald-500/40 text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 hidden md:inline-flex"
-                  title="Switch to Retro Terminal OS"
-                >
-                  <Terminal className="size-3.5" />
-                  <span>OS</span>
-                </Button>
-              )}
-
-              {/* Audio toggle */}
+              {/* Tactile Audio toggle */}
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -284,17 +382,38 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               </Button>
 
-              {/* Dropdown Menu for Settings & Modals */}
+              {/* User Profile Pill (Donezo Style: Avatar + Name + Email) */}
               <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground" />}>
-                  <Settings className="size-4" />
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger render={
+                  <button
+                    type="button"
+                    className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-border/70 hover:border-foreground/20 bg-background transition-all cursor-pointer text-left"
+                  >
+                    <div className="size-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary shrink-0">
+                      {userInitials}
+                    </div>
+                    <div className="hidden md:flex flex-col min-w-0 pr-1">
+                      <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
+                        {displayName}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
+                        {displayEmail}
+                      </span>
+                    </div>
+                  </button>
+                } />
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>GrindOS Console</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-semibold text-foreground">{displayName}</span>
+                      <span className="text-xs text-muted-foreground font-mono">{displayEmail}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     <DropdownMenuItem onClick={() => openModal('profile')}>
                       <User className="size-4 mr-2" />
-                      <span>Profile ({userProfile.name})</span>
+                      <span>Profile & Goals</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => openModal('placements')}>
                       <Briefcase className="size-4 mr-2" />
@@ -306,30 +425,22 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => openModal('auth')}>
                       <Cloud className="size-4 mr-2" />
-                      <span>{authUser ? 'Cloud Sync Status' : 'Sign In / Register'}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openModal('strategy')}>
-                      <BookOpen className="size-4 mr-2" />
-                      <span>Strategy Guide</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openModal('rules')}>
-                      <CheckCircle2 className="size-4 mr-2" />
-                      <span>Rules & Guidelines</span>
+                      <span>Cloud Sync Status</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={exportJSON}>
-                      <Download className="size-4 mr-2" />
-                      <span>Export Backup (.json)</span>
+                    <DropdownMenuItem onClick={() => openModal('strategy')}>
+                      <Zap className="size-4 mr-2" />
+                      <span>Phase Strategy</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleTriggerImport}>
-                      <Upload className="size-4 mr-2" />
-                      <span>Restore Backup</span>
+                    <DropdownMenuItem onClick={() => openModal('backup')}>
+                      <Cloud className="size-4 mr-2" />
+                      <span>Export / Backup Data</span>
                     </DropdownMenuItem>
                     {onGoToHome && (
                       <DropdownMenuItem onClick={onGoToHome}>
-                        <Compass className="size-4 mr-2" />
+                        <LayoutDashboard className="size-4 mr-2" />
                         <span>Experience Portal</span>
                       </DropdownMenuItem>
                     )}
@@ -345,32 +456,32 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* ── MAIN VIEWPORT CONTENT ── */}
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mb-16 md:mb-0">
-          <Outlet />
-        </main>
+          {/* ── MAIN CONTENT CONTAINER (CENTERED, CLEAN BENTO CANVAS) ── */}
+          <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mb-16 lg:mb-0">
+            <Outlet />
+          </main>
+        </div>
 
         {/* ── MOBILE BOTTOM NAVIGATION ── */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/40 flex items-center justify-around h-14 px-2">
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border flex items-center justify-around h-14 px-2">
           <NavLink
             to="/dashboard"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
               }`
             }
           >
-            <Compass className="size-4.5" />
-            <span>Today</span>
+            <LayoutDashboard className="size-4.5" />
+            <span>Dashboard</span>
           </NavLink>
           <NavLink
             to="/curriculum"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
               }`
             }
           >
@@ -381,7 +492,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
             to="/analytics"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
               }`
             }
           >
@@ -392,7 +503,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
             to="/leaderboard"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
               }`
             }
           >
@@ -400,35 +511,6 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
             <span>Ranks</span>
           </NavLink>
         </nav>
-
-        {/* ── FOOTER STATUS BAR ── */}
-        <footer className="hidden md:flex items-center justify-between border-t border-border/40 bg-card/40 px-6 py-3 text-xs text-muted-foreground font-mono">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-foreground">{APP_CONFIG.name}</span>
-            <span>·</span>
-            <span>Day {stats.currentDay} of {CURRICULUM.totalDays}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span>
-              <strong className="text-foreground font-semibold">{stats.solvedCount}</strong> / {stats.totalProblems} solved
-            </span>
-            {stats.streak > 0 && (
-              <>
-                <span>·</span>
-                <span className="text-amber-500 font-medium">🔥 {stats.streak}d streak</span>
-              </>
-            )}
-            {authUser && (
-              <>
-                <span>·</span>
-                <span className="flex items-center gap-1.5 text-foreground/80">
-                  <Cloud className="size-3" />
-                  {cloudSyncStatus === 'synced' ? 'Synced' : cloudSyncStatus === 'syncing' ? 'Syncing…' : 'Offline'}
-                </span>
-              </>
-            )}
-          </div>
-        </footer>
 
         {/* Hidden file input */}
         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
@@ -446,7 +528,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
         <Toaster
           position="bottom-center"
           toastOptions={{
-            className: '!bg-card !text-card-foreground !border !border-border !rounded-lg !text-xs !shadow-md',
+            className: '!bg-card !text-card-foreground !border !border-border !rounded-xl !text-xs !shadow-md',
           }}
         />
       </div>

@@ -114,8 +114,8 @@ export const StatsAnalyticsDashboard: React.FC = () => {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                   }}
                 />
-                <Bar dataKey="Solved" fill="oklch(0.606 0.25 292.717)" radius={[4, 4, 0, 0]} stackId="a" />
-                <Bar dataKey="Remaining" fill="oklch(0.275 0.011 216.9)" radius={[4, 4, 0, 0]} stackId="a" />
+                <Bar dataKey="Solved" fill="var(--primary)" radius={[4, 4, 0, 0]} stackId="a" />
+                <Bar dataKey="Remaining" fill="var(--muted)" radius={[4, 4, 0, 0]} stackId="a" />
               </BarChart>
             </ResponsiveContainer>
           </div>

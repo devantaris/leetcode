@@ -96,13 +96,13 @@ export const TodayMission: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-border/70 divide-y divide-border/40 overflow-hidden bg-card/60 shadow-xs">
+          <div className="rounded-2xl border border-border divide-y divide-border overflow-hidden bg-background shadow-xs">
             {todayDayPlan.problems.map((p) => {
               const isChecked = !!progress[p.id];
               const diffVariant =
-                p.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' :
-                p.difficulty === 'Hard' ? 'border-rose-500/30 text-rose-400 bg-rose-500/10' :
-                'border-amber-500/30 text-amber-400 bg-amber-500/10';
+                p.difficulty === 'Easy' ? 'border-primary/30 text-primary bg-primary/10' :
+                p.difficulty === 'Hard' ? 'border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10' :
+                'border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10';
 
               return (
                 <div
@@ -156,7 +156,7 @@ export const TodayMission: React.FC = () => {
                         </span>
 
                         {TOP_150_LC_NUMBERS.has(p.lcNumber) && !p.isReview && (
-                          <span className="font-mono text-[11px] font-medium px-2 py-0.5 rounded-md border border-purple-500/30 text-purple-400 bg-purple-500/10">
+                          <span className="font-mono text-[11px] font-medium px-2 py-0.5 rounded-md border border-primary/30 text-primary bg-primary/10">
                             Top 150
                           </span>
                         )}

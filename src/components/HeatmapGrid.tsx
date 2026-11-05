@@ -30,11 +30,11 @@ export const HeatmapGrid: React.FC = () => {
         {/* Legend */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
           <div className="flex items-center gap-1.5">
-            <div className="size-2.5 rounded-xs bg-emerald-500 shadow-xs" />
+            <div className="size-2.5 rounded-xs bg-primary shadow-xs" />
             <span className="text-[11px]">Solved</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="size-2.5 rounded-xs bg-primary shadow-xs" />
+            <div className="size-2.5 rounded-xs bg-foreground shadow-xs" />
             <span className="text-[11px]">Active</span>
           </div>
           <div className="flex items-center gap-1.5">

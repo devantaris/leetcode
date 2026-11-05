@@ -118,7 +118,7 @@ export const AnalyticsPage: React.FC = () => {
             <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Easy Mastery</span>
             <Award className="size-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-mono font-bold text-emerald-500 tabular-nums mt-1">
+          <div className="text-2xl font-mono font-bold text-primary tabular-nums mt-1">
             {Math.round((easySolved / (easyTotal || 1)) * 100)}%
           </div>
           <div className="text-[11px] text-muted-foreground mt-1 font-mono">
@@ -129,9 +129,9 @@ export const AnalyticsPage: React.FC = () => {
         <Card className="shadow-xs border-border/60 p-4">
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Med / Hard Ratio</span>
-            <Target className="size-4 text-purple-400" />
+            <Target className="size-4 text-primary" />
           </div>
-          <div className="text-2xl font-mono font-bold text-purple-400 tabular-nums mt-1">
+          <div className="text-2xl font-mono font-bold text-primary tabular-nums mt-1">
             {Math.round(((medSolved + hardSolved) / ((medTotal + hardTotal) || 1)) * 100)}%
           </div>
           <div className="text-[11px] text-muted-foreground mt-1 font-mono">
@@ -167,8 +167,8 @@ export const AnalyticsPage: React.FC = () => {
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                     }}
                   />
-                  <Line type="monotone" dataKey="Target" stroke="oklch(0.56 0.021 213.5)" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
-                  <Line type="monotone" dataKey="Solved" stroke="oklch(0.606 0.25 292.717)" strokeWidth={2.5} dot={{ r: 3, fill: 'oklch(0.606 0.25 292.717)' }} />
+                  <Line type="monotone" dataKey="Target" stroke="var(--muted-foreground)" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
+                  <Line type="monotone" dataKey="Solved" stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 3, fill: 'var(--primary)' }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -211,7 +211,7 @@ export const AnalyticsPage: React.FC = () => {
                         boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                       }}
                     />
-                    <Bar dataKey="Solved" fill="oklch(0.811 0.111 293.571)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Solved" fill="var(--primary)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -244,8 +244,8 @@ export const AnalyticsPage: React.FC = () => {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                   }}
                 />
-                <Bar dataKey="Solved" fill="oklch(0.606 0.25 292.717)" radius={[4, 4, 0, 0]} stackId="a" />
-                <Bar dataKey="Remaining" fill="oklch(0.275 0.011 216.9)" radius={[4, 4, 0, 0]} stackId="a" />
+                <Bar dataKey="Solved" fill="var(--primary)" radius={[4, 4, 0, 0]} stackId="a" />
+                <Bar dataKey="Remaining" fill="var(--muted)" radius={[4, 4, 0, 0]} stackId="a" />
               </BarChart>
             </ResponsiveContainer>
           </div>
