@@ -140,6 +140,89 @@ export const AnalyticsPage: React.FC = () => {
         </Card>
       </div>
 
+      {/* Placement Readiness Breakdown Card */}
+      <Card className="border border-border/70 shadow-xs bg-card">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="text-base font-semibold tracking-tight text-foreground flex items-center gap-2">
+                <span>Placement Readiness Index Breakdown</span>
+                <Badge variant="outline" className="font-mono text-xs text-primary border-primary/30 bg-primary/10">
+                  {stats.oddsPercentage}%
+                </Badge>
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Transparent 4-factor scoring model evaluated in Tier-1 software engineering hiring loops.
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="p-3 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-muted-foreground font-medium">Problem Coverage</span>
+                <span className="font-mono font-bold text-foreground">{stats.readinessBreakdown.coverageScore} / 40 pts</span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all"
+                  style={{ width: `${(stats.readinessBreakdown.coverageScore / 40) * 100}%` }}
+                />
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-1.5">40% weight • Curriculum depth</div>
+            </div>
+
+            <div className="p-3 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-muted-foreground font-medium">Streak Consistency</span>
+                <span className="font-mono font-bold text-amber-500">{stats.readinessBreakdown.streakScore} / 25 pts</span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-amber-500 rounded-full transition-all"
+                  style={{ width: `${(stats.readinessBreakdown.streakScore / 25) * 100}%` }}
+                />
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-1.5">25% weight • Habit discipline</div>
+            </div>
+
+            <div className="p-3 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-muted-foreground font-medium">Pace vs Target</span>
+                <span className="font-mono font-bold text-emerald-500">{stats.readinessBreakdown.paceScore} / 25 pts</span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all"
+                  style={{ width: `${(stats.readinessBreakdown.paceScore / 25) * 100}%` }}
+                />
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-1.5">25% weight • Deadline buffer</div>
+            </div>
+
+            <div className="p-3 rounded-xl border border-border/50 bg-muted/20">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-muted-foreground font-medium">Topic Breadth</span>
+                <span className="font-mono font-bold text-foreground">{stats.readinessBreakdown.breadthScore} / 10 pts</span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary/70 rounded-full transition-all"
+                  style={{ width: `${(stats.readinessBreakdown.breadthScore / 10) * 100}%` }}
+                />
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-1.5">10% weight • Multi-phase mastery</div>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 text-xs text-foreground flex items-center gap-2">
+            <span className="font-bold text-primary shrink-0">Actionable Advice:</span>
+            <span className="text-muted-foreground">{stats.readinessBreakdown.actionableAdvice}</span>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Charts row 1: Weekly trajectory & daily velocity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Trajectory */}
