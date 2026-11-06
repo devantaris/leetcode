@@ -3,9 +3,10 @@ import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
 import { CURRICULUM } from '../data/curriculumStats';
-import { TrendingUp, Zap, Target, Award, Calendar, History, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Zap, Target, Award, Calendar, History, ExternalLink, CheckCircle2, Flag, Check } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 export const AnalyticsPage: React.FC = () => {
   const { stats, progress, dailySolveLog } = useProgress();
@@ -63,6 +64,45 @@ export const AnalyticsPage: React.FC = () => {
       };
     });
   }, [progress]);
+
+  const phaseData = useMemo(() => {
+    const currentWeek = stats.currentWeek;
+    const PHASES = [
+      { phase: 1, name: 'Phase 1: Linear Foundations', weeks: [1, 2, 3, 4], desc: 'Arrays, Two Pointers, Sliding Window, Monotonic Stack, Linked Lists' },
+      { phase: 2, name: 'Phase 2: Tree & Graph Hierarchies', weeks: [5, 6, 7, 8, 9], desc: 'Binary Trees, BST, Heaps, Backtracking, BFS/DFS, Shortest Paths' },
+      { phase: 3, name: 'Phase 3: Dynamic Programming & Greedy', weeks: [10, 11, 12, 13], desc: '1D & 2D Memoization, Tabulation, Knapsack, Greedy Intervals' },
+      { phase: 4, name: 'Phase 4: Architecture & Design', weeks: [14], desc: 'Distributed caching, rate limiting, and core system design patterns' },
+      { phase: 5, name: 'Phase 5: Timed Mocks & Speedruns', weeks: [15, 16, 17, 18, 19, 20], desc: 'Company tags, 40-min timed runs, and live contest pressure' },
+    ];
+
+    const currentPhase = PHASES.find(p => p.weeks.includes(currentWeek)) || PHASES[0];
+
+    // Compute progress across all phases
+    const phaseStats = PHASES.map((p) => {
+      let total = 0;
+      let solved = 0;
+      PLAN_DATA.forEach(w => {
+        if (p.weeks.includes(w.week)) {
+          w.days.forEach(d => {
+            d.problems.forEach(prob => {
+              if (!prob.isReview) {
+                total++;
+                if (progress[prob.id]) solved++;
+              }
+            });
+          });
+        }
+      });
+      const pct = Math.round((solved / Math.max(1, total)) * 100);
+      const isCurrent = p.phase === currentPhase.phase;
+      const isDone = pct === 100;
+      return { ...p, total, solved, pct, isCurrent, isDone };
+    });
+
+    const activeStats = phaseStats.find(p => p.phase === currentPhase.phase) || phaseStats[0];
+
+    return { activeStats, phaseStats };
+  }, [stats.currentWeek, progress]);
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
@@ -219,6 +259,63 @@ export const AnalyticsPage: React.FC = () => {
           <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 text-xs text-foreground flex items-center gap-2">
             <span className="font-bold text-primary shrink-0">Actionable Advice:</span>
             <span className="text-muted-foreground">{stats.readinessBreakdown.actionableAdvice}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Phase Milestone Velocity Roadmap Card */}
+      <Card className="border border-border/70 shadow-xs bg-card">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="text-base font-semibold tracking-tight text-foreground flex items-center gap-2">
+                <Flag className="size-4.5 text-primary" />
+                <span>Active Milestone: {phaseData.activeStats.name}</span>
+                <Badge variant="outline" className="font-mono text-xs text-primary border-primary/30 bg-primary/10">
+                  {phaseData.activeStats.pct}% Complete
+                </Badge>
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {phaseData.activeStats.desc} • {phaseData.activeStats.solved} of {phaseData.activeStats.total} phase problems solved
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 pt-0">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-muted-foreground font-medium">Phase 140-Day Sub-Goal</span>
+              <span className="text-primary font-bold">{phaseData.activeStats.solved} / {phaseData.activeStats.total} problems ({phaseData.activeStats.pct}%)</span>
+            </div>
+            <Progress value={phaseData.activeStats.pct} className="h-2 w-full" />
+          </div>
+
+          {/* 5-Phase Horizontal Track */}
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2 border-t border-border/50">
+            {phaseData.phaseStats.map((p) => (
+              <div
+                key={p.phase}
+                className={`p-2.5 rounded-xl border flex flex-col gap-1 transition-all ${
+                  p.isCurrent
+                    ? 'border-primary/50 bg-primary/10 shadow-xs ring-1 ring-primary/30'
+                    : p.isDone
+                    ? 'border-emerald-500/40 bg-emerald-500/5'
+                    : 'border-border/60 bg-muted/20 opacity-80'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[11px] font-semibold">
+                  <span className={p.isCurrent ? 'text-primary' : 'text-foreground'}>Phase {p.phase}</span>
+                  {p.isDone ? (
+                    <Check className="size-3 text-emerald-500" />
+                  ) : (
+                    <span className="font-mono text-[10px] text-muted-foreground">{p.pct}%</span>
+                  )}
+                </div>
+                <div className="text-[10px] text-muted-foreground truncate">
+                  {p.weeks.length === 1 ? `Week ${p.weeks[0]}` : `Weeks ${p.weeks[0]}–${p.weeks[p.weeks.length - 1]}`}
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
