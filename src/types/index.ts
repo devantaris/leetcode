@@ -38,6 +38,14 @@ export interface SolveRecordMap {
   [problemId: string]: string; // ISO string timestamp when solved
 }
 
+export interface ProblemNoteMap {
+  [problemId: string]: string; // Personal approach notes
+}
+
+export interface ProblemFlagMap {
+  [problemId: string]: boolean; // Flagged for review
+}
+
 export interface ReadinessBreakdown {
   coverageScore: number;     // 0-40 based on solved / total
   streakScore: number;       // 0-25 based on streak consistency
@@ -78,6 +86,8 @@ export interface PlacementRecord {
   role: string;
   stage: PlacementStage;
   appliedDate: string;
+  interviewDate?: string;
+  contactInfo?: string;
   compensation?: string;
   notes?: string;
 }

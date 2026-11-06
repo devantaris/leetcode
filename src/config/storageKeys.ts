@@ -17,17 +17,20 @@ export const STORAGE_KEYS = {
   timerActive: `${PREFIX}_timer_active`,
   timerStartedAt: `${PREFIX}_timer_started_at`,
 
-  // UI state (sessionStorage)
+  // UI & Audio state
   bannerDismissed: `${PREFIX}_banner_dismissed`,
+  soundEnabled: `${PREFIX}_sound_enabled`,
 
   // Leaderboard (localStorage)
   leaderboardOptIn: `${PREFIX}_leaderboard_optin`,
   leaderboardAnonymous: `${PREFIX}_leaderboard_anonymous`,
   leaderboardUserId: `${PREFIX}_leaderboard_user_id`,
 
-  // Placements & Cohort (localStorage)
+  // Placements, Notes & Cohort (localStorage)
   placements: `${PREFIX}_placements_v1`,
   activeCohort: `${PREFIX}_active_cohort_v1`,
+  problemNotes: `${PREFIX}_problem_notes_v1`,
+  flaggedProblems: `${PREFIX}_flagged_problems_v1`,
 } as const;
 
 export type StorageKeys = typeof STORAGE_KEYS;

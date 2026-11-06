@@ -3,6 +3,8 @@ import React, { createContext, useState, useEffect, useMemo, useCallback } from 
 import type { 
   UserProgressMap, 
   SolveRecordMap, 
+  ProblemNoteMap,
+  ProblemFlagMap,
   AppStats, 
   PlacementRecord, 
   CohortInfo, 
@@ -58,6 +60,10 @@ export interface DailySolveGroup {
 interface ProgressContextType {
   progress: UserProgressMap;
   solveHistory: SolveRecordMap;
+  problemNotes: ProblemNoteMap;
+  flaggedProblems: ProblemFlagMap;
+  setProblemNote: (problemId: string, note: string) => void;
+  toggleProblemFlag: (problemId: string) => void;
   streak: number;
   dailySolveLog: DailySolveGroup[];
   stats: AppStats;
@@ -74,8 +80,8 @@ interface ProgressContextType {
   setSearchQuery: (query: string) => void;
   selectedDifficulty: string;
   setSelectedDifficulty: (diff: string) => void;
-  statusFilter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150';
-  setStatusFilter: (filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150') => void;
+  statusFilter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150' | 'flagged';
+  setStatusFilter: (filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150' | 'flagged') => void;
   companyFilter: CompanyTag | 'all';
   setCompanyFilter: (filter: CompanyTag | 'all') => void;
   placements: PlacementRecord[];
@@ -83,6 +89,7 @@ interface ProgressContextType {
   updatePlacement: (id: string, updates: Partial<PlacementRecord>) => void;
   deletePlacement: (id: string) => void;
   activeCohort: CohortInfo | null;
+  createCohort: (name: string) => Promise<{ success: boolean; error?: string }>;
   joinCohort: (code: string, name?: string) => Promise<boolean>;
   leaveCohort: () => void;
   exportJSON: () => void;
@@ -225,6 +232,40 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   });
 
+  const [problemNotes, setProblemNotes] = useState<ProblemNoteMap>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.problemNotes);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [flaggedProblems, setFlaggedProblems] = useState<ProblemFlagMap>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.flaggedProblems);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.problemNotes, JSON.stringify(problemNotes));
+    } catch (e) {
+      console.warn('Failed to save notes:', e);
+    }
+  }, [problemNotes]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.flaggedProblems, JSON.stringify(flaggedProblems));
+    } catch (e) {
+      console.warn('Failed to save flagged problems:', e);
+    }
+  }, [flaggedProblems]);
+
   // ── Auth & Live Cloud Sync State ───────────────────────────────────────────
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
@@ -238,11 +279,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [activeWeek, _setActiveWeek] = useState<number>(1);
   const [searchQuery, _setSearchQuery] = useState<string>('');
   const [selectedDifficulty, _setSelectedDifficulty] = useState<string>('All');
-  const [statusFilter, _setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review' | 'top150'>('all');
+  const [statusFilter, _setStatusFilter] = useState<'all' | 'solved' | 'unsolved' | 'review' | 'top150' | 'flagged'>('all');
   const [companyFilter, _setCompanyFilter] = useState<CompanyTag | 'all'>('all');
   const [soundEnabled, _setSoundEnabled] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('grindos_sound_enabled');
+      const saved = localStorage.getItem(STORAGE_KEYS.soundEnabled);
       return saved !== null ? saved === 'true' : true;
     } catch {
       return true;
@@ -252,7 +293,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     sounds.setEnabled(soundEnabled);
     try {
-      localStorage.setItem('grindos_sound_enabled', String(soundEnabled));
+      localStorage.setItem(STORAGE_KEYS.soundEnabled, String(soundEnabled));
     } catch {
       // ignore storage errors
     }
@@ -336,28 +377,82 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [authUser]);
 
+  const setProblemNote = useCallback((problemId: string, note: string) => {
+    setProblemNotes((prev) => ({ ...prev, [problemId]: note }));
+    if (authUser && authUser.provider === 'supabase') {
+      CloudSyncService.saveProblemNote(authUser.id, problemId, note);
+    }
+  }, [authUser]);
+
+  const toggleProblemFlag = useCallback((problemId: string) => {
+    setFlaggedProblems((prev) => {
+      const nextVal = !prev[problemId];
+      if (authUser && authUser.provider === 'supabase') {
+        CloudSyncService.toggleProblemFlag(authUser.id, problemId, nextVal);
+      }
+      return { ...prev, [problemId]: nextVal };
+    });
+  }, [authUser]);
+
+  const createCohort = useCallback(async (name: string): Promise<{ success: boolean; error?: string }> => {
+    if (authUser && authUser.provider === 'supabase') {
+      const res = await CloudSyncService.createCohort(authUser.id, name);
+      if (res.success && res.cohort) {
+        setActiveCohort(res.cohort);
+        toast.success(`Created cohort ${res.cohort.name} (${res.cohort.code})! 🚀`);
+        return { success: true };
+      }
+      return { success: false, error: res.error || 'Failed to create cohort' };
+    }
+    const code = 'G' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    const localCohort: CohortInfo = {
+      code,
+      name: name.trim() || 'Study Cohort',
+      memberCount: 1,
+      isOwner: true,
+    };
+    setActiveCohort(localCohort);
+    toast.success(`Created local cohort ${localCohort.name}! 🚀`);
+    return { success: true };
+  }, [authUser]);
+
   const joinCohort = useCallback(async (code: string, name?: string): Promise<boolean> => {
     const cleanCode = code.trim().toUpperCase();
     if (!cleanCode) return false;
+
+    if (authUser && authUser.provider === 'supabase') {
+      const res = await CloudSyncService.joinCohort(authUser.id, cleanCode);
+      if (res.success && res.cohort) {
+        setActiveCohort(res.cohort);
+        toast.success(`Joined cohort ${res.cohort.name}! 👥`);
+        return true;
+      }
+      toast.error(res.error || 'Cohort not found. Please check code.');
+      return false;
+    }
+
     const cohort: CohortInfo = {
       code: cleanCode,
       name: name || `Cohort ${cleanCode}`,
-      memberCount: Math.floor(Math.random() * 12) + 3,
+      memberCount: 1,
     };
     setActiveCohort(cohort);
     toast.success(`Joined cohort ${cohort.name}! 👥`);
     return true;
-  }, []);
+  }, [authUser]);
 
-  const leaveCohort = useCallback(() => {
+  const leaveCohort = useCallback(async () => {
+    if (authUser && authUser.provider === 'supabase' && activeCohort?.code) {
+      await CloudSyncService.leaveCohort(authUser.id, activeCohort.code);
+    }
     setActiveCohort(null);
     toast.success('Left cohort.');
-  }, []);
+  }, [authUser, activeCohort]);
 
   const setActiveWeek = useCallback((week: number) => _setActiveWeek(week), []);
   const setSearchQuery = useCallback((query: string) => _setSearchQuery(query), []);
   const setSelectedDifficulty = useCallback((diff: string) => _setSelectedDifficulty(diff), []);
-  const setStatusFilter = useCallback((filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150') => _setStatusFilter(filter), []);
+  const setStatusFilter = useCallback((filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150' | 'flagged') => _setStatusFilter(filter), []);
   const setCompanyFilter = useCallback((filter: CompanyTag | 'all') => _setCompanyFilter(filter), []);
 
   useEffect(() => {
@@ -626,9 +721,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // ── Import / Export ──────────────────────────────────────────────────────────
   const exportJSONString = useCallback((): string => {
     const data = {
-      version: 4,
+      version: 5,
       progress,
       solveHistory,
+      problemNotes,
+      flaggedProblems,
       streak,
       userProfile,
       placements,
@@ -636,15 +733,14 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       exportedAt: new Date().toISOString()
     };
     return JSON.stringify(data, null, 2);
-  }, [progress, solveHistory, streak, userProfile, placements, activeCohort]);
+  }, [progress, solveHistory, problemNotes, flaggedProblems, streak, userProfile, placements, activeCohort]);
 
   const exportJSON = useCallback(() => {
     const jsonStr = exportJSONString();
     const blob = new Blob([jsonStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
     const safeName = (userProfile?.name || 'user').toLowerCase().replace(/\s+/g, '_');
+    a.href = url;
     a.download = `${APP_CONFIG.exports.filenamePrefix}_${safeName}_${format(new Date(), 'yyyy-MM-dd')}.json`;
     a.click();
     toast.success("Progress backup downloaded! 💾");
@@ -656,6 +752,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (parsed && typeof parsed.progress === 'object') {
         setProgress(parsed.progress);
         if (parsed.solveHistory) setSolveHistory(parsed.solveHistory);
+        if (parsed.problemNotes) setProblemNotes(parsed.problemNotes);
+        if (parsed.flaggedProblems) setFlaggedProblems(parsed.flaggedProblems);
         if (parsed.userProfile && typeof parsed.userProfile === 'object') {
           setUserProfile(parsed.userProfile);
         }
@@ -665,7 +763,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (parsed.activeCohort && typeof parsed.activeCohort === 'object') {
           setActiveCohort(parsed.activeCohort);
         }
-        toast.success("Progress & placements restored! 🔄");
+        toast.success("Progress, notes & placements restored! 🔄");
         return true;
       }
       toast.error("Invalid backup file structure.");
@@ -679,12 +777,16 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetAll = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.progress);
     localStorage.removeItem(STORAGE_KEYS.solveHistory);
+    localStorage.removeItem(STORAGE_KEYS.problemNotes);
+    localStorage.removeItem(STORAGE_KEYS.flaggedProblems);
     localStorage.removeItem(STORAGE_KEYS.streak);
     localStorage.removeItem(STORAGE_KEYS.userProfile);
     localStorage.removeItem(STORAGE_KEYS.placements);
     localStorage.removeItem(STORAGE_KEYS.activeCohort);
     setProgress({});
     setSolveHistory({});
+    setProblemNotes({});
+    setFlaggedProblems({});
     setUserProfile(DEFAULT_PROFILE);
     setPlacements([]);
     setActiveCohort(null);
@@ -724,6 +826,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }
           if (pull.data.solveHistory && Object.keys(pull.data.solveHistory).length > 0) {
             setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
+          }
+          if (pull.data.problemNotes) {
+            setProblemNotes((prev) => ({ ...prev, ...pull.data!.problemNotes }));
+          }
+          if (pull.data.flaggedProblems) {
+            setFlaggedProblems((prev) => ({ ...prev, ...pull.data!.flaggedProblems }));
+          }
+          if (pull.data.activeCohort) {
+            setActiveCohort(pull.data.activeCohort);
           }
           if (pull.data.placements && pull.data.placements.length > 0) {
             setPlacements(pull.data.placements);
@@ -777,6 +888,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (pull.success && pull.data) {
         if (pull.data.progress) setProgress((prev) => ({ ...prev, ...pull.data!.progress }));
         if (pull.data.solveHistory) setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
+        if (pull.data.problemNotes) setProblemNotes((prev) => ({ ...prev, ...pull.data!.problemNotes }));
+        if (pull.data.flaggedProblems) setFlaggedProblems((prev) => ({ ...prev, ...pull.data!.flaggedProblems }));
+        if (pull.data.activeCohort) setActiveCohort(pull.data.activeCohort);
         if (pull.data.placements) setPlacements(pull.data.placements);
         if (pull.data.userProfile) setUserProfile(pull.data.userProfile);
       }
@@ -802,6 +916,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         userProfile: newProfile,
         progress,
         solveHistory,
+        problemNotes,
+        flaggedProblems,
         placements,
         streak,
         solvedCount: stats.solvedCount,
@@ -810,7 +926,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLastCloudSync(new Date());
     }
     return { success: true };
-  }, [userProfile, progress, solveHistory, placements, streak, stats.solvedCount]);
+  }, [userProfile, progress, solveHistory, problemNotes, flaggedProblems, placements, streak, stats.solvedCount]);
 
   const signInWithMagicLink = useCallback(async (email: string) => {
     return await AuthService.signInWithMagicLink(email);
@@ -834,6 +950,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       userProfile: userProfile || DEFAULT_PROFILE,
       progress,
       solveHistory,
+      problemNotes,
+      flaggedProblems,
       placements,
       streak,
       solvedCount: stats.solvedCount,
@@ -846,7 +964,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setCloudSyncStatus('error');
       return false;
     }
-  }, [authUser, userProfile, progress, solveHistory, placements, streak, stats.solvedCount]);
+  }, [authUser, userProfile, progress, solveHistory, problemNotes, flaggedProblems, placements, streak, stats.solvedCount]);
 
   // Debounced auto-sync when solves change
   useEffect(() => {
@@ -857,6 +975,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         userProfile: userProfile || DEFAULT_PROFILE,
         progress,
         solveHistory,
+        problemNotes,
+        flaggedProblems,
         placements,
         streak,
         solvedCount: stats.solvedCount,
@@ -869,11 +989,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, 4000);
 
     return () => clearTimeout(timer);
-  }, [authUser, progress, userProfile, placements, solveHistory, streak, stats.solvedCount]);
+  }, [authUser, progress, userProfile, placements, solveHistory, problemNotes, flaggedProblems, streak, stats.solvedCount]);
 
   const contextValue = useMemo(() => ({
     progress,
     solveHistory,
+    problemNotes,
+    flaggedProblems,
+    setProblemNote,
+    toggleProblemFlag,
     streak,
     dailySolveLog,
     stats,
@@ -899,6 +1023,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     updatePlacement,
     deletePlacement,
     activeCohort,
+    createCohort,
     joinCohort,
     leaveCohort,
     exportJSON,
@@ -918,11 +1043,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     triggerCloudSync,
     catchUpQueue,
   }), [
-    progress, solveHistory, streak, dailySolveLog, stats, userProfile, isOnboarded,
+    progress, solveHistory, problemNotes, flaggedProblems, setProblemNote, toggleProblemFlag,
+    streak, dailySolveLog, stats, userProfile, isOnboarded,
     updateProfile, resumeFromDay, toggleProblem, markDayComplete, isDayComplete,
     activeWeek, setActiveWeek, searchQuery, setSearchQuery, selectedDifficulty, setSelectedDifficulty,
     statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,
-    updatePlacement, deletePlacement, activeCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
+    updatePlacement, deletePlacement, activeCohort, createCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
     importJSON, resetAll, soundEnabled, toggleSound,
     authUser, login, signup, signInWithMagicLink, signInWithOAuth, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue
   ]);

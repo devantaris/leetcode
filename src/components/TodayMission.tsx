@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { ExternalLink, Check, Coffee, ArrowRight, Flame, AlertCircle, Lightbulb } from 'lucide-react';
+import { ExternalLink, Check, Coffee, ArrowRight, Flame, AlertCircle, Lightbulb, Bookmark, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { COMPANY_LABELS } from '../data/companyMappings';
@@ -12,7 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 export const TodayMission: React.FC = () => {
-  const { stats, progress, toggleProblem, markDayComplete, isDayComplete, setActiveWeek, userProfile, catchUpQueue } = useProgress();
+  const {
+    stats, progress, toggleProblem, markDayComplete, isDayComplete,
+    setActiveWeek, userProfile, catchUpQueue,
+    problemNotes, flaggedProblems, setProblemNote, toggleProblemFlag
+  } = useProgress();
+
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
 
   const SKILL_LABELS: Record<string, string> = {
     project: 'personal project',
@@ -99,6 +105,10 @@ export const TodayMission: React.FC = () => {
           <div className="rounded-2xl border border-border divide-y divide-border overflow-hidden bg-background shadow-xs">
             {todayDayPlan.problems.map((p) => {
               const isChecked = !!progress[p.id];
+              const isFlagged = !!flaggedProblems[p.id];
+              const userNote = problemNotes[p.id] || '';
+              const isNoteOpen = activeNoteId === p.id;
+
               const diffVariant =
                 p.difficulty === 'Easy' ? 'border-primary/30 text-primary bg-primary/10' :
                 p.difficulty === 'Hard' ? 'border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10' :
@@ -109,7 +119,7 @@ export const TodayMission: React.FC = () => {
                   key={p.id}
                   onClick={() => toggleProblem(p.id)}
                   className={`flex items-start gap-3.5 p-3.5 sm:p-4 transition-all duration-150 cursor-pointer group ${
-                    isChecked ? 'bg-muted/20 opacity-80' : 'hover:bg-muted/40'
+                    isChecked ? 'bg-muted/20 opacity-85' : 'hover:bg-muted/40'
                   }`}
                 >
                   {/* Custom Checkbox */}
@@ -149,7 +159,7 @@ export const TodayMission: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Badges / Tags */}
+                      {/* Badges / Tags & Action Controls */}
                       <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                         <span className={`font-mono text-[11px] font-semibold px-2 py-0.5 rounded-md border ${diffVariant}`}>
                           {p.difficulty}
@@ -169,6 +179,41 @@ export const TodayMission: React.FC = () => {
                             </span>
                           ) : null;
                         })}
+
+                        {/* Action buttons: Flag for review & Notes */}
+                        <div className="flex items-center gap-1 pl-1 border-l border-border/50">
+                          <button
+                            type="button"
+                            title={isFlagged ? 'Flagged for spaced review' : 'Flag for review'}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleProblemFlag(p.id);
+                            }}
+                            className={`p-1 rounded-md transition-colors ${
+                              isFlagged
+                                ? 'text-amber-500 bg-amber-500/15'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <Bookmark className={`size-3.5 ${isFlagged ? 'fill-amber-500' : ''}`} />
+                          </button>
+
+                          <button
+                            type="button"
+                            title={userNote ? 'View/edit approach note' : 'Add approach note'}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveNoteId(isNoteOpen ? null : p.id);
+                            }}
+                            className={`p-1 rounded-md transition-colors ${
+                              userNote
+                                ? 'text-primary bg-primary/15'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <FileText className="size-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -176,6 +221,30 @@ export const TodayMission: React.FC = () => {
                       <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground/90 bg-muted/40 px-2.5 py-1 rounded-md border border-border/40 w-fit">
                         <Lightbulb className="size-3 text-amber-500 shrink-0" />
                         <span>{p.note}</span>
+                      </div>
+                    )}
+
+                    {/* Expandable Problem Note Editor */}
+                    {isNoteOpen && (
+                      <div className="mt-2.5 pt-2 border-t border-border/60" onClick={(e) => e.stopPropagation()}>
+                        <textarea
+                          value={userNote}
+                          onChange={(e) => setProblemNote(p.id, e.target.value)}
+                          placeholder="Your approach: key invariants, time/space complexity, trade-offs..."
+                          className="w-full text-xs p-2.5 rounded-lg bg-background border border-border resize-y min-h-[64px] text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    )}
+
+                    {!isNoteOpen && userNote && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveNoteId(p.id);
+                        }}
+                        className="mt-1.5 text-[11px] text-muted-foreground italic truncate cursor-pointer hover:text-foreground"
+                      >
+                        📝 Note: {userNote}
                       </div>
                     )}
                   </div>

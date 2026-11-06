@@ -93,13 +93,14 @@ export const SearchAndFilter: React.FC = () => {
           {/* Status filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'solved' | 'unsolved' | 'top150')}
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'solved' | 'unsolved' | 'top150' | 'flagged')}
             className="h-8 rounded-md border border-input bg-background px-3 text-xs text-foreground outline-none focus:border-ring"
           >
             <option value="all">All Status</option>
             <option value="unsolved">Unsolved Only</option>
             <option value="solved">Solved Only</option>
             <option value="top150">Top 150 Benchmark</option>
+            <option value="flagged">Flagged for Review</option>
           </select>
         </div>
 
