@@ -246,3 +246,84 @@ CREATE INDEX IF NOT EXISTS idx_leaderboard_rank ON public.leaderboard_entries(so
 CREATE INDEX IF NOT EXISTS idx_cohorts_code ON public.cohorts(code);
 CREATE INDEX IF NOT EXISTS idx_cohort_members_user ON public.cohort_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_cohort_members_cohort ON public.cohort_members(cohort_id);
+
+-- ==============================================================================
+-- 7. STEALTH ADMIN & BROADCAST SUBSYSTEM
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS public.admin_users (
+  user_id      TEXT PRIMARY KEY,
+  email        TEXT NOT NULL,
+  role         TEXT NOT NULL DEFAULT 'superadmin',
+  granted_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.system_announcements (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title        TEXT NOT NULL,
+  message      TEXT NOT NULL,
+  type         TEXT NOT NULL DEFAULT 'banner', -- 'banner' | 'modal' | 'toast'
+  category     TEXT NOT NULL DEFAULT 'update', -- 'update' | 'pricing' | 'maintenance' | 'feature'
+  target_tier  TEXT NOT NULL DEFAULT 'all',    -- 'all' | 'free' | 'pro'
+  cta_label    TEXT DEFAULT '',
+  cta_url      TEXT DEFAULT '',
+  is_active    BOOLEAN NOT NULL DEFAULT TRUE,
+  starts_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at   TIMESTAMPTZ,
+  created_by   TEXT NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.system_settings (
+  key          TEXT PRIMARY KEY,
+  value        JSONB NOT NULL,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- RLS
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.system_announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.admin_users
+    WHERE user_id = auth.uid()::text
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Announcements: Public can read active items, only admin can manage
+DROP POLICY IF EXISTS "public_read_active_announcements" ON public.system_announcements;
+CREATE POLICY "public_read_active_announcements"
+  ON public.system_announcements FOR SELECT
+  USING (is_active = true AND (expires_at IS NULL OR expires_at > now()));
+
+DROP POLICY IF EXISTS "admin_manage_announcements" ON public.system_announcements;
+CREATE POLICY "admin_manage_announcements"
+  ON public.system_announcements FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- Admin Users: Only admins can manage admins
+DROP POLICY IF EXISTS "admin_manage_admins" ON public.admin_users;
+CREATE POLICY "admin_manage_admins"
+  ON public.admin_users FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- Settings: Public read, admin write
+DROP POLICY IF EXISTS "public_read_settings" ON public.system_settings;
+CREATE POLICY "public_read_settings"
+  ON public.system_settings FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "admin_manage_settings" ON public.system_settings;
+CREATE POLICY "admin_manage_settings"
+  ON public.system_settings FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+CREATE INDEX IF NOT EXISTS idx_announcements_active ON public.system_announcements(is_active, starts_at);

@@ -98,3 +98,43 @@ export interface CohortInfo {
   memberCount: number;
   isOwner?: boolean;
 }
+
+export interface SystemAnnouncement {
+  id: string;
+  title: string;
+  message: string;
+  type: 'banner' | 'modal' | 'toast';
+  category: 'update' | 'pricing' | 'maintenance' | 'feature';
+  targetTier: 'all' | 'free' | 'pro';
+  ctaLabel?: string;
+  ctaUrl?: string;
+  isActive: boolean;
+  startsAt: string;
+  expiresAt?: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface AdminTelemetry {
+  totalRegisteredUsers: number;
+  activeSolvers7d: number;
+  solvesToday: number;
+  totalSolvesCount: number;
+  offerConversionRate: number;
+  totalCohorts: number;
+  companyDistribution: Array<{ company: string; count: number; percentage: number }>;
+  tierDistribution: Array<{ tier: string; count: number }>;
+}
+
+export interface AdminUserRecord {
+  userId: string;
+  displayName: string;
+  tagline?: string;
+  targetCompany?: string;
+  targetTier?: string;
+  isPro: boolean;
+  solvedCount: number;
+  streak: number;
+  lastSyncedAt?: string;
+  createdAt: string;
+}

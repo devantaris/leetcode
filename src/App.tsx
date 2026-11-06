@@ -13,6 +13,14 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
+// Stealth Admin Dashboard
+import { AdminGuard } from './admin/AdminGuard';
+import { AdminLayout } from './admin/AdminLayout';
+import { AdminOverviewPage } from './admin/pages/AdminOverviewPage';
+import { AdminBroadcastPage } from './admin/pages/AdminBroadcastPage';
+import { AdminUsersPage } from './admin/pages/AdminUsersPage';
+import { AdminCohortsPage } from './admin/pages/AdminCohortsPage';
+
 function AppRoutes() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,6 +79,17 @@ function AppRoutes() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+      </Route>
+
+      {/* Stealth Ops Console (Guarded: renders 404 for unauthenticated / non-admin users) */}
+      <Route element={<AdminGuard />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/_ops" element={<AdminOverviewPage />} />
+          <Route path="/_ops/broadcasts" element={<AdminBroadcastPage />} />
+          <Route path="/_ops/users" element={<AdminUsersPage />} />
+          <Route path="/_ops/cohorts" element={<AdminCohortsPage />} />
+          <Route path="/admin" element={<Navigate to="/_ops" replace />} />
+        </Route>
       </Route>
 
       {/* Catch-all 404 page */}

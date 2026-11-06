@@ -105,7 +105,7 @@ export function initializeSupabaseClient(customUrl?: string, customKey?: string)
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storage: window.localStorage,
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       },
     });
     return _client;
@@ -117,8 +117,10 @@ export function initializeSupabaseClient(customUrl?: string, customKey?: string)
 }
 
 export function clearCustomSupabaseCredentials(): void {
-  localStorage.removeItem(STORAGE_URL_KEY);
-  localStorage.removeItem(STORAGE_ANON_KEY);
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem(STORAGE_URL_KEY);
+    localStorage.removeItem(STORAGE_ANON_KEY);
+  }
   initializeSupabaseClient();
 }
 
