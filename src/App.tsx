@@ -8,6 +8,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { CurriculumPage } from './pages/CurriculumPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -67,18 +69,20 @@ function AppRoutes() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
       </Route>
 
-      {/* Catch-all fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Catch-all 404 page */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ProgressProvider>
-        <AppRoutes />
-      </ProgressProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ProgressProvider>
+          <AppRoutes />
+        </ProgressProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
