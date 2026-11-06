@@ -18,15 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-  DropdownMenuGroup
-} from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 type Theme = 'dark' | 'light';
@@ -46,6 +37,22 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('grindos-theme');
     if (saved === 'dark' || saved === 'light') return saved;
@@ -383,86 +390,120 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
               </Button>
 
               {/* User Profile Pill (Donezo Style: Avatar + Name + Email) */}
-              <DropdownMenu>
-                <DropdownMenuTrigger render={
-                  <button
-                    type="button"
-                    className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-border/70 hover:border-foreground/20 bg-background transition-all cursor-pointer text-left"
-                  >
-                    {authUser?.avatarUrl ? (
-                      <img
-                        src={authUser.avatarUrl}
-                        alt={displayName}
-                        className="size-8 rounded-full object-cover border border-border shrink-0"
-                      />
-                    ) : (
-                      <div className="size-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary shrink-0">
-                        {userInitials}
-                      </div>
-                    )}
-                    <div className="hidden md:flex flex-col min-w-0 pr-1">
-                      <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
-                        {displayName}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
-                        {displayEmail}
-                      </span>
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-border/70 hover:border-foreground/20 bg-background transition-all cursor-pointer text-left focus:outline-hidden"
+                >
+                  {authUser?.avatarUrl ? (
+                    <img
+                      src={authUser.avatarUrl}
+                      alt={displayName}
+                      className="size-8 rounded-full object-cover border border-border shrink-0"
+                    />
+                  ) : (
+                    <div className="size-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center font-bold text-xs text-primary shrink-0">
+                      {userInitials}
                     </div>
-                  </button>
-                } />
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-semibold text-foreground">{displayName}</span>
-                      <span className="text-xs text-muted-foreground font-mono">{displayEmail}</span>
+                  )}
+                  <div className="hidden md:flex flex-col min-w-0 pr-1">
+                    <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
+                      {displayName}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
+                      {displayEmail}
+                    </span>
+                  </div>
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-60 rounded-xl bg-card border border-border/80 p-1.5 text-card-foreground shadow-lg shadow-black/10 z-50 flex flex-col gap-0.5">
+                    <div className="px-2.5 py-2 flex flex-col gap-0.5 border-b border-border/50 mb-1">
+                      <span className="font-semibold text-xs text-foreground truncate">{displayName}</span>
+                      <span className="text-[10px] text-muted-foreground font-mono truncate">{displayEmail}</span>
                     </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => openModal('profile')}>
-                      <User className="size-4 mr-2" />
-                      <span>Profile & Goals</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openModal('placements')}>
-                      <Briefcase className="size-4 mr-2" />
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('auth'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <Cloud className="size-4 text-primary" />
+                      <span>Account &amp; Cloud Sync</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('profile'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <User className="size-4 text-muted-foreground" />
+                      <span>Profile &amp; Goals</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('placements'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <Briefcase className="size-4 text-muted-foreground" />
                       <span>Placement Pipeline</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openModal('resume')}>
-                      <CalendarClock className="size-4 mr-2" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('resume'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <CalendarClock className="size-4 text-muted-foreground" />
                       <span>Adjust Timeline / Day</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openModal('auth')}>
-                      <Cloud className="size-4 mr-2" />
-                      <span>Cloud Sync Status</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => openModal('strategy')}>
-                      <Zap className="size-4 mr-2" />
+                    </button>
+
+                    <div className="h-px bg-border/50 my-1" />
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('strategy'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <Zap className="size-4 text-muted-foreground" />
                       <span>Phase Strategy</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => openModal('backup')}>
-                      <Cloud className="size-4 mr-2" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('backup'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <Cloud className="size-4 text-muted-foreground" />
                       <span>Export / Backup Data</span>
-                    </DropdownMenuItem>
+                    </button>
+
                     {onGoToHome && (
-                      <DropdownMenuItem onClick={onGoToHome}>
-                        <LayoutDashboard className="size-4 mr-2" />
+                      <button
+                        type="button"
+                        onClick={() => { onGoToHome(); setUserMenuOpen(false); }}
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                      >
+                        <LayoutDashboard className="size-4 text-muted-foreground" />
                         <span>Experience Portal</span>
-                      </DropdownMenuItem>
+                      </button>
                     )}
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => openModal('reset')}
-                  >
-                    <RotateCcw className="size-4 mr-2" />
-                    <span>Reset All Data</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+
+                    <div className="h-px bg-border/50 my-1" />
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('reset'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors text-left"
+                    >
+                      <RotateCcw className="size-4" />
+                      <span>Reset All Data</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 
