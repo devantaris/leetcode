@@ -196,16 +196,16 @@ function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { d
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.userProfile);
-      return saved ? normalizeUserProfile(JSON.parse(saved)) : null;
+      return (saved ? normalizeUserProfile(JSON.parse(saved)) : null) || DEFAULT_PROFILE;
     } catch {
-      return null;
+      return DEFAULT_PROFILE;
     }
   });
 
-  const isOnboarded = userProfile !== null;
+  const isOnboarded = true;
 
   const [progress, setProgress] = useState<UserProgressMap>(() => {
     try {
@@ -685,7 +685,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.removeItem(STORAGE_KEYS.activeCohort);
     setProgress({});
     setSolveHistory({});
-    setUserProfile(null);
+    setUserProfile(DEFAULT_PROFILE);
     setPlacements([]);
     setActiveCohort(null);
     toast.error("All progress wiped.", { id: 'reset-toast' });

@@ -37,8 +37,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Landing page with the dual experience selector */}
-      <Route path="/" element={<LandingPage onSelectMode={handleSelectMode} />} />
+      {/* Default to the modern Bento dashboard */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/landing" element={<LandingPage onSelectMode={handleSelectMode} />} />
 
       {/* Retro Terminal OS */}
