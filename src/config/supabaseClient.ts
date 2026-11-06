@@ -5,22 +5,36 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const DEFAULT_SUPABASE_URL = 'https://bjjfiycwhkghbibffmtr.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'sb_publishable_LZEFz60xje4AKVpppwyIGQ_VO-kxcse';
+export const DEFAULT_SUPABASE_URL = 'https://bjjfiycwhkghbibffmtr.supabase.co';
+export const DEFAULT_SUPABASE_KEY = 'sb_publishable_LZEFz60xje4AKVpppwyIGQ_VO-kxcse';
 
-const ENV_URL = (
+export function isDefunctSupabaseUrl(url?: string | null): boolean {
+  if (!url) return true;
+  const lower = url.toLowerCase();
+  return (
+    lower.includes('ppxcikfbyhbdbeokvxys') ||
+    lower.includes('your-project-id') ||
+    lower.includes('xyz.supabase.co') ||
+    lower.includes('xyzcompany')
+  );
+}
+
+const rawEnvUrl = (
   (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
   (import.meta.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined) ||
   DEFAULT_SUPABASE_URL
 )?.trim();
 
-const ENV_KEY = (
+const rawEnvKey = (
   (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
   (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
   (import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
   (import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined) ||
   DEFAULT_SUPABASE_KEY
 )?.trim();
+
+const ENV_URL = isDefunctSupabaseUrl(rawEnvUrl) ? DEFAULT_SUPABASE_URL : rawEnvUrl;
+const ENV_KEY = isDefunctSupabaseUrl(rawEnvUrl) || !rawEnvKey ? DEFAULT_SUPABASE_KEY : rawEnvKey;
 
 const STORAGE_URL_KEY = 'grindos_supabase_url';
 const STORAGE_ANON_KEY = 'grindos_supabase_anon_key';
@@ -44,19 +58,31 @@ export function normalizeSupabaseUrl(rawUrl: string): string {
 }
 
 export function getActiveSupabaseCredentials(): { url: string; key: string; source: 'env' | 'custom' | 'none' } {
-  if (ENV_URL && ENV_KEY && !ENV_URL.includes('your-project-id')) {
+  // Purge any defunct URL in browser localStorage
+  try {
+    const customUrl = localStorage.getItem(STORAGE_URL_KEY)?.trim();
+    if (customUrl && isDefunctSupabaseUrl(customUrl)) {
+      localStorage.removeItem(STORAGE_URL_KEY);
+      localStorage.removeItem(STORAGE_ANON_KEY);
+    }
+  } catch {
+    // ignore
+  }
+
+  if (ENV_URL && ENV_KEY && !isDefunctSupabaseUrl(ENV_URL)) {
     return { url: normalizeSupabaseUrl(ENV_URL), key: ENV_KEY, source: 'env' };
   }
+
   const customUrl = localStorage.getItem(STORAGE_URL_KEY)?.trim();
   const customKey = localStorage.getItem(STORAGE_ANON_KEY)?.trim();
-  if (customUrl && customKey) {
+  if (customUrl && customKey && !isDefunctSupabaseUrl(customUrl)) {
     const clean = normalizeSupabaseUrl(customUrl);
     if (clean !== customUrl) {
       localStorage.setItem(STORAGE_URL_KEY, clean);
     }
     return { url: clean, key: customKey, source: 'custom' };
   }
-  return { url: '', key: '', source: 'none' };
+  return { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY, source: 'env' };
 }
 
 export function initializeSupabaseClient(customUrl?: string, customKey?: string): SupabaseClient | null {
