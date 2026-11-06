@@ -35,7 +35,7 @@ export function normalizeUserProfile(raw: any): UserProfile | null {
     : format(addDays(now, APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd');
 
   return {
-    name: (raw.name && typeof raw.name === 'string') ? raw.name : 'User',
+    name: (raw.name && typeof raw.name === 'string') ? raw.name : APP_CONFIG.defaults.userName,
     tagline: (raw.tagline && typeof raw.tagline === 'string') ? raw.tagline : APP_CONFIG.defaults.defaultTagline,
     startDate,
     targetDate,
