@@ -12,7 +12,7 @@ import {
   Sun, Moon, Settings, RotateCcw, User,
   CalendarClock, Terminal, Search, Volume2, VolumeX,
   BookOpen, BarChart2, Award, Cloud, Briefcase, Flame,
-  LayoutDashboard, Menu, ArrowUpRight, Zap, Share2
+  LayoutDashboard, Menu, ArrowUpRight, Zap, Share2, Sparkles
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 type Theme = 'dark' | 'light';
-type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'share' | 'auth' | null;
+type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'share' | 'pricing' | 'auth' | null;
 
 interface LayoutProps {
   onSwitchToOS?: () => void;
@@ -146,9 +146,18 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
               <span className="font-sans font-bold text-lg tracking-tight text-foreground">
                 {APP_CONFIG.name}
               </span>
-              <span className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-primary/10 text-primary font-semibold border border-primary/20">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openModal('pricing');
+                }}
+                className="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-primary/10 text-primary font-semibold border border-primary/20 hover:bg-primary/20 cursor-pointer transition-colors"
+                title="View Pro Plans"
+              >
                 PRO
-              </span>
+              </button>
             </div>
             <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
               {userProfile.targetCompany ? `Target: ${userProfile.targetCompany}` : '140-Day System'}
@@ -258,6 +267,15 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
           >
             <Settings className="size-4.5 shrink-0" />
             <span>Settings</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { openModal('pricing'); onNavigate?.(); }}
+            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-150 text-left"
+          >
+            <Sparkles className="size-4.5 shrink-0 text-primary" />
+            <span>Plans &amp; Upgrades</span>
           </button>
 
           <button
@@ -452,6 +470,15 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                     >
                       <User className="size-4 text-muted-foreground" />
                       <span>Profile &amp; Goals</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('pricing'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <Sparkles className="size-4 text-primary" />
+                      <span>Plans &amp; Upgrades</span>
                     </button>
 
                     <button
