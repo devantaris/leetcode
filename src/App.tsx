@@ -8,6 +8,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { CurriculumPage } from './pages/CurriculumPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -67,6 +69,8 @@ function AppRoutes() {
         <Route path="/curriculum" element={<CurriculumPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Route>
 
       {/* Catch-all 404 page */}

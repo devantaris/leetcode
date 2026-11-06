@@ -863,6 +863,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           <Link to="/leaderboard" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
             Leaderboard
           </Link>
+          <Link to="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
+            Terms
+          </Link>
+          <Link to="/privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
+            Privacy
+          </Link>
         </div>
         <div>
           {APP_CONFIG.name} • Minimalist Placement Operating System • Dual-Engine Architecture
