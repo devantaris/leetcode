@@ -5,6 +5,7 @@ import { CommandPalette } from './components/CommandPalette';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { useProgress } from './context/ProgressContext';
 import { AuthModal } from './components/modals/AuthModal';
+import { AnnouncementBanner } from './components/AnnouncementBanner';
 import toast, { Toaster } from 'react-hot-toast';
 import { APP_CONFIG } from './config/appConfig';
 import { CURRICULUM } from './data/curriculumStats';
@@ -357,6 +358,8 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
         {/* ── MAIN WORKSPACE ── */}
         <div className="flex-1 flex flex-col min-w-0">
+          <AnnouncementBanner />
+
           {/* Top Header */}
           <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-4 sm:px-6 lg:px-8">
             {/* Left: Mobile trigger & Search Bar */}
