@@ -3,7 +3,6 @@ import { useProgress } from '../context/ProgressContext';
 import { CURRICULUM } from '../data/curriculumStats';
 import { TodayMission } from '../components/TodayMission';
 import { BrutalityBanner } from '../components/BrutalityBanner';
-import { AICoachCard } from '../components/AICoachCard';
 import { DailyFocusTimer } from '../components/DailyFocusTimer';
 import { Top150Card } from '../components/Top150Card';
 import { StatsAnalyticsDashboard } from '../components/StatsAnalyticsDashboard';
@@ -134,27 +133,18 @@ export const DashboardPage: React.FC = () => {
       {/* Catch-Up Queue — only shown when backlog exists */}
       <CatchUpQueueCard />
 
-      {/* Primary Operations Grid (Today's Mission & Coach / Timer) */}
+      {/* Primary Operations Grid (Today's Mission & Timer / Benchmark) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left: Today's Mission (8 columns) */}
+        {/* Left: Today's Mission (7/8 columns) */}
         <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
           <TodayMission />
-        </div>
-
-        {/* Right: AI Placement Coach & Deep-Work Stopwatch (4 columns) */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-          <AICoachCard />
-          <DailyFocusTimer />
-        </div>
-      </div>
-
-      {/* Intelligence & Benchmark Strip */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-5 xl:col-span-4">
-          <Top150Card />
-        </div>
-        <div className="lg:col-span-7 xl:col-span-8">
           <StatsAnalyticsDashboard />
+        </div>
+
+        {/* Right: Deep-Work Stopwatch & Top 150 Benchmark (4/5 columns) */}
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
+          <DailyFocusTimer />
+          <Top150Card />
         </div>
       </div>
 
