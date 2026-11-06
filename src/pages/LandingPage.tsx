@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Timer, ArrowRight, ChevronDown, ChevronUp,
-  Check, Bot, Building2, Briefcase, Users, Shield,
+  Check, Target, Building2, Briefcase, Users, Shield,
   Terminal, Sparkles, RefreshCw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -14,17 +14,17 @@ import { sounds } from '../utils/audio';
 const PHASES = [
   {
     id: 1,
-    weeks: 'Weeks 1–5',
+    weeks: 'Weeks 1-5',
     title: 'Linear Foundations & Core Pointers',
     subtitle: 'Arrays, Two Pointers, Sliding Window, Prefix Sums & Hash Maps',
     problems: 65,
-    description: 'Master core patterns tested in 70% of technical phone screens. Eliminates brute-force O(N²) habits.',
+    description: 'Master core patterns tested in 70% of technical phone screens. Eliminates brute-force O(N^2) habits.',
     keyPatterns: ['Opposite & Fast/Slow Pointers', 'Dynamic & Fixed Sliding Window', 'Prefix Sums & Frequency Counting', 'Monotonic Stack / Queue'],
     sampleProblems: ['3Sum (LC 15)', 'Longest Substring Without Repeating (LC 3)', 'Daily Temperatures (LC 739)', 'Trapping Rain Water (LC 42)']
   },
   {
     id: 2,
-    weeks: 'Weeks 6–10',
+    weeks: 'Weeks 6-10',
     title: 'Hierarchical & Graph Algorithms',
     subtitle: 'Binary Trees, BSTs, BFS/DFS, Topological Sort & Shortest Path',
     problems: 75,
@@ -34,7 +34,7 @@ const PHASES = [
   },
   {
     id: 3,
-    weeks: 'Weeks 11–15',
+    weeks: 'Weeks 11-15',
     title: 'Dynamic Programming & Memoization',
     subtitle: '1D/2D DP, Subsequences, Knapsack & State Transitions',
     problems: 65,
@@ -44,7 +44,7 @@ const PHASES = [
   },
   {
     id: 4,
-    weeks: 'Weeks 16–18',
+    weeks: 'Weeks 16-18',
     title: 'Architecture & System Design Foundations',
     subtitle: 'Distributed Caching, Rate Limiting, Partitioning & Resiliency',
     problems: 28,
@@ -54,7 +54,7 @@ const PHASES = [
   },
   {
     id: 5,
-    weeks: 'Weeks 19–25',
+    weeks: 'Weeks 19-25',
     title: 'Offer Sprint & Timed Mock Pressure',
     subtitle: 'High-Frequency Speedruns, Top 150 Benchmarks & Mock Interviews',
     problems: 74,
@@ -228,7 +228,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                   Welcome back, {userProfile.name}!
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  Day {stats.currentDay} / {CURRICULUM.totalDays} · {stats.solvedCount} of {stats.totalProblems} solved ({progressPct}%) {stats.streak > 0 && `· ${stats.streak}d streak`}
+                  Day {stats.currentDay} / {CURRICULUM.totalDays} • {stats.solvedCount} of {stats.totalProblems} solved ({progressPct}%) {stats.streak > 0 && `• ${stats.streak}d streak`}
                 </div>
               </div>
             </div>
@@ -285,7 +285,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                   RETRO WORKSTATION
                 </span>
                 <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#888' }}>
-                  VT220 · CHIP SYNTH
+                  VT220 • CHIP SYNTH
                 </span>
               </div>
 
@@ -314,7 +314,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                 <div>C:\&gt; grindos --boot</div>
                 <div style={{ color: '#e8c35a' }}>[OK] 25 WEEKS / 178 DAYS INITIALIZED</div>
                 <div>[OK] WINDOW MANAGER &amp; CHIP SYNTH ONLINE</div>
-                <div style={{ color: '#888' }}>&gt; MISSIONS.EXE · ORACLE.EXE · POMO.EXE</div>
+                <div style={{ color: '#888' }}>&gt; MISSIONS.EXE • ORACLE.EXE • POMO.EXE</div>
               </div>
 
               {/* Feature Points */}
@@ -376,7 +376,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                   MODERN DASHBOARD
                 </span>
                 <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                  LINEAR · HIGH DENSITY
+                  LINEAR • HIGH DENSITY
                 </span>
               </div>
 
@@ -634,15 +634,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
-          {/* Card 1: AI Placement Coach */}
+          {/* Card 1: Placement Readiness Engine */}
           <div style={{
             background: 'var(--bg-card)', border: '1px solid var(--border-default)',
             borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
           }}>
-            <Bot size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Placement Diagnostic Coach</h3>
+            <Target size={20} style={{ color: 'var(--text-primary)' }} />
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Placement Readiness Engine</h3>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-              Generates daily briefings, tracks pace vs deadline, and breaks down your readiness score into coverage, streak, and topic breadth.
+              Calculates your interview odds formula, tracks pace against your target offer deadline, and benchmarks topic mastery across all 25 curriculum categories.
             </p>
           </div>
 
@@ -770,7 +770,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                       ))}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      <strong>Key Benchmarks:</strong> {phase.sampleProblems.join(' · ')}
+                      <strong>Key Benchmarks:</strong> {phase.sampleProblems.join(' • ')}
                     </div>
                   </div>
                 )}
@@ -865,7 +865,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           </Link>
         </div>
         <div>
-          {APP_CONFIG.name} · Minimalist Placement Operating System · Dual-Engine Architecture
+          {APP_CONFIG.name} • Minimalist Placement Operating System • Dual-Engine Architecture
         </div>
       </footer>
     </div>
