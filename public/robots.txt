@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://leetcode-psi.vercel.app/sitemap.xml
