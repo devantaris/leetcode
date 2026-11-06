@@ -421,7 +421,7 @@ export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb, o
       } else if (e.ctrlKey && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         toggleSound();
-      } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'w') {
+      } else if (((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'w') || (e.altKey && e.key.toLowerCase() === 'o')) {
         if (onSwitchToWeb) {
           e.preventDefault();
           sounds.playTickSound();

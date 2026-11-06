@@ -88,6 +88,10 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
         e.preventDefault();
         toggleSound();
       }
+      if (onSwitchToOS && e.altKey && e.key.toLowerCase() === 'o') {
+        e.preventDefault();
+        onSwitchToOS();
+      }
       if (!isInput && e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         openModal('rules');
@@ -99,7 +103,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleSound]);
+  }, [toggleSound, onSwitchToOS]);
 
   const handleTriggerImport = () => fileInputRef.current?.click();
 
@@ -590,34 +594,42 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
         </div>
 
         {/* ── MOBILE BOTTOM NAVIGATION ── */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border flex items-center justify-around h-14 px-2">
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border flex items-center justify-around h-16 pb-[max(0.25rem,env(safe-area-inset-bottom))] px-1 shadow-lg">
           <NavLink
             to="/dashboard"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
+              `flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all ${
+                isActive ? 'text-primary font-bold bg-primary/10' : 'text-muted-foreground hover:text-foreground'
               }`
             }
           >
             <LayoutDashboard className="size-4.5" />
-            <span>Dashboard</span>
+            <span>Mission</span>
           </NavLink>
           <NavLink
             to="/curriculum"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
+              `flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all ${
+                isActive ? 'text-primary font-bold bg-primary/10' : 'text-muted-foreground hover:text-foreground'
               }`
             }
           >
             <BookOpen className="size-4.5" />
             <span>Syllabus</span>
           </NavLink>
+          <button
+            type="button"
+            onClick={() => openModal('placements')}
+            className="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+          >
+            <Briefcase className="size-4.5" />
+            <span>Pipeline</span>
+          </button>
           <NavLink
             to="/analytics"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
+              `flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all ${
+                isActive ? 'text-primary font-bold bg-primary/10' : 'text-muted-foreground hover:text-foreground'
               }`
             }
           >
@@ -627,8 +639,8 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
           <NavLink
             to="/leaderboard"
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-primary font-bold' : 'text-muted-foreground'
+              `flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all ${
+                isActive ? 'text-primary font-bold bg-primary/10' : 'text-muted-foreground hover:text-foreground'
               }`
             }
           >
