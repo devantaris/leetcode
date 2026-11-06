@@ -3,7 +3,7 @@ import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from 'recharts';
 import { CURRICULUM } from '../data/curriculumStats';
-import { TrendingUp, Zap, Target, Award, Calendar } from 'lucide-react';
+import { TrendingUp, Zap, Target, Award, Calendar, History, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -332,6 +332,79 @@ export const AnalyticsPage: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Chronological Solve Activity Stream */}
+      <Card className="shadow-xs border-border/60">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+          <div className="flex items-center gap-2">
+            <History className="size-4 text-primary" />
+            <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+              Recent Solve Activity Log
+            </CardTitle>
+          </div>
+          <Badge variant="outline" className="text-[10px] font-mono">
+            {stats.solvedCount} total recorded
+          </Badge>
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          {dailySolveLog.length === 0 ? (
+            <div className="p-8 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl">
+              No solve logs found yet. Complete missions in the syllabus to build your history!
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {dailySolveLog.slice(0, 7).map((group) => (
+                <div key={group.dateStr} className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                    <Calendar className="size-3 text-primary" />
+                    <span>{group.displayDate}</span>
+                    <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4.5 font-mono">
+                      {group.items.length} solve{group.items.length !== 1 ? 's' : ''}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {group.items.map((item) => (
+                      <div
+                        key={item.problemId}
+                        className="p-2.5 rounded-xl border border-border/50 bg-muted/20 flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                          <div className="min-w-0">
+                            <div className="text-xs font-medium text-foreground truncate">
+                              {item.name}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground font-mono truncate">
+                              {item.topic} • {item.timeFormatted}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <Badge variant="outline" className="text-[9px] py-0 px-1 font-mono">
+                            {item.difficulty}
+                          </Badge>
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground p-0.5"
+                            title="Open problem"
+                          >
+                            <ExternalLink className="size-3" />
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
