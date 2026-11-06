@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
+import { CloudSyncService } from '../services/cloudSync';
 import { AuthModal } from '../components/modals/AuthModal';
 import { RefreshCw, Users, Globe, Copy, Check, Eye, EyeOff, LogIn, Cloud } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -18,11 +19,15 @@ import {
 } from '@/components/ui/table';
 
 export const LeaderboardPage: React.FC = () => {
-  const { stats, userProfile, activeCohort, joinCohort, leaveCohort, authUser } = useProgress();
+  const { stats, userProfile, activeCohort, createCohort, joinCohort, leaveCohort, authUser } = useProgress();
   const [boardType, setBoardType] = useState<'global' | 'cohort'>('global');
+  const [cohortAction, setCohortAction] = useState<'join' | 'create'>('join');
   const [cohortInput, setCohortInput] = useState('');
+  const [newCohortName, setNewCohortName] = useState('');
+  const [cohortEntries, setCohortEntries] = useState<any[]>([]);
+  const [isCohortLoading, setIsCohortLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [isJoining, setIsJoining] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const {
@@ -37,7 +42,6 @@ export const LeaderboardPage: React.FC = () => {
     fetchEntries,
     isSyncing,
     isFetching,
-    isEnabled,
   } = useLeaderboard();
 
   const handleSync = useCallback(async () => {
@@ -67,12 +71,31 @@ export const LeaderboardPage: React.FC = () => {
   const handleJoinCohortSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cohortInput.trim()) return;
-    setIsJoining(true);
+    setIsSubmitting(true);
     await joinCohort(cohortInput.trim().toUpperCase());
-    setIsJoining(false);
+    setIsSubmitting(false);
     setCohortInput('');
-    toast.success('Joined cohort!');
   };
+
+  const handleCreateCohortSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCohortName.trim()) return;
+    setIsSubmitting(true);
+    await createCohort(newCohortName.trim());
+    setIsSubmitting(false);
+    setNewCohortName('');
+  };
+
+  useEffect(() => {
+    if (boardType === 'cohort' && activeCohort?.code) {
+      setIsCohortLoading(true);
+      CloudSyncService.fetchCohortLeaderboard(activeCohort.code)
+        .then((res) => {
+          setCohortEntries(res || []);
+        })
+        .finally(() => setIsCohortLoading(false));
+    }
+  }, [boardType, activeCohort]);
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
@@ -240,7 +263,7 @@ export const LeaderboardPage: React.FC = () => {
                     <TableCell className="text-right font-mono text-primary">{stats.oddsPercentage}%</TableCell>
                   </TableRow>
 
-                  {isEnabled && entries.filter(e => e.user_id !== myEntry?.user_id).map((peer, idx) => (
+                  {cohortEntries.filter(e => e.user_id !== myEntry?.user_id).map((peer, idx) => (
                     <TableRow key={peer.id || peer.user_id} className="text-xs">
                       <TableCell>{renderRankBadge(idx + 2)}</TableCell>
                       <TableCell className="font-medium text-foreground">
@@ -256,36 +279,81 @@ export const LeaderboardPage: React.FC = () => {
                       <TableCell className="text-right font-mono text-primary">{peer.readiness_pct}%</TableCell>
                     </TableRow>
                   ))}
+
+                  {cohortEntries.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-6 text-xs text-muted-foreground">
+                        {isCohortLoading ? 'Refreshing cohort standings...' : `No other batchmates yet. Share code "${activeCohort.code}" to compete together!`}
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </Card>
           </div>
         ) : (
-          /* Join Cohort Form */
+          /* Join or Create Cohort View */
           <Card className="border-border/60">
             <CardContent className="p-8 flex flex-col items-center text-center max-w-md mx-auto gap-4">
               <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
                 <Users className="size-6" />
               </div>
               <div>
-                <h3 className="text-base font-serif font-bold text-foreground">Join a Study Cohort</h3>
+                <h3 className="text-base font-serif font-bold text-foreground">Study Cohorts & Peer Velocity</h3>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  Compete with your university batchmates, campus study circle, or placement discord group.
+                  Compete directly with your university batchmates, campus study circle, or placement discord group.
                 </p>
               </div>
 
-              <form onSubmit={handleJoinCohortSubmit} className="flex gap-2 w-full mt-2">
-                <Input
-                  placeholder="Enter 6-char code (e.g. GRIND1)"
-                  value={cohortInput}
-                  onChange={(e) => setCohortInput(e.target.value.toUpperCase())}
-                  className="text-xs h-9 font-mono"
-                  maxLength={10}
-                />
-                <Button type="submit" disabled={isJoining || !cohortInput.trim()} className="text-xs h-9">
-                  {isJoining ? 'Joining…' : 'Join'}
-                </Button>
-              </form>
+              {/* Action Switcher */}
+              <div className="flex rounded-lg bg-muted/60 p-1 border border-border/40 text-xs w-full max-w-xs">
+                <button
+                  type="button"
+                  onClick={() => setCohortAction('join')}
+                  className={`flex-1 py-1.5 rounded-md font-medium transition-colors ${
+                    cohortAction === 'join' ? 'bg-background shadow-xs text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Join with Code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCohortAction('create')}
+                  className={`flex-1 py-1.5 rounded-md font-medium transition-colors ${
+                    cohortAction === 'create' ? 'bg-background shadow-xs text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Create Cohort
+                </button>
+              </div>
+
+              {cohortAction === 'join' ? (
+                <form onSubmit={handleJoinCohortSubmit} className="flex gap-2 w-full mt-2">
+                  <Input
+                    placeholder="Enter 6-char code (e.g. GAB12)"
+                    value={cohortInput}
+                    onChange={(e) => setCohortInput(e.target.value.toUpperCase())}
+                    className="text-xs h-9 font-mono"
+                    maxLength={10}
+                  />
+                  <Button type="submit" disabled={isSubmitting || !cohortInput.trim()} className="text-xs h-9">
+                    {isSubmitting ? 'Joining…' : 'Join'}
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleCreateCohortSubmit} className="flex gap-2 w-full mt-2">
+                  <Input
+                    placeholder="Cohort Name (e.g. IIT Delhi 2026 Batch)"
+                    value={newCohortName}
+                    onChange={(e) => setNewCohortName(e.target.value)}
+                    className="text-xs h-9"
+                    maxLength={40}
+                  />
+                  <Button type="submit" disabled={isSubmitting || !newCohortName.trim()} className="text-xs h-9">
+                    {isSubmitting ? 'Creating…' : 'Create'}
+                  </Button>
+                </form>
+              )}
             </CardContent>
           </Card>
         )

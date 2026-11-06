@@ -71,6 +71,23 @@ CREATE TABLE IF NOT EXISTS public.focus_sessions (
   completed_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 6. COHORTS & COHORT MEMBERS
+CREATE TABLE IF NOT EXISTS public.cohorts (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code           TEXT UNIQUE NOT NULL,
+  name           TEXT NOT NULL,
+  created_by     TEXT NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.cohort_members (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cohort_id      UUID NOT NULL REFERENCES public.cohorts(id) ON DELETE CASCADE,
+  user_id        TEXT NOT NULL,
+  joined_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (cohort_id, user_id)
+);
+
 -- ==============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ==============================================================================
@@ -80,6 +97,8 @@ ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.placement_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leaderboard_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.focus_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cohorts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cohort_members ENABLE ROW LEVEL SECURITY;
 
 -- Drop old policies to prevent duplicates
 DROP POLICY IF EXISTS "public_all_profiles" ON public.user_profiles;
@@ -118,6 +137,27 @@ CREATE POLICY "public_read_leaderboard"
 DROP POLICY IF EXISTS "users_own_leaderboard" ON public.leaderboard_entries;
 CREATE POLICY "users_own_leaderboard"
   ON public.leaderboard_entries FOR ALL
+  USING (auth.uid()::text = user_id)
+  WITH CHECK (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS "public_read_cohorts" ON public.cohorts;
+CREATE POLICY "public_read_cohorts"
+  ON public.cohorts FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "users_create_cohorts" ON public.cohorts;
+CREATE POLICY "users_create_cohorts"
+  ON public.cohorts FOR INSERT
+  WITH CHECK (auth.uid()::text = created_by);
+
+DROP POLICY IF EXISTS "public_read_cohort_members" ON public.cohort_members;
+CREATE POLICY "public_read_cohort_members"
+  ON public.cohort_members FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "users_manage_cohort_members" ON public.cohort_members;
+CREATE POLICY "users_manage_cohort_members"
+  ON public.cohort_members FOR ALL
   USING (auth.uid()::text = user_id)
   WITH CHECK (auth.uid()::text = user_id);
 
@@ -203,3 +243,6 @@ CREATE INDEX IF NOT EXISTS idx_user_progress_user ON public.user_progress(user_i
 CREATE INDEX IF NOT EXISTS idx_user_progress_user_problem ON public.user_progress(user_id, problem_id);
 CREATE INDEX IF NOT EXISTS idx_placements_user ON public.placement_records(user_id);
 CREATE INDEX IF NOT EXISTS idx_leaderboard_rank ON public.leaderboard_entries(solved_count DESC, streak DESC);
+CREATE INDEX IF NOT EXISTS idx_cohorts_code ON public.cohorts(code);
+CREATE INDEX IF NOT EXISTS idx_cohort_members_user ON public.cohort_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_cohort_members_cohort ON public.cohort_members(cohort_id);

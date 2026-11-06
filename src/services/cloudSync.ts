@@ -3,7 +3,7 @@
 
 import { getSupabase } from '../config/supabaseClient';
 import type { UserProfile } from '../context/ProgressContext';
-import type { PlacementRecord, UserProgressMap, SolveRecordMap } from '../types';
+import type { PlacementRecord, UserProgressMap, SolveRecordMap, ProblemNoteMap, ProblemFlagMap, CohortInfo } from '../types';
 import { CURRICULUM } from '../data/curriculumStats';
 
 export interface CloudSyncPayload {
@@ -11,6 +11,8 @@ export interface CloudSyncPayload {
   userProfile: UserProfile;
   progress: UserProgressMap;
   solveHistory: SolveRecordMap;
+  problemNotes?: ProblemNoteMap;
+  flaggedProblems?: ProblemFlagMap;
   placements: PlacementRecord[];
   streak: number;
   solvedCount: number;
@@ -20,7 +22,10 @@ export interface CloudDataResponse {
   userProfile?: UserProfile;
   progress?: UserProgressMap;
   solveHistory?: SolveRecordMap;
+  problemNotes?: ProblemNoteMap;
+  flaggedProblems?: ProblemFlagMap;
   placements?: PlacementRecord[];
+  activeCohort?: CohortInfo;
   lastSyncedAt?: string;
 }
 
@@ -65,14 +70,20 @@ export class CloudSyncService {
       );
       if (profileErr) console.warn('[CloudSync] Profile upsert warning:', profileErr.message);
 
-      // 2. Upsert solves into user_progress
-      const solveEntries = Object.entries(payload.progress)
-        .filter(([_, isSolved]) => isSolved)
-        .map(([probId]) => ({
-          user_id: payload.userId,
-          problem_id: probId,
-          solved_at: payload.solveHistory[probId] || new Date().toISOString(),
-        }));
+      // 2. Upsert solves, notes, and flags into user_progress
+      const allProblemIds = new Set([
+        ...Object.keys(payload.progress).filter((id) => payload.progress[id]),
+        ...Object.keys(payload.problemNotes || {}),
+        ...Object.keys(payload.flaggedProblems || {}).filter((id) => payload.flaggedProblems?.[id]),
+      ]);
+
+      const solveEntries = Array.from(allProblemIds).map((probId) => ({
+        user_id: payload.userId,
+        problem_id: probId,
+        solved_at: payload.solveHistory[probId] || new Date().toISOString(),
+        approach_notes: payload.problemNotes?.[probId] || '',
+        is_flagged: !!payload.flaggedProblems?.[probId],
+      }));
 
       if (solveEntries.length > 0) {
         // Upsert in batches of 50
@@ -148,10 +159,10 @@ export class CloudSyncService {
         .eq('user_id', userId)
         .maybeSingle();
 
-      // 2. Fetch progress solves
+      // 2. Fetch progress solves, notes, and flags
       const { data: progressData } = await sb
         .from('user_progress')
-        .select('problem_id, solved_at')
+        .select('problem_id, solved_at, approach_notes, is_flagged')
         .eq('user_id', userId);
 
       // 3. Fetch placements
@@ -160,13 +171,39 @@ export class CloudSyncService {
         .select('*')
         .eq('user_id', userId);
 
+      // 4. Fetch cohort membership
+      let activeCohort: CohortInfo | undefined;
+      try {
+        const { data: memberRow } = await sb
+          .from('cohort_members')
+          .select('cohort_id, cohorts(code, name, created_by)')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (memberRow?.cohorts) {
+          const c: any = memberRow.cohorts;
+          activeCohort = {
+            code: c.code,
+            name: c.name,
+            memberCount: 1,
+            isOwner: c.created_by === userId,
+          };
+        }
+      } catch {
+        // non-blocking
+      }
+
       const progressMap: UserProgressMap = {};
       const historyMap: SolveRecordMap = {};
+      const notesMap: Record<string, string> = {};
+      const flagMap: Record<string, boolean> = {};
 
       if (progressData) {
         progressData.forEach((row: any) => {
           progressMap[row.problem_id] = true;
-          historyMap[row.problem_id] = row.solved_at;
+          if (row.solved_at) historyMap[row.problem_id] = row.solved_at;
+          if (row.approach_notes) notesMap[row.problem_id] = row.approach_notes;
+          if (row.is_flagged) flagMap[row.problem_id] = true;
         });
       }
 
@@ -188,6 +225,7 @@ export class CloudSyncService {
             targetDate: profileData.target_date || new Date().toISOString().split('T')[0],
             restDay: profileData.rest_day || 'sunday',
             secondarySkill: profileData.secondary_skill || 'project',
+            targetTier: profileData.target_company || 'top_tech',
           }
         : undefined;
 
@@ -198,7 +236,10 @@ export class CloudSyncService {
           userProfile: restoredProfile,
           progress: progressMap,
           solveHistory: historyMap,
+          problemNotes: notesMap,
+          flaggedProblems: flagMap,
           placements: placementsList,
+          activeCohort,
           lastSyncedAt: new Date().toISOString(),
         },
       };
@@ -505,6 +546,218 @@ export class CloudSyncService {
       return data || [];
     } catch {
       return [];
+    }
+  }
+
+  /**
+   * Creates a new cohort and adds the creator as a member.
+   */
+  public static async createCohort(
+    userId: string,
+    name: string
+  ): Promise<{ success: boolean; cohort?: CohortInfo; error?: string }> {
+    const sb = getSupabase();
+    if (!sb || !userId) return { success: false, error: 'Database unauthenticated' };
+
+    try {
+      const code = 'G' + Math.random().toString(36).substring(2, 7).toUpperCase();
+      const { data: cohort, error: cohortErr } = await sb
+        .from('cohorts')
+        .insert({
+          code,
+          name: name.trim() || 'Grind Cohort',
+          created_by: userId,
+        })
+        .select('*')
+        .single();
+
+      if (cohortErr) return { success: false, error: cohortErr.message };
+
+      await sb.from('cohort_members').insert({
+        cohort_id: cohort.id,
+        user_id: userId,
+      });
+
+      return {
+        success: true,
+        cohort: {
+          code: cohort.code,
+          name: cohort.name,
+          memberCount: 1,
+          isOwner: true,
+        },
+      };
+    } catch (err: unknown) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  /**
+   * Joins an existing cohort by its code.
+   */
+  public static async joinCohort(
+    userId: string,
+    code: string
+  ): Promise<{ success: boolean; cohort?: CohortInfo; error?: string }> {
+    const sb = getSupabase();
+    if (!sb || !userId) return { success: false, error: 'Database unauthenticated' };
+
+    try {
+      const cleanCode = code.trim().toUpperCase();
+      const { data: cohort, error: findErr } = await sb
+        .from('cohorts')
+        .select('id, code, name, created_by')
+        .eq('code', cleanCode)
+        .maybeSingle();
+
+      if (findErr || !cohort) {
+        return { success: false, error: 'Cohort code not found. Check code and try again.' };
+      }
+
+      await sb.from('cohort_members').upsert(
+        { cohort_id: cohort.id, user_id: userId },
+        { onConflict: 'cohort_id,user_id' }
+      );
+
+      return {
+        success: true,
+        cohort: {
+          code: cohort.code,
+          name: cohort.name,
+          memberCount: 2,
+          isOwner: cohort.created_by === userId,
+        },
+      };
+    } catch (err: unknown) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  /**
+   * Leaves a cohort.
+   */
+  public static async leaveCohort(
+    userId: string,
+    cohortCode: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const sb = getSupabase();
+    if (!sb || !userId) return { success: false };
+
+    try {
+      const { data: cohort } = await sb
+        .from('cohorts')
+        .select('id')
+        .eq('code', cohortCode)
+        .maybeSingle();
+
+      if (cohort?.id) {
+        await sb
+          .from('cohort_members')
+          .delete()
+          .eq('cohort_id', cohort.id)
+          .eq('user_id', userId);
+      }
+      return { success: true };
+    } catch (err: unknown) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  /**
+   * Fetches leaderboard ranking scoped to a cohort.
+   */
+  public static async fetchCohortLeaderboard(cohortCode: string): Promise<any[]> {
+    const sb = getSupabase();
+    if (!sb || !cohortCode) return [];
+
+    try {
+      const { data: cohort } = await sb
+        .from('cohorts')
+        .select('id')
+        .eq('code', cohortCode.trim().toUpperCase())
+        .maybeSingle();
+
+      if (!cohort) return [];
+
+      const { data: members } = await sb
+        .from('cohort_members')
+        .select('user_id')
+        .eq('cohort_id', cohort.id);
+
+      if (!members || members.length === 0) return [];
+
+      const userIds = members.map((m: any) => m.user_id);
+
+      const { data: entries, error } = await sb
+        .from('leaderboard_entries')
+        .select('*')
+        .in('user_id', userIds)
+        .order('solved_count', { ascending: false })
+        .order('streak', { ascending: false });
+
+      if (error) {
+        console.warn('[Leaderboard] Cohort fetch error:', error.message);
+        return [];
+      }
+      return entries || [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Saves or updates an approach note for a specific problem.
+   */
+  public static async saveProblemNote(
+    userId: string,
+    problemId: string,
+    notes: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const sb = getSupabase();
+    if (!sb || !userId) return { success: false };
+
+    try {
+      const { error } = await sb.from('user_progress').upsert(
+        {
+          user_id: userId,
+          problem_id: problemId,
+          approach_notes: notes,
+          solved_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,problem_id' }
+      );
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: unknown) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  /**
+   * Toggles review flag for a specific problem.
+   */
+  public static async toggleProblemFlag(
+    userId: string,
+    problemId: string,
+    isFlagged: boolean
+  ): Promise<{ success: boolean; error?: string }> {
+    const sb = getSupabase();
+    if (!sb || !userId) return { success: false };
+
+    try {
+      const { error } = await sb.from('user_progress').upsert(
+        {
+          user_id: userId,
+          problem_id: problemId,
+          is_flagged: isFlagged,
+          solved_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,problem_id' }
+      );
+      if (error) return { success: false, error: error.message };
+      return { success: true };
+    } catch (err: unknown) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) };
     }
   }
 }
