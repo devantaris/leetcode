@@ -27,6 +27,10 @@ const REST_DAY_OPTIONS = [
   { id: 'none', label: 'Flexible', desc: 'Rest when needed' },
 ];
 
+const TARGET_COMPANIES = [
+  'Google', 'Meta', 'Amazon', 'Microsoft', 'Apple', 'Uber', 'Netflix', 'Top Tech / FAANG', 'High-Growth Startup'
+];
+
 const TOTAL_STEPS = 3;
 
 export const OnboardingPage: React.FC = () => {
@@ -36,6 +40,7 @@ export const OnboardingPage: React.FC = () => {
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
+  const [targetCompany, setTargetCompany] = useState('Top Tech / FAANG');
   const [startDate, setStartDate] = useState(today);
   const [targetDate, setTargetDate] = useState(format(addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'));
   const [restDay, setRestDay] = useState('sunday');
@@ -59,6 +64,7 @@ export const OnboardingPage: React.FC = () => {
       targetDate: targetDate || format(addDays(new Date(), APP_CONFIG.defaults.targetDateOffsetDays), 'yyyy-MM-dd'),
       restDay: restDay,
       secondarySkill: secondarySkill,
+      targetCompany: targetCompany,
     };
     sounds.playVictorySound();
     confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
@@ -182,6 +188,35 @@ export const OnboardingPage: React.FC = () => {
                         onKeyDown={(e) => e.key === 'Enter' && name.trim() && goNext()}
                         placeholder="e.g. CS Student • Target: SDE-1"
                         className="text-xs h-9.5"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-foreground block mb-1.5">
+                        Target Company / Tier
+                      </label>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {TARGET_COMPANIES.map((comp) => (
+                          <button
+                            key={comp}
+                            type="button"
+                            onClick={() => setTargetCompany(comp)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                              targetCompany === comp
+                                ? 'bg-primary text-primary-foreground border-primary font-semibold'
+                                : 'bg-muted/40 text-muted-foreground border-border/60 hover:text-foreground'
+                            }`}
+                          >
+                            {comp}
+                          </button>
+                        ))}
+                      </div>
+                      <Input
+                        type="text"
+                        value={targetCompany}
+                        onChange={(e) => setTargetCompany(e.target.value)}
+                        placeholder="Or type custom company..."
+                        className="text-xs h-9"
                       />
                     </div>
                   </div>
@@ -320,7 +355,10 @@ export const OnboardingPage: React.FC = () => {
                   </div>
 
                   <div className="p-3 bg-muted/40 border border-border/60 rounded-xl text-xs flex flex-col gap-1">
-                    <div className="font-semibold text-foreground">{name || 'Operator'}</div>
+                    <div className="font-semibold text-foreground flex items-center justify-between">
+                      <span>{name || 'Operator'}</span>
+                      <span className="text-[11px] font-mono text-primary">{targetCompany}</span>
+                    </div>
                     <div className="text-muted-foreground text-[11px]">Rest: {REST_DAY_OPTIONS.find(r => r.id === restDay)?.label} ({SECONDARY_SKILL_OPTIONS.find(s => s.id === secondarySkill)?.label})</div>
                     <div className="text-muted-foreground text-[11px]">Start: {startDate} → Target: {targetDate}</div>
                   </div>

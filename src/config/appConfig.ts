@@ -23,6 +23,7 @@ export const APP_CONFIG = {
 
   // Smart defaults
   defaults: {
+    userName: 'Operator',
     targetDateOffsetDays: 140,
     dailyProblems: 3,
     restDay: 'sunday' as const,
