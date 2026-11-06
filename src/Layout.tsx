@@ -12,7 +12,7 @@ import {
   Sun, Moon, Settings, RotateCcw, User,
   CalendarClock, Terminal, Search, Volume2, VolumeX,
   BookOpen, BarChart2, Award, Cloud, Briefcase, Flame,
-  LayoutDashboard, Menu, ArrowUpRight, Zap, Share2, Sparkles
+  LayoutDashboard, Menu, ArrowUpRight, Zap, Share2, Sparkles, Loader2
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -284,10 +284,23 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
             className="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-150 text-left"
           >
             <div className="flex items-center gap-3">
-              <Cloud className="size-4.5 shrink-0" />
+              {cloudSyncStatus === 'syncing' ? (
+                <Loader2 className="size-4.5 shrink-0 text-primary animate-spin" />
+              ) : (
+                <Cloud className="size-4.5 shrink-0" />
+              )}
               <span>Cloud Sync</span>
             </div>
-            <span className={`size-2 rounded-full ${cloudSyncStatus === 'synced' ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
+            <span
+              className={`size-2 rounded-full ${
+                cloudSyncStatus === 'synced'
+                  ? 'bg-primary shadow-[0_0_8px_rgba(61,220,132,0.6)]'
+                  : cloudSyncStatus === 'syncing'
+                  ? 'bg-amber-500 animate-pulse'
+                  : 'bg-muted-foreground/40'
+              }`}
+              title={`Status: ${cloudSyncStatus}`}
+            />
           </button>
 
           {onSwitchToOS && (
@@ -384,6 +397,21 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                   <span>{stats.streak}d streak</span>
                 </Badge>
               )}
+
+              {/* Cloud Sync Status */}
+              <button
+                type="button"
+                onClick={() => openModal('auth')}
+                className="hidden md:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-xl border border-border/70 hover:border-foreground/30 bg-background text-xs text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                title={`Cloud Sync Status: ${cloudSyncStatus} (${authUser ? authUser.email : 'Local Only'})`}
+              >
+                {cloudSyncStatus === 'syncing' ? (
+                  <Loader2 className="size-3.5 text-primary animate-spin" />
+                ) : (
+                  <Cloud className={`size-3.5 ${cloudSyncStatus === 'synced' ? 'text-primary' : 'text-muted-foreground'}`} />
+                )}
+                <span className="font-mono text-[10px] capitalize">{cloudSyncStatus}</span>
+              </button>
 
               {/* Share Badge Button */}
               <Button
