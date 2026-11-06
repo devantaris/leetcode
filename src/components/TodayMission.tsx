@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { ExternalLink, Check, Coffee, ArrowRight, Flame, AlertCircle, Lightbulb, Bookmark, FileText } from 'lucide-react';
+import { ExternalLink, Check, Coffee, ArrowRight, Flame, AlertCircle, Lightbulb, Bookmark, FileText, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TOP_150_LC_NUMBERS } from '../data/top150List';
 import { COMPANY_LABELS } from '../data/companyMappings';
 import { CURRICULUM } from '../data/curriculumStats';
+import { getPatternIntuition } from '../data/patternIntuitions';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ export const TodayMission: React.FC = () => {
   const solvedToday = todayDayPlan.problems.filter(p => !!progress[p.id]).length;
   const totalToday = todayDayPlan.problems.length;
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
+  const pattern = getPatternIntuition(todayDayPlan.topic, currentWeekPlan.topic);
 
   return (
     <Card className="border border-border/80 bg-card text-card-foreground shadow-xs">
@@ -102,7 +104,29 @@ export const TodayMission: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-border divide-y divide-border overflow-hidden bg-background shadow-xs">
+          <>
+            {/* Pedagogical Pattern Intuition Callout */}
+            <div className="p-3.5 rounded-xl border border-primary/25 bg-primary/5 flex flex-col gap-1.5 shadow-2xs">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="size-4 text-primary shrink-0" />
+                  <span className="font-mono text-xs font-bold text-foreground">
+                    Core Pattern: {pattern.pattern}
+                  </span>
+                </div>
+                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/10 px-2 py-0.5">
+                  {pattern.interviewFrequency}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed m-0">
+                {pattern.intuition}
+              </p>
+              <div className="text-[11px] text-foreground/80 font-mono mt-0.5 pt-1.5 border-t border-primary/15">
+                <span className="text-primary font-semibold">Key Invariant:</span> {pattern.keyInvariant}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border divide-y divide-border overflow-hidden bg-background shadow-xs">
             {todayDayPlan.problems.map((p) => {
               const isChecked = !!progress[p.id];
               const isFlagged = !!flaggedProblems[p.id];
@@ -226,7 +250,20 @@ export const TodayMission: React.FC = () => {
 
                     {/* Expandable Problem Note Editor */}
                     {isNoteOpen && (
-                      <div className="mt-2.5 pt-2 border-t border-border/60" onClick={(e) => e.stopPropagation()}>
+                      <div className="mt-2.5 pt-2 border-t border-border/60 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1 font-mono">
+                            <FileText className="size-3 text-primary" />
+                            <span>Approach Notes &amp; Invariants (autosaved)</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setActiveNoteId(null)}
+                            className="text-primary hover:underline text-[10px] font-medium"
+                          >
+                            Done
+                          </button>
+                        </div>
                         <textarea
                           value={userNote}
                           onChange={(e) => setProblemNote(p.id, e.target.value)}
@@ -252,6 +289,7 @@ export const TodayMission: React.FC = () => {
               );
             })}
           </div>
+          </>
         )}
       </CardContent>
 
