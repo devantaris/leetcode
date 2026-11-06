@@ -12,7 +12,7 @@ import {
   Sun, Moon, Settings, RotateCcw, User,
   CalendarClock, Terminal, Search, Volume2, VolumeX,
   BookOpen, BarChart2, Award, Cloud, Briefcase, Flame,
-  LayoutDashboard, Menu, ArrowUpRight, Zap
+  LayoutDashboard, Menu, ArrowUpRight, Zap, Share2
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 type Theme = 'dark' | 'light';
-type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'auth' | null;
+type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'share' | 'auth' | null;
 
 interface LayoutProps {
   onSwitchToOS?: () => void;
@@ -367,6 +367,18 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                 </Badge>
               )}
 
+              {/* Share Badge Button */}
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => openModal('share')}
+                className="hidden sm:inline-flex h-8 gap-1.5 px-2.5 text-xs text-foreground border-border/80 hover:bg-muted"
+                title="Share your candidate velocity badge"
+              >
+                <Share2 className="size-3.5 text-primary" />
+                <span>Share Badge</span>
+              </Button>
+
               {/* Tactile Audio toggle */}
               <Button
                 variant="ghost"
@@ -440,6 +452,15 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                     >
                       <User className="size-4 text-muted-foreground" />
                       <span>Profile &amp; Goals</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { openModal('share'); setUserMenuOpen(false); }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
+                    >
+                      <Share2 className="size-4 text-primary" />
+                      <span>Share Candidate Badge</span>
                     </button>
 
                     <button

@@ -6,9 +6,10 @@ import { RulesModal } from './modals/RulesModal';
 import { StrategyModal } from './modals/StrategyModal';
 import { ResetModal } from './modals/ResetModal';
 import { PlacementTrackerModal } from './modals/PlacementTrackerModal';
+import { ShareBadgeModal } from './modals/ShareBadgeModal';
 
 interface ModalsProps {
-  activeModal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | null;
+  activeModal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'share' | null;
   onClose: () => void;
   onTriggerImportFile?: () => void;
 }
@@ -23,6 +24,7 @@ export const Modals: React.FC<ModalsProps> = ({ activeModal, onClose, onTriggerI
       <StrategyModal isOpen={activeModal === 'strategy'} onClose={onClose} />
       <ResetModal isOpen={activeModal === 'reset'} onClose={onClose} />
       <PlacementTrackerModal isOpen={activeModal === 'placements'} onClose={onClose} />
+      <ShareBadgeModal isOpen={activeModal === 'share'} onClose={onClose} />
     </>
   );
 };
