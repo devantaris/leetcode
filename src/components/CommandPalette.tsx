@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { MERGED_PLAN_DATA as PLAN_DATA } from '../data/mergedPlanData';
-import { Compass, BookOpen, BarChart2, Award, Terminal, Cloud, Briefcase, User, CalendarClock, RotateCcw, ExternalLink } from 'lucide-react';
+import {
+  Compass, BookOpen, BarChart2, Award, Terminal, Cloud,
+  Briefcase, User, CalendarClock, RotateCcw, ExternalLink,
+  Share2, Sparkles, Shield
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   CommandDialog,
@@ -17,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenModal?: (modal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'auth') => void;
+  onOpenModal?: (modal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'share' | 'pricing' | 'auth') => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onOpenModal }) => {
@@ -166,12 +170,39 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
             <Terminal className="size-4 mr-2 text-emerald-500" />
             <span>Switch to Retro Terminal OS</span>
           </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              navigate('/terms');
+              onClose();
+            }}
+          >
+            <Shield className="size-4 mr-2 text-muted-foreground" />
+            <span>Terms of Service & Privacy</span>
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
         {onOpenModal && (
           <CommandGroup heading="Actions & Settings">
+            <CommandItem
+              onSelect={() => {
+                onOpenModal('share');
+                onClose();
+              }}
+            >
+              <Share2 className="size-4 mr-2 text-primary" />
+              <span>Share Candidate Velocity Badge</span>
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                onOpenModal('pricing');
+                onClose();
+              }}
+            >
+              <Sparkles className="size-4 mr-2 text-primary" />
+              <span>Plans & Pro Licensing Matrix</span>
+            </CommandItem>
             <CommandItem
               onSelect={() => {
                 onOpenModal('auth');
