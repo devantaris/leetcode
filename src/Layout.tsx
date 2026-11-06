@@ -13,8 +13,10 @@ import {
   Sun, Moon, Settings, RotateCcw, User,
   CalendarClock, Terminal, Search, Volume2, VolumeX,
   BookOpen, BarChart2, Award, Cloud, Briefcase, Flame,
-  LayoutDashboard, Menu, ArrowUpRight, Zap, Share2, Sparkles, Loader2
+  LayoutDashboard, Menu, ArrowUpRight, Zap, Share2, Sparkles, Loader2,
+  LogOut, LogIn, Shield
 } from 'lucide-react';
+import { AdminService } from './admin/services/adminService';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,14 +34,29 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const {
     importJSON, isOnboarded, userProfile, stats,
-    soundEnabled, toggleSound, authUser, cloudSyncStatus
+    soundEnabled, toggleSound, authUser, cloudSyncStatus, logout
   } = useProgress();
 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (authUser) {
+      AdminService.checkIsAdmin(authUser).then((res) => {
+        if (isMounted) setIsAdmin(res);
+      });
+    } else {
+      setIsAdmin(false);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [authUser]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -130,9 +147,11 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
   if (!isOnboarded) return <OnboardingPage />;
 
-  const displayName = authUser?.displayName || userProfile.name || 'Devansh Kumar';
-  const displayEmail = authUser?.email || (userProfile.name ? `${userProfile.name.toLowerCase().replace(/\s+/g, '')}@placement.io` : 'operator@grindos.dev');
-  const userInitials = displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'OP';
+  const displayName = authUser?.displayName || (userProfile.name && userProfile.name !== 'Operator' && userProfile.name !== 'User' ? userProfile.name : 'Guest User');
+  const displayEmail = authUser?.email || 'Cloud sync offline';
+  const userInitials = authUser
+    ? (displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'OP')
+    : 'GU';
 
   const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col justify-between h-full gap-6">
@@ -489,6 +508,18 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                       <span className="text-[10px] text-muted-foreground font-mono truncate">{displayEmail}</span>
                     </div>
 
+                    {isAdmin && (
+                      <Link
+                        to="/_ops"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-colors text-left mb-1"
+                      >
+                        <Shield className="size-4 text-primary" />
+                        <span className="flex-1">Admin Dashboard</span>
+                        <span className="text-[10px] font-mono opacity-70">/_ops</span>
+                      </Link>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => { openModal('auth'); setUserMenuOpen(false); }}
@@ -576,10 +607,37 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
                     <div className="h-px bg-border/50 my-1" />
 
+                    {authUser ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setUserMenuOpen(false);
+                          await logout();
+                          toast.success('Signed out successfully.');
+                        }}
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors text-left w-full cursor-pointer"
+                      >
+                        <LogOut className="size-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          openModal('auth');
+                          setUserMenuOpen(false);
+                        }}
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 transition-colors text-left w-full cursor-pointer"
+                      >
+                        <LogIn className="size-4" />
+                        <span>Sign In / Create Account</span>
+                      </button>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => { openModal('reset'); setUserMenuOpen(false); }}
-                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors text-left"
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-left"
                     >
                       <RotateCcw className="size-4" />
                       <span>Reset All Data</span>

@@ -35,40 +35,33 @@ export const STORAGE_KEYS = {
 
 export type StorageKeys = typeof STORAGE_KEYS;
 
-// --- Data Migration ---
-// Migrate old 'dsa_' prefixed keys to new 'go_' prefix.
-// Runs once on app load. Safe to call multiple times (idempotent).
-const LEGACY_KEY_MAP: [string, string][] = [
-  ['dsa_progress_v2', STORAGE_KEYS.progress],
-  ['dsa_streak_v2', STORAGE_KEYS.streak],
-  ['dsa_solve_history_v2', STORAGE_KEYS.solveHistory],
-  ['dsa_user_profile_v1', STORAGE_KEYS.userProfile],
-];
+// --- Storage Cleanup ---
+// Purges legacy and local progress keys: GrindOS is strictly cloud-only via Supabase.
 
 export function migrateLegacyStorageKeys(): void {
   try {
     if (typeof window === 'undefined' || !window.localStorage) return;
 
-    for (const [oldKey, newKey] of LEGACY_KEY_MAP) {
-      const oldData = localStorage.getItem(oldKey);
-      const newData = localStorage.getItem(newKey);
+    // Purge legacy and local progress keys: GrindOS is strictly cloud-only via Supabase
+    const keysToPurge = [
+      'dsa_progress_v2',
+      'dsa_streak_v2',
+      'dsa_solve_history_v2',
+      'dsa_user_profile_v1',
+      'dsa_last_date_v2',
+      STORAGE_KEYS.progress,
+      STORAGE_KEYS.solveHistory,
+      STORAGE_KEYS.streak,
+      STORAGE_KEYS.userProfile,
+      STORAGE_KEYS.placements,
+      STORAGE_KEYS.problemNotes,
+      STORAGE_KEYS.flaggedProblems,
+    ];
 
-      // Only migrate if old data exists AND new key is empty
-      // (don't overwrite if user already has new-format data)
-      if (oldData && !newData) {
-        localStorage.setItem(newKey, oldData);
-        console.info(`[GrindOS] Migrated storage: ${oldKey} → ${newKey}`);
-      }
-
-      // Clean up old key after migration (regardless)
-      if (oldData) {
-        localStorage.removeItem(oldKey);
-      }
+    for (const key of keysToPurge) {
+      localStorage.removeItem(key);
     }
-
-    // Also clean up the dead KEY_LAST_DATE that was removed earlier
-    localStorage.removeItem('dsa_last_date_v2');
   } catch (err) {
-    console.warn('[GrindOS] Storage migration safely skipped:', err);
+    console.warn('[GrindOS] Storage purge safely skipped:', err);
   }
 }

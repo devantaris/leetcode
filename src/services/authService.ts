@@ -38,6 +38,11 @@ export class AuthService {
             provider: 'supabase',
           };
           this.notifyListeners();
+        } else {
+          // If Supabase has no active session, ensure local session key is wiped
+          this.currentUser = null;
+          localStorage.removeItem(LOCAL_USER_KEY);
+          this.notifyListeners();
         }
 
         // Keep session synced across OAuth redirects & token refreshes
@@ -55,20 +60,20 @@ export class AuthService {
               isAnonymous: session.user.is_anonymous || false,
               provider: 'supabase',
             };
-          } else if (_event === 'SIGNED_OUT') {
+          } else {
             this.currentUser = null;
             localStorage.removeItem(LOCAL_USER_KEY);
           }
           this.notifyListeners();
         });
 
-        if (this.currentUser) return this.currentUser;
+        return this.currentUser;
       } catch (err) {
         console.warn('[GrindOS Auth] Session restore error:', err);
       }
     }
 
-    // Fallback: check local storage session
+    // Only if Supabase is completely unconfigured, check local storage session fallback
     try {
       const stored = localStorage.getItem(LOCAL_USER_KEY);
       if (stored) {

@@ -203,68 +203,13 @@ function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { d
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.userProfile);
-      return (saved ? normalizeUserProfile(JSON.parse(saved)) : null) || DEFAULT_PROFILE;
-    } catch {
-      return DEFAULT_PROFILE;
-    }
-  });
-
+  // Cloud-only: all progress state starts empty; loaded from Supabase after auth
+  const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const isOnboarded = true;
-
-  const [progress, setProgress] = useState<UserProgressMap>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.progress);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  const [solveHistory, setSolveHistory] = useState<SolveRecordMap>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.solveHistory);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  const [problemNotes, setProblemNotes] = useState<ProblemNoteMap>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.problemNotes);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  const [flaggedProblems, setFlaggedProblems] = useState<ProblemFlagMap>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.flaggedProblems);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.problemNotes, JSON.stringify(problemNotes));
-    } catch (e) {
-      console.warn('Failed to save notes:', e);
-    }
-  }, [problemNotes]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.flaggedProblems, JSON.stringify(flaggedProblems));
-    } catch (e) {
-      console.warn('Failed to save flagged problems:', e);
-    }
-  }, [flaggedProblems]);
+  const [progress, setProgress] = useState<UserProgressMap>({});
+  const [solveHistory, setSolveHistory] = useState<SolveRecordMap>({});
+  const [problemNotes, setProblemNotes] = useState<ProblemNoteMap>({});
+  const [flaggedProblems, setFlaggedProblems] = useState<ProblemFlagMap>({});
 
   // ── Auth & Live Cloud Sync State ───────────────────────────────────────────
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -299,50 +244,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [soundEnabled]);
 
-  // ── Placements & Cohort ──────────────────────────────────────────────────────
-  const [placements, setPlacements] = useState<PlacementRecord[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.placements);
-      if (!saved) return [];
-      const list: PlacementRecord[] = JSON.parse(saved);
-      // Migrate legacy place_ IDs to standard UUIDs
-      let migrated = false;
-      const normalized = list.map((p) => {
-        if (!p.id || !p.id.includes('-') || p.id.length !== 36) {
-          migrated = true;
-          return { ...p, id: generateUUID() };
-        }
-        return p;
-      });
-      if (migrated) {
-        localStorage.setItem(STORAGE_KEYS.placements, JSON.stringify(normalized));
-      }
-      return normalized;
-    } catch {
-      return [];
-    }
-  });
-
-  const [activeCohort, setActiveCohort] = useState<CohortInfo | null>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.activeCohort);
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.placements, JSON.stringify(placements));
-  }, [placements]);
-
-  useEffect(() => {
-    if (activeCohort) {
-      localStorage.setItem(STORAGE_KEYS.activeCohort, JSON.stringify(activeCohort));
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.activeCohort);
-    }
-  }, [activeCohort]);
+  // ── Placements & Cohort (cloud-only; starts empty, loaded on auth) ──────────
+  const [placements, setPlacements] = useState<PlacementRecord[]>([]);
+  const [activeCohort, setActiveCohort] = useState<CohortInfo | null>(null);
 
   const addPlacement = useCallback((rec: Omit<PlacementRecord, 'id'>) => {
     const newRec: PlacementRecord = {
@@ -455,24 +359,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const setStatusFilter = useCallback((filter: 'all' | 'solved' | 'unsolved' | 'review' | 'top150' | 'flagged') => _setStatusFilter(filter), []);
   const setCompanyFilter = useCallback((filter: CompanyTag | 'all') => _setCompanyFilter(filter), []);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(progress));
-  }, [progress]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.solveHistory, JSON.stringify(solveHistory));
-  }, [solveHistory]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.streak, streak.toString());
-  }, [streak]);
-
-  useEffect(() => {
-    if (userProfile !== null) {
-      localStorage.setItem(STORAGE_KEYS.userProfile, JSON.stringify(userProfile));
-    }
-  }, [userProfile]);
-
   // ── Profile Actions ──────────────────────────────────────────────────────────
   const updateProfile = useCallback((profile: UserProfile) => {
     const normalized = normalizeUserProfile(profile) || DEFAULT_PROFILE;
@@ -492,11 +378,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resumeFromDay = useCallback((newStartDate: string) => {
     setUserProfile((prev) => {
       const updated = { ...(prev ?? DEFAULT_PROFILE), startDate: newStartDate };
-      localStorage.setItem(STORAGE_KEYS.userProfile, JSON.stringify(updated));
+      if (authUser && authUser.provider === 'supabase') {
+        CloudSyncService.saveProfile(authUser.id, updated);
+      }
       return updated;
     });
     toast.success('Program date adjusted! Picking up from where you left off 🎯', { id: 'resume-toast' });
-  }, []);
+  }, [authUser]);
 
   // ── Sound ────────────────────────────────────────────────────────────────────
   const toggleSound = useCallback(() => {
@@ -804,34 +692,20 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (user && user.provider === 'supabase') {
         setCloudSyncStatus('syncing');
 
-        // 1. Merge any existing guest/local solves into newly authenticated cloud account
-        try {
-          const rawLocal = localStorage.getItem(STORAGE_KEYS.progress);
-          const rawHist = localStorage.getItem(STORAGE_KEYS.solveHistory);
-          const localProg = rawLocal ? JSON.parse(rawLocal) : {};
-          const localHist = rawHist ? JSON.parse(rawHist) : {};
-
-          if (Object.keys(localProg).length > 0) {
-            await CloudSyncService.mergeLocalProgressToCloud(user.id, localProg, localHist);
-          }
-        } catch {
-          // ignore localStorage parse issues
-        }
-
-        // 2. Authoritative pull from Supabase
+        // Authoritative pull from Supabase (cloud-only: no local merge)
         const pull = await CloudSyncService.pullFromCloud(user.id);
         if (pull.success && pull.data) {
-          if (pull.data.progress && Object.keys(pull.data.progress).length > 0) {
-            setProgress((prev) => ({ ...prev, ...pull.data!.progress }));
+          if (pull.data.progress) {
+            setProgress(pull.data.progress);
           }
-          if (pull.data.solveHistory && Object.keys(pull.data.solveHistory).length > 0) {
-            setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
+          if (pull.data.solveHistory) {
+            setSolveHistory(pull.data.solveHistory);
           }
           if (pull.data.problemNotes) {
-            setProblemNotes((prev) => ({ ...prev, ...pull.data!.problemNotes }));
+            setProblemNotes(pull.data.problemNotes);
           }
           if (pull.data.flaggedProblems) {
-            setFlaggedProblems((prev) => ({ ...prev, ...pull.data!.flaggedProblems }));
+            setFlaggedProblems(pull.data.flaggedProblems);
           }
           if (pull.data.activeCohort) {
             setActiveCohort(pull.data.activeCohort);
@@ -856,14 +730,23 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setCloudSyncStatus('synced');
         }
       } else {
+        // User signed out — wipe all progress state
+        setProgress({});
+        setSolveHistory({});
+        setProblemNotes({});
+        setFlaggedProblems({});
+        setUserProfile(DEFAULT_PROFILE);
+        setPlacements([]);
+        setActiveCohort(null);
         setCloudSyncStatus('offline');
+        setLastCloudSync(null);
       }
     };
 
     AuthService.init().then(handleUserSync);
 
     const unsubscribe = AuthService.subscribe((u) => {
-      if (!unmounted) setAuthUser(u);
+      if (!unmounted) handleUserSync(u);
     });
 
     return () => {
@@ -881,15 +764,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     setAuthUser(res.user);
     if (res.user && res.user.provider === 'supabase') {
-      // 1. Merge local solves
-      await CloudSyncService.mergeLocalProgressToCloud(res.user.id, progress, solveHistory);
-      // 2. Pull authoritative cloud state
+      // Pull authoritative cloud state (cloud-only: no local merge)
       const pull = await CloudSyncService.pullFromCloud(res.user.id);
       if (pull.success && pull.data) {
-        if (pull.data.progress) setProgress((prev) => ({ ...prev, ...pull.data!.progress }));
-        if (pull.data.solveHistory) setSolveHistory((prev) => ({ ...prev, ...pull.data!.solveHistory }));
-        if (pull.data.problemNotes) setProblemNotes((prev) => ({ ...prev, ...pull.data!.problemNotes }));
-        if (pull.data.flaggedProblems) setFlaggedProblems((prev) => ({ ...prev, ...pull.data!.flaggedProblems }));
+        if (pull.data.progress) setProgress(pull.data.progress);
+        if (pull.data.solveHistory) setSolveHistory(pull.data.solveHistory);
+        if (pull.data.problemNotes) setProblemNotes(pull.data.problemNotes);
+        if (pull.data.flaggedProblems) setFlaggedProblems(pull.data.flaggedProblems);
         if (pull.data.activeCohort) setActiveCohort(pull.data.activeCohort);
         if (pull.data.placements) setPlacements(pull.data.placements);
         if (pull.data.userProfile) setUserProfile(pull.data.userProfile);
@@ -898,7 +779,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setLastCloudSync(new Date());
     }
     return { success: true };
-  }, [progress, solveHistory]);
+  }, []);
 
   const signup = useCallback(async (email: string, pass: string, name: string) => {
     setCloudSyncStatus('syncing');
@@ -938,8 +819,30 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const logout = useCallback(async () => {
     await AuthService.signOut();
+    // Clear all progress state — no localStorage, cloud-only
     setAuthUser(null);
+    setProgress({});
+    setSolveHistory({});
+    setProblemNotes({});
+    setFlaggedProblems({});
+    setUserProfile(DEFAULT_PROFILE);
+    setPlacements([]);
+    setActiveCohort(null);
     setCloudSyncStatus('offline');
+    setLastCloudSync(null);
+    // Clear any stale localStorage progress keys from migration
+    try {
+      localStorage.removeItem(STORAGE_KEYS.progress);
+      localStorage.removeItem(STORAGE_KEYS.solveHistory);
+      localStorage.removeItem(STORAGE_KEYS.streak);
+      localStorage.removeItem(STORAGE_KEYS.userProfile);
+      localStorage.removeItem(STORAGE_KEYS.placements);
+      localStorage.removeItem(STORAGE_KEYS.activeCohort);
+      localStorage.removeItem(STORAGE_KEYS.problemNotes);
+      localStorage.removeItem(STORAGE_KEYS.flaggedProblems);
+    } catch {
+      // ignore storage errors
+    }
   }, []);
 
   const triggerCloudSync = useCallback(async (): Promise<boolean> => {
