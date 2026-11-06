@@ -37,6 +37,15 @@ describe('AdminService & Security Guarding', () => {
     };
     expect(await AdminService.checkIsAdmin(adminUser)).toBe(true);
 
+    const devanshUser: AuthUser = {
+      id: 'founder-devansh',
+      email: 'email2devanshkr@gmail.com',
+      displayName: 'Devansh Kumar',
+      isAnonymous: false,
+      provider: 'supabase',
+    };
+    expect(await AdminService.checkIsAdmin(devanshUser)).toBe(true);
+
     const founderUser: AuthUser = {
       id: 'founder-002',
       email: 'devantaris@gmail.com',
