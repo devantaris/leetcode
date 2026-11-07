@@ -108,6 +108,54 @@ export const AdminBroadcastPage: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Quick Template Presets */}
+              <div className="flex flex-col gap-1.5 mb-3 pb-3 border-b border-border/50">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-semibold">
+                  Quick Presets
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTitle('🔥 GrindOS Pro Lifetime License Now Live');
+                      setMessage('Unlock top tech company tags, private study cohorts, and advanced placement readiness scoring.');
+                      setCategory('pricing');
+                      setCtaLabel('View Pro License');
+                      setCtaUrl('/dashboard');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-md border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
+                  >
+                    🔥 Pro Beta
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTitle('⚡ 140-Day Mastery Plan Update');
+                      setMessage('New top 150 benchmark problems and company tagging now available.');
+                      setCategory('feature');
+                      setCtaLabel('Explore Syllabus');
+                      setCtaUrl('/curriculum');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-md border border-border bg-muted/60 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    ⚡ Milestone
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTitle('🛠️ Cloud Infrastructure Notice');
+                      setMessage('Routine cloud synchronization upgrade in progress. Your local solve state is safe.');
+                      setCategory('maintenance');
+                      setCtaLabel('Backup JSON');
+                      setCtaUrl('/dashboard');
+                    }}
+                    className="text-[10px] px-2 py-0.5 rounded-md border border-border bg-muted/60 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    🛠️ Maintenance
+                  </button>
+                </div>
+              </div>
+
               <form onSubmit={handleCreate} className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-semibold text-foreground">Headline Title</label>
