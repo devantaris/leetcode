@@ -4,7 +4,7 @@ import { useLeaderboard } from '../hooks/useLeaderboard';
 import { CloudSyncService } from '../services/cloudSync';
 import { AuthModal } from '../components/modals/AuthModal';
 import { PricingModal } from '../components/modals/PricingModal';
-import { RefreshCw, Users, Globe, Copy, Check, Eye, EyeOff, LogIn, Cloud } from 'lucide-react';
+import { RefreshCw, Users, Globe, Copy, Check, Eye, EyeOff, LogIn, Cloud, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,8 @@ export const LeaderboardPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'solves' | 'streak' | 'readiness'>('solves');
 
   const {
     entries,
@@ -56,6 +58,27 @@ export const LeaderboardPage: React.FC = () => {
     isSyncing,
     isFetching,
   } = useLeaderboard();
+
+  const filteredEntries = useMemo(() => {
+    let result = [...entries];
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(e =>
+        (e.display_name && e.display_name.toLowerCase().includes(q)) ||
+        (e.tagline && e.tagline.toLowerCase().includes(q))
+      );
+    }
+    result.sort((a, b) => {
+      if (sortBy === 'streak') {
+        return b.streak - a.streak || b.solved_count - a.solved_count;
+      }
+      if (sortBy === 'readiness') {
+        return b.readiness_pct - a.readiness_pct || b.solved_count - a.solved_count;
+      }
+      return b.solved_count - a.solved_count || b.streak - a.streak;
+    });
+    return result;
+  }, [entries, searchQuery, sortBy]);
 
   const handleSync = useCallback(async () => {
     await syncStats({
@@ -417,52 +440,82 @@ export const LeaderboardPage: React.FC = () => {
         )
       ) : (
         /* Global Leaderboard Table */
-        <Card className="shadow-xs border-border/60 overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="text-xs">
-                <TableHead className="w-16">Rank</TableHead>
-                <TableHead>Candidate</TableHead>
-                <TableHead className="text-right">Total Solves</TableHead>
-                <TableHead className="text-right">Streak</TableHead>
-                <TableHead className="text-right">Readiness</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {entries.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-xs text-muted-foreground">
-                    {isFetching ? 'Fetching live entries from cloud...' : 'No public leaderboard entries yet. Be the first to join above!'}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                entries.map((entry, idx) => {
-                  const isMe = entry.user_id === myEntry?.user_id;
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search candidate or role..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 text-xs h-8.5 bg-background"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'solves' | 'streak' | 'readiness')}
+                className="h-8.5 rounded-md border border-input bg-background px-2.5 text-xs text-foreground outline-none focus:border-ring"
+              >
+                <option value="solves">Total Solves</option>
+                <option value="streak">Active Streak</option>
+                <option value="readiness">Readiness %</option>
+              </select>
+            </div>
+          </div>
 
-                  return (
-                    <TableRow key={entry.id || entry.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
-                      <TableCell>{renderRankBadge(idx + 1)}</TableCell>
-                      <TableCell className="font-medium text-foreground">
-                        <div className="flex items-center gap-2">
-                          <span>{entry.is_anonymous ? 'Anonymous Grinder 🎭' : entry.display_name}</span>
-                          {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
-                        </div>
-                        {entry.tagline && !entry.is_anonymous && (
-                          <div className="text-[11px] text-muted-foreground font-normal mt-0.5">
-                            {entry.tagline}
+          <Card className="shadow-xs border-border/60 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="text-xs">
+                  <TableHead className="w-16">Rank</TableHead>
+                  <TableHead>Candidate</TableHead>
+                  <TableHead className="text-right">Total Solves</TableHead>
+                  <TableHead className="text-right">Streak</TableHead>
+                  <TableHead className="text-right">Readiness</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredEntries.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-12 text-xs text-muted-foreground">
+                      {searchQuery.trim()
+                        ? `No candidates match "${searchQuery}".`
+                        : isFetching
+                        ? 'Fetching live entries from cloud...'
+                        : 'No public leaderboard entries yet. Be the first to join above!'}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredEntries.map((entry, idx) => {
+                    const isMe = entry.user_id === myEntry?.user_id;
+
+                    return (
+                      <TableRow key={entry.id || entry.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
+                        <TableCell>{renderRankBadge(idx + 1)}</TableCell>
+                        <TableCell className="font-medium text-foreground">
+                          <div className="flex items-center gap-2">
+                            <span>{entry.is_anonymous ? 'Anonymous Grinder 🎭' : entry.display_name}</span>
+                            {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-emerald-500 font-semibold">{entry.solved_count}</TableCell>
-                      <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {entry.streak}d</TableCell>
-                      <TableCell className="text-right font-mono text-primary font-semibold">{entry.readiness_pct}%</TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+                          {entry.tagline && !entry.is_anonymous && (
+                            <div className="text-[11px] text-muted-foreground font-normal mt-0.5">
+                              {entry.tagline}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-emerald-500 font-semibold">{entry.solved_count}</TableCell>
+                        <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {entry.streak}d</TableCell>
+                        <TableCell className="text-right font-mono text-primary font-semibold">{entry.readiness_pct}%</TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
       )}
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
