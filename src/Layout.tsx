@@ -266,16 +266,27 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
             </div>
           </NavLink>
 
-          <button
-            type="button"
-            onClick={() => { openModal('placements'); onNavigate?.(); }}
-            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-150 text-left"
+          <NavLink
+            to="/tracker"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 ${
+                isActive
+                  ? 'bg-primary/10 text-primary font-semibold relative before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1 before:bg-primary before:rounded-r'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+              }`
+            }
           >
             <div className="flex items-center gap-3">
               <Briefcase className="size-4.5 shrink-0" />
               <span>Applications</span>
             </div>
-          </button>
+            {stats.placementsCount > 0 && (
+              <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 h-4 border-primary/30 text-primary bg-primary/5">
+                {stats.placementsCount}
+              </Badge>
+            )}
+          </NavLink>
         </div>
 
         {/* Section: GENERAL */}
