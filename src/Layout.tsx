@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import { Modals } from './components/Modals';
 import { CommandPalette } from './components/CommandPalette';
 import { OnboardingPage } from './pages/OnboardingPage';
@@ -24,7 +24,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 type Theme = 'dark' | 'light';
-type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'share' | 'pricing' | 'auth' | null;
+type ModalType = 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'share' | 'pricing' | 'auth' | null;
 
 interface LayoutProps {
   onSwitchToOS?: () => void;
@@ -32,6 +32,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
+  const navigate = useNavigate();
   const {
     importJSON, isOnboarded, userProfile, stats,
     soundEnabled, toggleSound, authUser, cloudSyncStatus, logout
@@ -575,7 +576,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
                     <button
                       type="button"
-                      onClick={() => { openModal('placements'); setUserMenuOpen(false); }}
+                      onClick={() => { navigate('/tracker'); setUserMenuOpen(false); }}
                       className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
                     >
                       <Briefcase className="size-4 text-muted-foreground" />
@@ -695,14 +696,17 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
             <BookOpen className="size-4.5" />
             <span>Syllabus</span>
           </NavLink>
-          <button
-            type="button"
-            onClick={() => openModal('placements')}
-            className="flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+          <NavLink
+            to="/tracker"
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-medium transition-all ${
+                isActive ? 'text-primary font-bold bg-primary/10' : 'text-muted-foreground hover:text-foreground'
+              }`
+            }
           >
             <Briefcase className="size-4.5" />
             <span>Pipeline</span>
-          </button>
+          </NavLink>
           <NavLink
             to="/analytics"
             className={({ isActive }) =>

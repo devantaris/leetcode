@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenModal?: (modal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'placements' | 'share' | 'pricing' | 'auth') => void;
+  onOpenModal?: (modal: 'rules' | 'strategy' | 'reset' | 'backup' | 'resume' | 'profile' | 'share' | 'pricing' | 'auth') => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose, onOpenModal }) => {
@@ -214,7 +214,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                onOpenModal('placements');
+                navigate('/tracker');
                 onClose();
               }}
             >
