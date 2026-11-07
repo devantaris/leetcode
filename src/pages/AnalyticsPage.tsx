@@ -9,7 +9,40 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
 export const AnalyticsPage: React.FC = () => {
-  const { stats, progress, dailySolveLog } = useProgress();
+  const { stats, progress, dailySolveLog, userProfile } = useProgress();
+
+  const weeklySolveVelocity = useMemo(() => {
+    let elapsedDays = stats.currentDay;
+    if (userProfile?.startDate) {
+      const start = new Date(userProfile.startDate);
+      const now = new Date();
+      const diffMs = now.getTime() - start.getTime();
+      const diffDays = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1);
+      elapsedDays = diffDays;
+    }
+    return ((stats.solvedCount / Math.max(1, elapsedDays)) * 7).toFixed(1);
+  }, [stats.solvedCount, stats.currentDay, userProfile?.startDate]);
+
+  const recent14DaysData = useMemo(() => {
+    const result = [];
+    const dateMap = new Map<string, number>();
+    dailySolveLog.forEach((g) => {
+      dateMap.set(g.dateStr, g.items.length);
+    });
+
+    const now = new Date();
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const monthDay = dateStr.slice(5); // MM-DD
+      result.push({
+        date: monthDay,
+        Solved: dateMap.get(dateStr) || 0,
+      });
+    }
+    return result;
+  }, [dailySolveLog]);
 
   const { easySolved, easyTotal, medSolved, medTotal, hardSolved, hardTotal, topicDataMap } = useMemo(() => {
     let easySolved = 0, easyTotal = 0;
@@ -132,7 +165,7 @@ export const AnalyticsPage: React.FC = () => {
             <Zap className="size-4 text-primary" />
           </div>
           <div className="text-2xl font-mono font-bold text-foreground tabular-nums mt-1">
-            {((stats.solvedCount / Math.max(1, stats.currentDay)) * 7).toFixed(1)}
+            {weeklySolveVelocity}
             <span className="text-xs font-normal text-muted-foreground"> / wk</span>
           </div>
           <div className="text-[11px] text-muted-foreground mt-1">
@@ -373,10 +406,7 @@ export const AnalyticsPage: React.FC = () => {
               <div className="h-56 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={[...dailySolveLog].reverse().slice(-14).map((g) => ({
-                      date: g.dateStr.slice(5),
-                      Solved: g.items.length,
-                    }))}
+                    data={recent14DaysData}
                     margin={{ top: 5, right: 10, left: -24, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
