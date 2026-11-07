@@ -16,7 +16,12 @@ interface ModalWrapperProps {
 export const ModalWrapper: React.FC<ModalWrapperProps> = ({ isOpen, onClose, title, children }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-xl p-6 max-h-[88vh] overflow-y-auto">
+      <DialogContent
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="sm:max-w-xl p-6 max-h-[88vh] overflow-y-auto"
+      >
         <DialogHeader className="sr-only">
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
