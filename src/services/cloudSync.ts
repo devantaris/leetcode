@@ -29,6 +29,14 @@ export interface CloudDataResponse {
   lastSyncedAt?: string;
 }
 
+function formatDatabaseError(err: { code?: string; message: string } | null, featureName: string): string {
+  if (!err) return 'Operation failed';
+  if (err.code === 'PGRST205' || err.message.toLowerCase().includes('schema cache') || err.message.toLowerCase().includes('could not find the table')) {
+    return `${featureName} is currently initializing on cloud servers. Please check back shortly.`;
+  }
+  return err.message;
+}
+
 export class CloudSyncService {
   private static isSyncing = false;
   private static lastSyncTime: Date | null = null;
@@ -582,7 +590,7 @@ export class CloudSyncService {
         .select('*')
         .single();
 
-      if (cohortErr) return { success: false, error: cohortErr.message };
+      if (cohortErr) return { success: false, error: formatDatabaseError(cohortErr, 'Peer Study Cohorts') };
 
       await sb.from('cohort_members').insert({
         cohort_id: cohort.id,
@@ -621,7 +629,10 @@ export class CloudSyncService {
         .eq('code', cleanCode)
         .maybeSingle();
 
-      if (findErr || !cohort) {
+      if (findErr) {
+        return { success: false, error: formatDatabaseError(findErr, 'Peer Study Cohorts') };
+      }
+      if (!cohort) {
         return { success: false, error: 'Cohort code not found. Check code and try again.' };
       }
 

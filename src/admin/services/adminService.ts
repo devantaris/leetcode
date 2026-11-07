@@ -247,8 +247,13 @@ export class AdminService {
         expires_at: payload.expiresAt || null,
         created_by: payload.createdBy
       });
-      return !error;
-    } catch {
+      if (error) {
+        console.warn('[AdminService] createAnnouncement warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err: unknown) {
+      console.warn('[AdminService] createAnnouncement exception:', err);
       return false;
     }
   }
@@ -265,8 +270,13 @@ export class AdminService {
         .from('system_announcements')
         .update({ is_active: isActive })
         .eq('id', id);
-      return !error;
-    } catch {
+      if (error) {
+        console.warn('[AdminService] createAnnouncement warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err: unknown) {
+      console.warn('[AdminService] createAnnouncement exception:', err);
       return false;
     }
   }
@@ -283,8 +293,13 @@ export class AdminService {
         .from('system_announcements')
         .delete()
         .eq('id', id);
-      return !error;
-    } catch {
+      if (error) {
+        console.warn('[AdminService] createAnnouncement warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err: unknown) {
+      console.warn('[AdminService] createAnnouncement exception:', err);
       return false;
     }
   }
@@ -390,8 +405,13 @@ export class AdminService {
         .from('user_profiles')
         .update({ is_pro: isPro })
         .eq('user_id', userId);
-      return !error;
-    } catch {
+      if (error) {
+        console.warn('[AdminService] createAnnouncement warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err: unknown) {
+      console.warn('[AdminService] createAnnouncement exception:', err);
       return false;
     }
   }
@@ -415,8 +435,13 @@ export class AdminService {
           { onConflict: 'email' }
         );
 
-      return !error;
-    } catch {
+      if (error) {
+        console.warn('[AdminService] createAnnouncement warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err: unknown) {
+      console.warn('[AdminService] createAnnouncement exception:', err);
       return false;
     }
   }
@@ -505,8 +530,13 @@ export class AdminService {
     try {
       await sb.from('cohort_members').delete().eq('cohort_code', code);
       const { error } = await sb.from('cohorts').delete().eq('code', code);
-      return !error;
-    } catch {
+      if (error) {
+        console.warn('[AdminService] createAnnouncement warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err: unknown) {
+      console.warn('[AdminService] createAnnouncement exception:', err);
       return false;
     }
   }
