@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /_ops
+Disallow: /_ops/*
 
 Sitemap: https://leetcode-psi.vercel.app/sitemap.xml
