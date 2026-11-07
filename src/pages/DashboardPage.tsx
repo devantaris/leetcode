@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { CURRICULUM } from '../data/curriculumStats';
 import { TodayMission } from '../components/TodayMission';
@@ -9,11 +9,14 @@ import { StatsAnalyticsDashboard } from '../components/StatsAnalyticsDashboard';
 import { HeatmapGrid } from '../components/HeatmapGrid';
 import { CatchUpQueueCard } from '../components/CatchUpQueueCard';
 import { CheckCircle2, Flame, Target, Award, Plus, Download, ArrowRight, Sparkles, Eye, RotateCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
+import { sounds } from '../utils/audio';
 
 export const DashboardPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     stats,
     exportJSON,
@@ -23,6 +26,17 @@ export const DashboardPage: React.FC = () => {
     loadDemoData,
     clearDemoData
   } = useProgress();
+
+  useEffect(() => {
+    if (searchParams.get('upgraded') === 'true') {
+      sounds.playVictorySound();
+      confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+      toast.success('🎉 Lifetime Pro confirmed! All advanced capabilities unlocked.');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('upgraded');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
   const dailyTarget = userProfile?.dailyQuota || CURRICULUM.dailyTarget;
 

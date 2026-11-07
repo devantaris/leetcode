@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import toast from 'react-hot-toast';
 import { useProgress } from '../../context/ProgressContext';
-import confetti from 'canvas-confetti';
-import { sounds } from '../../utils/audio';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -35,25 +33,11 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
       return;
     }
 
-    const stripeUrl = import.meta.env.VITE_STRIPE_PAYMENT_URL as string | undefined;
-    if (stripeUrl) {
-      toast.success('Redirecting to secure Stripe Checkout... 💳');
-      window.open(stripeUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    // Direct Sandbox / Beta Pro License activation
     setIsUpgrading(true);
     const success = await upgradeToPro();
     setIsUpgrading(false);
-
     if (success) {
-      sounds.playVictorySound();
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
-      toast.success('🎉 Lifetime Pro activated! All advanced capabilities unlocked.');
       onClose();
-    } else {
-      toast.error('Could not activate Pro license. Please check your cloud connection.');
     }
   };
 

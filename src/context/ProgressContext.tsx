@@ -982,24 +982,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return false;
     }
 
-    const sb = getSupabase();
-    if (sb) {
-      try {
-        const { error } = await sb
-          .from('user_profiles')
-          .update({ is_pro: true })
-          .eq('user_id', authUser.id);
-
-        if (error) {
-          console.warn('[ProgressContext] Error saving Pro status to cloud:', error.message);
-        }
-      } catch (err) {
-        console.warn('[ProgressContext] Cloud Pro update exception:', err);
-      }
+    const stripeUrl = import.meta.env.VITE_STRIPE_PAYMENT_URL as string | undefined;
+    if (stripeUrl) {
+      toast.success('Redirecting to secure Stripe Checkout... 💳');
+      window.open(stripeUrl, '_blank', 'noopener,noreferrer');
+      return true;
     }
 
-    setUserProfile((prev) => (prev ? { ...prev, isPro: true } : { ...DEFAULT_PROFILE, isPro: true }));
-    return true;
+    toast.error('Payment checkout is currently being provisioned. Please contact support.');
+    return false;
   }, [authUser]);
 
   const contextValue = useMemo(() => ({
