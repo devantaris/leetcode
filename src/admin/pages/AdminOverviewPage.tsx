@@ -134,17 +134,23 @@ export const AdminOverviewPage: React.FC = () => {
             </p>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 pt-0">
-            {telemetry.companyDistribution.map((item) => (
-              <div key={item.company} className="flex flex-col gap-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-foreground">{item.company}</span>
-                  <span className="font-mono text-muted-foreground">
-                    {item.count} users ({item.percentage}%)
-                  </span>
-                </div>
-                <Progress value={item.percentage} className="h-1.5 w-full bg-muted/60" />
+            {telemetry.companyDistribution.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl">
+                No company preferences recorded yet. They will appear here once candidates complete onboarding.
               </div>
-            ))}
+            ) : (
+              telemetry.companyDistribution.map((item) => (
+                <div key={item.company} className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">{item.company}</span>
+                    <span className="font-mono text-muted-foreground">
+                      {item.count} users ({item.percentage}%)
+                    </span>
+                  </div>
+                  <Progress value={item.percentage} className="h-1.5 w-full bg-muted/60" />
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
@@ -161,14 +167,20 @@ export const AdminOverviewPage: React.FC = () => {
               </p>
             </CardHeader>
             <CardContent className="flex flex-col gap-2.5 pt-0">
-              {telemetry.tierDistribution.map((item) => (
-                <div key={item.tier} className="p-2.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">{item.tier}</span>
-                  <Badge variant="secondary" className="font-mono text-xs">
-                    {item.count} candidates
-                  </Badge>
+              {telemetry.tierDistribution.length === 0 ? (
+                <div className="py-6 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl">
+                  No tier distributions recorded yet.
                 </div>
-              ))}
+              ) : (
+                telemetry.tierDistribution.map((item) => (
+                  <div key={item.tier} className="p-2.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">{item.tier}</span>
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {item.count} candidates
+                    </Badge>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 

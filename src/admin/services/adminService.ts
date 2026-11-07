@@ -74,26 +74,16 @@ export class AdminService {
   public static async fetchTelemetry(): Promise<AdminTelemetry> {
     const sb = getSupabase();
 
-    // Default simulated / local telemetry baseline
+    // Telemetry baseline for empty database state
     const fallbackTelemetry: AdminTelemetry = {
-      totalRegisteredUsers: 142,
-      activeSolvers7d: 89,
-      solvesToday: 47,
-      totalSolvesCount: 2840,
-      offerConversionRate: 8.5,
-      totalCohorts: 12,
-      companyDistribution: [
-        { company: 'Google', count: 54, percentage: 38 },
-        { company: 'Amazon', count: 38, percentage: 27 },
-        { company: 'Meta', count: 27, percentage: 19 },
-        { company: 'Microsoft', count: 14, percentage: 10 },
-        { company: 'Apple', count: 9, percentage: 6 },
-      ],
-      tierDistribution: [
-        { tier: 'Tier-1 / FAANG', count: 86 },
-        { tier: 'Unicorn Startup', count: 34 },
-        { tier: 'Mid-Market', count: 22 },
-      ]
+      totalRegisteredUsers: 0,
+      activeSolvers7d: 0,
+      solvesToday: 0,
+      totalSolvesCount: 0,
+      offerConversionRate: 0,
+      totalCohorts: 0,
+      companyDistribution: [],
+      tierDistribution: []
     };
 
     if (!sb) return fallbackTelemetry;
@@ -106,7 +96,8 @@ export class AdminService {
 
       if (pErr || !profiles) return fallbackTelemetry;
 
-      const totalRegisteredUsers = Math.max(profiles.length, 1);
+      const totalRegisteredUsers = profiles.length;
+      if (totalRegisteredUsers === 0) return fallbackTelemetry;
 
       // Company frequency count
       const companyCounts: Record<string, number> = {};
@@ -157,7 +148,7 @@ export class AdminService {
         .gte('solved_at', sevenDaysAgo.toISOString());
 
       const activeUserSet = new Set((recentProgress || []).map(r => r.user_id));
-      const activeSolvers7d = Math.max(activeUserSet.size, 1);
+      const activeSolvers7d = activeUserSet.size;
 
       // 4. Offer conversion rate from placement records
       const { data: placements } = await sb
@@ -180,8 +171,8 @@ export class AdminService {
         totalSolvesCount: totalSolvesCount || 0,
         offerConversionRate,
         totalCohorts: totalCohorts || 0,
-        companyDistribution: companyDistribution.length > 0 ? companyDistribution : fallbackTelemetry.companyDistribution,
-        tierDistribution: tierDistribution.length > 0 ? tierDistribution : fallbackTelemetry.tierDistribution
+        companyDistribution,
+        tierDistribution
       };
     } catch (err) {
       console.warn('[AdminService] Telemetry fetch error:', err);

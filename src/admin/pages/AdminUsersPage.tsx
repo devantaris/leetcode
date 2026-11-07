@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { AdminService } from '../services/adminService';
 import type { AdminUserRecord } from '../../types';
 import {
-  Users, Search, Edit2, Check, Sparkles, Building2, Flame
+  Users, Search, Edit2, Check, Sparkles, Building2, Flame,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,8 @@ export const AdminUsersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [moderatingId, setModeratingId] = useState<string | null>(null);
   const [moderatedName, setModeratedName] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
   const loadUsers = async () => {
     setLoading(true);
@@ -60,6 +63,9 @@ export const AdminUsersPage: React.FC = () => {
     );
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -102,7 +108,7 @@ export const AdminUsersPage: React.FC = () => {
             </div>
           ) : (
             <div className="divide-y divide-border/60">
-              {filteredUsers.map((u) => {
+              {paginatedUsers.map((u) => {
                 const isModerating = moderatingId === u.userId;
 
                 return (
@@ -189,6 +195,40 @@ export const AdminUsersPage: React.FC = () => {
             </div>
           )}
         </CardContent>
+
+        {/* Pagination Bar */}
+        {filteredUsers.length > PAGE_SIZE && (
+          <div className="p-3 border-t border-border/60 bg-muted/10 flex items-center justify-between text-xs text-muted-foreground">
+            <div>
+              Showing <strong className="text-foreground">{(currentPage - 1) * PAGE_SIZE + 1}</strong>–<strong className="text-foreground">{Math.min(currentPage * PAGE_SIZE, filteredUsers.length)}</strong> of <strong className="text-foreground">{filteredUsers.length}</strong> candidates
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="xs"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                className="h-7 gap-1 text-xs"
+              >
+                <ChevronLeft className="size-3" />
+                <span>Prev</span>
+              </Button>
+              <span className="font-mono text-xs px-2">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="xs"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                className="h-7 gap-1 text-xs"
+              >
+                <span>Next</span>
+                <ChevronRight className="size-3" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
