@@ -35,7 +35,8 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const navigate = useNavigate();
   const {
     importJSON, isOnboarded, userProfile, stats,
-    soundEnabled, toggleSound, authUser, cloudSyncStatus, logout
+    soundEnabled, toggleSound, authUser, cloudSyncStatus, logout,
+    updateProfile
   } = useProgress();
 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -89,10 +90,27 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
       document.documentElement.classList.remove('dark');
       document.documentElement.classList.add('light');
     }
-    localStorage.setItem('grindos-theme', theme);
+    try {
+      localStorage.setItem('grindos-theme', theme);
+    } catch {
+      // ignore
+    }
   }, [theme]);
 
-  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  // Sync theme from cloud user profile
+  useEffect(() => {
+    if (userProfile?.theme && (userProfile.theme === 'light' || userProfile.theme === 'dark') && userProfile.theme !== theme) {
+      setTheme(userProfile.theme);
+    }
+  }, [userProfile?.theme, theme]);
+
+  const toggleTheme = () => {
+    const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    if (userProfile) {
+      updateProfile({ ...userProfile, theme: nextTheme });
+    }
+  };
 
   // Keyboard shortcuts (Ctrl+K, Esc, ?, Ctrl+M)
   useEffect(() => {

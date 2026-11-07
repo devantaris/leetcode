@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   secondary_skill TEXT DEFAULT 'project',
   daily_target    INTEGER DEFAULT 3,
   is_pro          BOOLEAN NOT NULL DEFAULT FALSE,
+  theme           TEXT DEFAULT 'light',
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );

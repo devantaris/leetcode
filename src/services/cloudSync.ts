@@ -64,6 +64,7 @@ export class CloudSyncService {
           start_date: payload.userProfile.startDate,
           target_date: payload.userProfile.targetDate,
           rest_day: payload.userProfile.restDay,
+          theme: payload.userProfile.theme || 'light',
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }
@@ -491,6 +492,7 @@ export class CloudSyncService {
           target_date: profile.targetDate,
           rest_day: profile.restDay || 'sunday',
           secondary_skill: profile.secondarySkill || 'project',
+          theme: profile.theme || 'light',
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }

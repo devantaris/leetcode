@@ -13,6 +13,7 @@ export interface UserProfile {
   dailyQuota?: number;
   targetTier?: string;
   isPro?: boolean;
+  theme?: 'light' | 'dark';
 }
 
 export const DEFAULT_PROFILE: UserProfile = {
@@ -25,6 +26,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   dailyQuota: 3,
   targetTier: 'tier1',
   isPro: false,
+  theme: 'light',
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,6 +48,7 @@ export function normalizeUserProfile(raw: any): UserProfile | null {
     dailyQuota: (typeof raw.dailyQuota === 'number' && [2, 3, 4].includes(raw.dailyQuota)) ? raw.dailyQuota : 3,
     targetTier: (typeof raw.targetTier === 'string') ? raw.targetTier : 'tier1',
     isPro: Boolean(raw.isPro || raw.is_pro),
+    theme: (raw.theme === 'dark' || raw.theme === 'light') ? raw.theme : 'light',
   };
 }
 
