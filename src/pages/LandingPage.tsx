@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Timer, ArrowRight, ChevronDown, ChevronUp,
   Check, Target, Building2, Briefcase, Users, Shield,
-  Terminal, Sparkles, RefreshCw, LogIn, CreditCard, UserCheck,
-  Star
+  Terminal, Sparkles, RefreshCw, LogIn, CreditCard, UserCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { APP_CONFIG } from '../config/appConfig';
@@ -617,106 +616,72 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF & PLACEMENT OUTCOMES ── */}
+      {/* ── EARLY ACCESS & CURRICULUM ARCHITECTURE ── */}
       <section style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px 64px' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="section-label" style={{ marginBottom: 4 }}>Candidate Outcomes</div>
+          <div className="section-label" style={{ marginBottom: 4 }}>Early Access</div>
           <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-            Proven Results in Tier-1 Hiring Loops
+            Built for Engineers Who Are Serious About Tier-1 Roles
           </h2>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 540, margin: '0 auto' }}>
-            Engineers using GrindOS have cleared interviews at top tech companies worldwide.
+            GrindOS is currently in early access. Be among the first engineers to master the full cloud-synced dual-engine curriculum.
           </p>
         </div>
 
-        {/* Aggregate trust metrics */}
+        {/* Structured curriculum trust metrics */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12,
           marginBottom: 24, textAlign: 'center'
         }}>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>1,400+</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Engineers Enrolled</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>140</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Structured Days</div>
           </div>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-success-text)', fontFamily: 'var(--font-mono)' }}>48,000+</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Problems Mastered</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-success-text)', fontFamily: 'var(--font-mono)' }}>332</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Curated Problems</div>
           </div>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>88%</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Interview Pass Rate</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>20</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Weeks of Structure</div>
           </div>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-warning-text)', fontFamily: 'var(--font-mono)' }}>140 Days</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Structured Journey</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-warning-text)', fontFamily: 'var(--font-mono)' }}>$29</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Lifetime Pro Access</div>
           </div>
         </div>
 
-        {/* Testimonials cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14 }}>
-          {[
-            {
-              quote: 'Went from freezing up on Medium DP to clearing my Google L4 phone screen in Week 14. The 4-factor readiness score showed me exactly where my blind spots were.',
-              name: 'Rahul S.',
-              role: 'Software Engineer',
-              company: 'Google',
-              badge: 'Offer Accepted'
-            },
-            {
-              quote: 'The cohort invite codes let our college placement study squad grind synchronously for 140 days. 5 out of 6 of us converted top tier-1 product offers.',
-              name: 'Aman P.',
-              role: 'SDE-1',
-              company: 'Amazon',
-              badge: 'Offer Accepted'
-            },
-            {
-              quote: 'The dual UI is brilliant. I boot Retro OS at night for distraction-free deep work, then track my live interview pipeline stages in Modern Web by day.',
-              name: 'Elena V.',
-              role: 'Backend Engineer',
-              company: 'Stripe',
-              badge: 'Offer Accepted'
-            }
-          ].map((t, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-default)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: 14
-              }}
+        {/* Early access invitation card */}
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '28px',
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-xs)'
+        }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+            Join the Early Access Cohort
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 480, margin: '0 auto 18px', lineHeight: 1.6 }}>
+            The Free Community tier is fully operational with live Supabase cloud sync. Lifetime Pro access is locked in at $29 for early adopters before public scaling.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="btn btn-primary"
+              style={{ fontSize: 12, padding: '8px 20px', fontWeight: 600 }}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', gap: 2 }}>
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={12} fill="#e8c35a" color="#e8c35a" />
-                    ))}
-                  </div>
-                  <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', padding: '2px 6px', borderRadius: 4, background: 'var(--color-success-bg)', color: 'var(--color-success-text)', border: '1px solid var(--color-success-border)' }}>
-                    {t.badge}
-                  </span>
-                </div>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-              </div>
-
-              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{t.name}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t.role}</div>
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                  {t.company}
-                </div>
-              </div>
-            </div>
-          ))}
+              Start Free • No Credit Card
+            </button>
+            <button
+              onClick={() => setIsPricingModalOpen(true)}
+              className="btn btn-default"
+              style={{ fontSize: 12, padding: '8px 16px', fontWeight: 600 }}
+            >
+              View Plan Details
+            </button>
+          </div>
         </div>
       </section>
 
