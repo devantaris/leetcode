@@ -14,6 +14,15 @@ interface PricingModalProps {
 export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
   const { isPro, upgradeToPro, authUser } = useProgress();
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isOnWaitlist, setIsOnWaitlist] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('grindos_pro_waitlist') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const hasStripe = Boolean(import.meta.env.VITE_STRIPE_PAYMENT_URL);
 
   const handleSelectPlan = async (tier: string) => {
     if (tier === 'free') {
@@ -29,7 +38,22 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
     }
 
     if (!authUser) {
-      toast.error('Please sign in or create an account first to link your Pro license.');
+      toast.error(hasStripe 
+        ? 'Please sign in or create an account first to link your Pro license.'
+        : 'Please sign in first to secure your priority waitlist position.'
+      );
+      return;
+    }
+
+    if (!hasStripe) {
+      // Early-access priority waitlist registration
+      try {
+        localStorage.setItem('grindos_pro_waitlist', 'true');
+      } catch {
+        // ignore
+      }
+      setIsOnWaitlist(true);
+      toast.success(`🎉 Priority waitlist confirmed for ${authUser.email}! Pro access opens shortly.`, { duration: 5000 });
       return;
     }
 
@@ -105,8 +129,10 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
           {/* Card 2: Pro Lifetime (Featured) */}
           <div className="p-5 rounded-2xl border-2 border-primary bg-primary/5 flex flex-col justify-between gap-5 relative shadow-md">
             <div className="absolute -top-2.5 right-4">
-              <Badge className={`font-mono font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 shadow-xs ${isPro ? 'bg-emerald-600 text-white' : 'bg-primary text-primary-foreground'}`}>
-                {isPro ? 'Active License' : 'Beta Access'}
+              <Badge className={`font-mono font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 shadow-xs ${
+                isPro ? 'bg-emerald-600 text-white' : hasStripe ? 'bg-primary text-primary-foreground' : 'bg-amber-500/90 text-white'
+              }`}>
+                {isPro ? 'Active License' : hasStripe ? 'Early Beta' : 'Waitlist Priority'}
               </Badge>
             </div>
 
@@ -124,7 +150,9 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
                   <span className="text-2xl font-bold font-mono text-foreground">$29</span>
                   <span className="text-xs text-muted-foreground">one-time</span>
                 </div>
-                <div className="text-[11px] text-muted-foreground">Pay once • Lifetime updates</div>
+                <div className="text-[11px] text-muted-foreground">
+                  {hasStripe ? 'Pay once • Lifetime updates' : 'Early access price • Guaranteed lock-in'}
+                </div>
               </div>
 
               <div className="h-px bg-primary/20 my-1" />
@@ -156,6 +184,15 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
                 <Check className="size-3.5" />
                 <span>Active Lifetime Pro Plan</span>
               </Button>
+            ) : !hasStripe && isOnWaitlist ? (
+              <Button
+                size="sm"
+                disabled
+                className="w-full text-xs h-9 font-semibold gap-1.5 bg-amber-500/20 text-amber-500 border border-amber-500/30 opacity-100 cursor-default"
+              >
+                <Check className="size-3.5" />
+                <span>On Priority Pro Waitlist</span>
+              </Button>
             ) : (
               <Button
                 size="sm"
@@ -163,7 +200,13 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
                 disabled={isUpgrading}
                 className="w-full text-xs h-9 font-semibold gap-1.5"
               >
-                <span>{isUpgrading ? 'Activating Pro License...' : 'Activate Pro Access ($29)'}</span>
+                <span>
+                  {isUpgrading 
+                    ? 'Connecting to Checkout...' 
+                    : hasStripe 
+                      ? 'Activate Pro Access ($29)' 
+                      : 'Join Pro Priority Waitlist'}
+                </span>
                 <ArrowRight className="size-3.5" />
               </Button>
             )}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminService } from '../services/adminService';
 import type { AdminUserRecord } from '../../types';
+import { useProgress } from '../../context/ProgressContext';
 import {
   Users, Search, Edit2, Check, Sparkles, Building2, Flame,
   ChevronLeft, ChevronRight, ShieldCheck, UserPlus
@@ -12,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 
 export const AdminUsersPage: React.FC = () => {
+  const { authUser, updateProfile } = useProgress();
   const [users, setUsers] = useState<AdminUserRecord[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -59,10 +61,14 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   const handleTogglePro = async (userId: string, current: boolean) => {
-    const success = await AdminService.toggleUserPro(userId, !current);
+    const nextState = !current;
+    const success = await AdminService.toggleUserPro(userId, nextState);
     if (success) {
-      toast.success(`User Pro status ${!current ? 'granted' : 'revoked'}!`);
-      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, isPro: !current } : u));
+      toast.success(`User Pro status ${nextState ? 'granted' : 'revoked'}!`);
+      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, isPro: nextState } : u));
+      if (authUser?.id === userId) {
+        updateProfile({ isPro: nextState });
+      }
     } else {
       toast.error('Failed to update Pro status.');
     }
