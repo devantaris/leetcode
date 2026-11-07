@@ -2,7 +2,7 @@
 // Synchronizes solve progress, profile, streak, and placements across all devices.
 
 import { getSupabase } from '../config/supabaseClient';
-import type { UserProfile } from '../context/ProgressContext';
+import type { UserProfile } from '../utils/progressHelpers';
 import type { PlacementRecord, UserProgressMap, SolveRecordMap, ProblemNoteMap, ProblemFlagMap, CohortInfo } from '../types';
 import { CURRICULUM } from '../data/curriculumStats';
 

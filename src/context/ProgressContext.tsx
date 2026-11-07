@@ -1068,4 +1068,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
-export { useProgress } from './useProgress';
+export const useProgress = () => {
+  const ctx = React.useContext(ProgressContext);
+  if (!ctx) throw new Error('useProgress must be used within a ProgressProvider');
+  return ctx;
+};
