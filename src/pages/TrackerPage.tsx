@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
+import { NotificationService } from '../services/notificationService';
+
 const STAGES: PlacementStage[] = [
   'Wishlist',
   'Applied',
@@ -29,7 +31,7 @@ const STAGES: PlacementStage[] = [
 type FilterTab = 'all' | 'active' | 'offers' | 'rejected';
 
 export const TrackerPage: React.FC = () => {
-  const { placements, addPlacement, updatePlacement, deletePlacement } = useProgress();
+  const { placements, addPlacement, updatePlacement, deletePlacement, authUser, userProfile } = useProgress();
 
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('Software Engineer');
@@ -74,6 +76,10 @@ export const TrackerPage: React.FC = () => {
       sounds.playVictorySound();
       confetti({ particleCount: 100, spread: 80, origin: { y: 0.55 } });
       toast.success(newStage === 'Offer Accepted 🏆' ? 'Massive congratulations on accepting your offer! 🎉🏆' : 'Huge congratulations! Placement offer logged! 🎉');
+      const targetPlacement = placements.find(p => p.id === id);
+      if (authUser?.email && targetPlacement) {
+        NotificationService.sendOfferCelebration(authUser.email, userProfile.name, targetPlacement.company, targetPlacement.role);
+      }
     }
   };
 
