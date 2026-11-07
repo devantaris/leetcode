@@ -437,6 +437,49 @@ export class AdminService {
   }
 
   /**
+   * Promote an email to administrative access
+   */
+  public static async addAdminUser(email: string, role: 'admin' | 'superadmin' = 'admin'): Promise<boolean> {
+    const sb = getSupabase();
+    if (!sb) return true;
+
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const { error } = await sb
+        .from('admin_users')
+        .upsert(
+          {
+            email: cleanEmail,
+            role,
+          },
+          { onConflict: 'email' }
+        );
+
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Fetch list of current administrator emails
+   */
+  public static async fetchAdminList(): Promise<string[]> {
+    const sb = getSupabase();
+    const defaults = [...DEFAULT_ADMIN_EMAILS];
+    if (!sb) return defaults;
+
+    try {
+      const { data, error } = await sb.from('admin_users').select('email');
+      if (error || !data) return defaults;
+      const dbEmails = data.map(d => d.email).filter(Boolean);
+      return Array.from(new Set([...defaults, ...dbEmails]));
+    } catch {
+      return defaults;
+    }
+  }
+
+  /**
    * Moderate user display name on public leaderboard
    */
   public static async moderateUser(userId: string, cleanDisplayName: string): Promise<boolean> {

@@ -3,7 +3,7 @@ import { AdminService } from '../services/adminService';
 import type { AdminUserRecord } from '../../types';
 import {
   Users, Search, Edit2, Check, Sparkles, Building2, Flame,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, ShieldCheck, UserPlus
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,9 @@ export const AdminUsersPage: React.FC = () => {
   const [moderatingId, setModeratingId] = useState<string | null>(null);
   const [moderatedName, setModeratedName] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [adminEmails, setAdminEmails] = useState<string[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const PAGE_SIZE = 15;
 
   const loadUsers = async () => {
@@ -27,9 +30,33 @@ export const AdminUsersPage: React.FC = () => {
     setLoading(false);
   };
 
+  const loadAdmins = async () => {
+    const list = await AdminService.fetchAdminList();
+    setAdminEmails(list);
+  };
+
   useEffect(() => {
     loadUsers();
+    loadAdmins();
   }, []);
+
+  const handleAddAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminEmail.trim() || !newAdminEmail.includes('@')) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    setIsAddingAdmin(true);
+    const success = await AdminService.addAdminUser(newAdminEmail.trim());
+    setIsAddingAdmin(false);
+    if (success) {
+      toast.success(`Admin privileges granted to ${newAdminEmail.trim()}`);
+      setAdminEmails(prev => Array.from(new Set([...prev, newAdminEmail.trim().toLowerCase()])));
+      setNewAdminEmail('');
+    } else {
+      toast.error('Failed to grant admin privileges.');
+    }
+  };
 
   const handleTogglePro = async (userId: string, current: boolean) => {
     const success = await AdminService.toggleUserPro(userId, !current);
@@ -90,6 +117,38 @@ export const AdminUsersPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Admin Team Management Card */}
+      <Card className="border-border shadow-xs bg-card p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <ShieldCheck className="size-4 text-emerald-500" />
+              <span>Active Administrators ({adminEmails.length})</span>
+            </h3>
+            <div className="flex items-center gap-1.5 flex-wrap mt-2">
+              {adminEmails.map((email) => (
+                <Badge key={email} variant="outline" className="text-[11px] font-mono py-0.5 px-2 border-primary/30 text-primary bg-primary/5">
+                  {email}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <form onSubmit={handleAddAdmin} className="flex items-center gap-2 w-full sm:w-auto">
+            <Input
+              placeholder="operator@company.com"
+              value={newAdminEmail}
+              onChange={(e) => setNewAdminEmail(e.target.value)}
+              className="text-xs h-8 w-full sm:w-56"
+            />
+            <Button type="submit" size="xs" disabled={isAddingAdmin} className="text-xs h-8 gap-1 shrink-0 font-semibold">
+              <UserPlus className="size-3.5" />
+              <span>Grant Admin</span>
+            </Button>
+          </form>
+        </div>
+      </Card>
 
       {/* Users Table / Cards */}
       <Card className="border-border shadow-xs bg-card overflow-hidden">
