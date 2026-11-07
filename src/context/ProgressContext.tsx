@@ -651,7 +651,10 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (parsed.problemNotes) setProblemNotes(parsed.problemNotes);
         if (parsed.flaggedProblems) setFlaggedProblems(parsed.flaggedProblems);
         if (parsed.userProfile && typeof parsed.userProfile === 'object') {
-          setUserProfile(parsed.userProfile);
+          const normalized = normalizeUserProfile(parsed.userProfile);
+          if (normalized) {
+            setUserProfile(normalized);
+          }
         }
         if (Array.isArray(parsed.placements)) {
           setPlacements(parsed.placements);
