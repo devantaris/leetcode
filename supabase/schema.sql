@@ -303,8 +303,7 @@ BEGIN
     OR lower(auth.jwt()->>'email') IN (
       'admin@grindos.dev',
       'founder@grindos.dev',
-      'email2devanshkr@gmail.com',
-      'devantaris@gmail.com'
+      'email2devanshkr@gmail.com'
     )
   );
 END;

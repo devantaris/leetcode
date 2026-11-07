@@ -9,8 +9,7 @@ import type { SystemAnnouncement, AdminTelemetry, AdminUserRecord, CohortInfo } 
 const DEFAULT_ADMIN_EMAILS = [
   'admin@grindos.dev',
   'founder@grindos.dev',
-  'email2devanshkr@gmail.com',
-  'devantaris@gmail.com'
+  'email2devanshkr@gmail.com'
 ];
 
 export class AdminService {

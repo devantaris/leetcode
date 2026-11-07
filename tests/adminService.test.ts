@@ -48,7 +48,7 @@ describe('AdminService & Security Guarding', () => {
 
     const founderUser: AuthUser = {
       id: 'founder-002',
-      email: 'devantaris@gmail.com',
+      email: 'founder@grindos.dev',
       displayName: 'Founder',
       isAnonymous: false,
       provider: 'supabase',
