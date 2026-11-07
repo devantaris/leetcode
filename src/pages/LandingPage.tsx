@@ -123,124 +123,102 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
   const progressPct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary">
       {/* ── TOP NAV ── */}
-      <header className="site-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 'var(--radius-xs)',
-            background: 'var(--text-primary)', color: 'var(--text-inverse)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: 12, fontFamily: 'var(--font-mono)'
-          }}>
+      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="size-7 rounded-lg bg-foreground text-background flex items-center justify-center font-extrabold text-xs font-mono">
             {APP_CONFIG.shortName}
           </div>
           <div>
-            <span style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', display: 'block' }}>
+            <span className="font-bold text-sm tracking-tight block text-foreground">
               {APP_CONFIG.name}
             </span>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            <span className="text-[10px] text-muted-foreground font-mono block">
               Dual-Engine Workstation
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="#curriculum" style={{ fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }} className="hidden sm:inline">
+        <div className="flex items-center gap-3">
+          <a href="#curriculum" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
             Curriculum
           </a>
-          <a href="#compare" style={{ fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }} className="hidden sm:inline">
+          <a href="#compare" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
             Compare
           </a>
-          <a href="#features" style={{ fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }} className="hidden sm:inline">
+          <a href="#features" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
             Features
           </a>
           <button
             onClick={() => setIsPricingModalOpen(true)}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer', padding: 0 }}
-            className="hidden sm:inline hover:underline"
+            className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors cursor-pointer"
           >
             Pricing
           </button>
-          <a href="#faq" style={{ fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }} className="hidden sm:inline">
+          <a href="#faq" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
             FAQ
           </a>
 
           {/* Authentication Action */}
           {authUser ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)' }} className="hidden md:flex">
-              <UserCheck size={14} style={{ color: 'var(--color-success-text)' }} />
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{userProfile.name}</span>
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
+              <UserCheck size={14} className="text-emerald-500" />
+              <span className="font-semibold text-foreground">{userProfile.name}</span>
             </div>
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="btn btn-default"
-              style={{ fontSize: 12, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4 }}
+              className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <LogIn size={12} /> Sign In
+              <LogIn size={12} /> <span>Sign In</span>
             </button>
           )}
 
           {/* Direct interface launching triggers */}
           <button
             onClick={() => handleLaunch('os')}
-            className="btn btn-default"
-            style={{ fontSize: 12, padding: '5px 10px', fontFamily: 'var(--font-mono)' }}
+            className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted font-mono font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             title="Launch in Retro Terminal OS format"
           >
-            <Terminal size={12} /> OS Mode
+            <Terminal size={12} /> <span>OS Mode</span>
           </button>
 
           <button
             onClick={() => handleLaunch('web')}
-            className="btn btn-primary"
-            style={{ fontSize: 12, padding: '5px 12px' }}
+            className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center gap-1.5 hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
             title="Launch in Modern Web format"
           >
-            <Sparkles size={12} /> Modern App
+            <Sparkles size={12} /> <span>Modern App</span>
           </button>
         </div>
       </header>
 
       {/* ── HERO SECTION: DUAL FORK ── */}
-      <section style={{ maxWidth: 1040, margin: '0 auto', padding: '60px 20px 40px', textAlign: 'center' }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '4px 12px', borderRadius: 99,
-          background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-          fontSize: 12, color: 'var(--text-secondary)', marginBottom: 20
-        }}>
-          <span style={{ color: 'var(--color-success-text)', fontWeight: 600 }}>● 100% Shared Database</span>
-          <span style={{ color: 'var(--border-strong)' }}>•</span>
+      <section className="max-w-5xl mx-auto px-5 pt-16 pb-10 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-xs text-muted-foreground mb-5 shadow-xs">
+          <span className="text-emerald-500 font-semibold">● 100% Shared Cloud Database</span>
+          <span className="text-border">•</span>
           <span>Two Complementary Interfaces</span>
-          <span style={{ color: 'var(--border-strong)' }}>•</span>
+          <span className="text-border">•</span>
           <span>Zero Data Silos</span>
         </div>
 
-        <h1 style={{
-          fontSize: 'clamp(32px, 5.2vw, 54px)', fontWeight: 800,
-          letterSpacing: '-0.03em', lineHeight: 1.15, margin: '0 auto 16px',
-          maxWidth: 880, color: 'var(--text-primary)'
-        }}>
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto mb-4 text-foreground">
           One Structured Syllabus.<br />Two Distinct Realities.
         </h1>
 
-        <p style={{
-          fontSize: 'clamp(15px, 2vw, 17px)', color: 'var(--text-secondary)',
-          lineHeight: 1.6, maxWidth: 680, margin: '0 auto 24px'
-        }}>
+        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-6">
           Master {CURRICULUM.totalProblems} curated algorithmic problems across {CURRICULUM.totalWeeks} disciplined weeks.
           Choose between the deep retro immersion of a 90s terminal OS, or the crisp efficiency of a modern engineering dashboard.
         </p>
 
         {/* Primary Conversion Funnel CTA */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+        <div className="flex items-center justify-center gap-3 mb-3.5 flex-wrap">
           {authUser ? (
             <button
               onClick={() => handleLaunch('web')}
-              className="btn btn-primary"
-              style={{ fontSize: 14, fontWeight: 700, padding: '10px 24px', gap: 8, display: 'inline-flex', alignItems: 'center' }}
+              className="text-sm font-bold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
             >
               <span>Go to Dashboard</span>
               <ArrowRight size={14} />
@@ -249,16 +227,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             <>
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="btn btn-primary"
-                style={{ fontSize: 14, fontWeight: 700, padding: '10px 24px', gap: 8, display: 'inline-flex', alignItems: 'center' }}
+                className="text-sm font-bold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
               >
                 <span>Start 140-Day Prep Free</span>
                 <ArrowRight size={14} />
               </button>
               <button
                 onClick={() => setIsPricingModalOpen(true)}
-                className="btn btn-default"
-                style={{ fontSize: 13, padding: '10px 18px', gap: 6, display: 'inline-flex', alignItems: 'center' }}
+                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-foreground flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <CreditCard size={14} />
                 <span>Lifetime Pro ($29)</span>
@@ -266,7 +242,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             </>
           )}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 32, fontFamily: 'var(--font-mono)' }}>
+        <div className="text-[11px] text-muted-foreground mb-8 font-mono">
           ✓ Free Community Tier • ✓ Real-Time Cloud Sync • ✓ No Credit Card Required
         </div>
 
