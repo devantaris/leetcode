@@ -12,6 +12,8 @@ import { CURRICULUM } from '../data/curriculumStats';
 import { sounds } from '../utils/audio';
 import { AuthModal } from '../components/modals/AuthModal';
 import { PricingModal } from '../components/modals/PricingModal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const PHASES = [
   {
@@ -247,60 +249,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
 
         {/* User state resume banner if already has data */}
         {(stats.solvedCount > 0 || isOnboarded) && (
-          <div style={{
-            maxWidth: 720, margin: '0 auto 36px',
-            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)', padding: '14px 20px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            flexWrap: 'wrap', gap: 12, textAlign: 'left'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: 'var(--radius-md)',
-                background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16
-              }}>
+          <div className="max-w-2xl mx-auto mb-9 bg-card border border-border rounded-2xl p-4 sm:p-5 flex items-center justify-between flex-wrap gap-3.5 text-left shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="size-9 rounded-xl bg-muted border border-border flex items-center justify-center text-base">
                 🔥
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                <div className="text-sm font-bold text-foreground">
                   Welcome back, {userProfile.name}!
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                <div className="text-xs text-muted-foreground font-mono mt-0.5">
                   Day {stats.currentDay} / {CURRICULUM.totalDays} • {stats.solvedCount} of {stats.totalProblems} solved ({progressPct}%) {stats.streak > 0 && `• ${stats.streak}d streak`}
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => handleLaunch('os')}
-                className="btn btn-default"
-                style={{ fontSize: 12, padding: '6px 12px', fontFamily: 'var(--font-mono)' }}
+                className="text-xs h-8 font-mono gap-1.5"
               >
-                <Terminal size={12} /> Resume in OS
-              </button>
-              <button
+                <Terminal className="size-3.5" />
+                <span>Resume in OS</span>
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => handleLaunch('web')}
-                className="btn btn-primary"
-                style={{ fontSize: 12, padding: '6px 14px' }}
+                className="text-xs h-8 gap-1.5 font-semibold"
               >
-                Resume in Modern <ArrowRight size={12} />
-              </button>
+                <span>Resume in Modern</span>
+                <ArrowRight className="size-3.5" />
+              </Button>
             </div>
           </div>
         )}
 
         {/* ── THE EXPERIENCE FORK: DUAL INTERFACE CARDS ── */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: 24, textAlign: 'left', marginTop: 16
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mt-4">
           {/* OPTION 1: RETRO TERMINAL OS */}
           <div style={{
             background: '#040805',
             border: '2px solid #1a6b42',
-            borderRadius: 'var(--radius-xl)',
+            borderRadius: '1.5rem',
             padding: '24px',
             display: 'flex',
             flexDirection: 'column',
@@ -388,225 +380,180 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           </div>
 
           {/* OPTION 2: MODERN MINIMALIST WEB */}
-          <div style={{
-            background: 'var(--bg-card)',
-            border: '2px solid var(--border-default)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxShadow: 'var(--shadow-lg)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Modern Badge */}
+          <div className="bg-card border-2 border-border/80 rounded-3xl p-6 flex flex-col justify-between shadow-md hover:border-primary/40 transition-all relative overflow-hidden">
             <div>
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: 16
-              }}>
-                <span style={{
-                  fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                  padding: '2px 8px', borderRadius: 4,
-                  background: 'var(--bg-elevated)', color: 'var(--text-primary)',
-                  border: '1px solid var(--border-strong)'
-                }}>
-                  MODERN DASHBOARD
-                </span>
-                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                  LINEAR • HIGH DENSITY
+              <div className="flex items-center justify-between mb-4">
+                <Badge variant="outline" className="font-mono font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 bg-muted text-foreground border-border">
+                  Modern Dashboard
+                </Badge>
+                <span className="font-mono text-xs text-muted-foreground">
+                  Linear • High Density
                 </span>
               </div>
 
-              <h2 style={{
-                fontSize: 22, fontWeight: 800, color: 'var(--text-primary)',
-                margin: '0 0 8px', letterSpacing: '-0.02em'
-              }}>
+              <h2 className="text-xl font-bold font-sans text-foreground tracking-tight m-0 mb-2">
                 Cadence Pro Web
               </h2>
 
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 20px' }}>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed m-0 mb-5">
                 For engineers who prefer a sleek executive developer dashboard, luminous telemetry charts, GitHub-style heatmaps, and structured Kanban tracking.
               </p>
 
               {/* Modern Card Graphic */}
-              <div style={{
-                background: 'var(--bg-elevated)', border: '1px solid var(--border-default)',
-                borderRadius: 6, padding: '12px 14px', marginBottom: 20,
-                fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.6
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: 6, marginBottom: 8 }}>
-                  <span style={{ fontWeight: 600 }}>Day 14: Sliding Window &amp; Two Pointers</span>
-                  <span style={{ color: 'var(--color-warning-text)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>🔥 4d</span>
+              <div className="bg-muted/40 border border-border/80 rounded-xl p-3.5 mb-5 text-xs text-foreground leading-relaxed">
+                <div className="flex justify-between border-b border-border/60 pb-1.5 mb-2 font-medium">
+                  <span>Day 14: Sliding Window &amp; Two Pointers</span>
+                  <span className="text-amber-500 font-mono font-semibold">🔥 4d</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
-                  <span style={{ color: 'var(--color-success-text)' }}>✓</span>
+                <div className="flex items-center gap-2 text-muted-foreground text-[11px] py-0.5">
+                  <span className="text-emerald-500 font-bold">✓</span>
                   <span>Longest Substring Without Repeating</span>
-                  <span style={{ marginLeft: 'auto', color: 'var(--color-warning-text)', fontWeight: 600 }}>Med</span>
+                  <span className="ml-auto text-amber-500 font-semibold">Med</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}>
-                  <span style={{ opacity: 0.4 }}>○</span>
+                <div className="flex items-center gap-2 text-muted-foreground text-[11px] py-0.5">
+                  <span className="opacity-40">○</span>
                   <span>Minimum Window Substring</span>
-                  <span style={{ marginLeft: 'auto', color: 'var(--color-danger-text)', fontWeight: 600 }}>Hard</span>
+                  <span className="ml-auto text-destructive font-semibold">Hard</span>
                 </div>
               </div>
 
               {/* Feature Points */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+              <div className="flex flex-col gap-2 mb-6">
                 {[
                   'Luminous midnight obsidian interface with Linear/Vercel fidelity',
                   'Recharts analytics & 25-week activity heatmaps',
                   'Placement pipeline Kanban board & interview tracker',
                   'Quick command palette (Ctrl+K) & company track filtering'
                 ].map((feat, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)' }}>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 800 }}>•</span>
+                  <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="text-primary font-bold">•</span>
                     <span>{feat}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <button
+            <Button
+              size="lg"
               onClick={() => handleLaunch('web')}
-              className="btn btn-primary"
-              style={{
-                borderRadius: 6, padding: '12px 18px',
-                fontSize: 13, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 8, cursor: 'pointer'
-              }}
+              className="w-full h-11 text-xs font-semibold gap-2 shadow-xs"
             >
-              <Sparkles size={14} /> Launch Modern Web App
-            </button>
+              <Sparkles className="size-4" />
+              <span>Launch Modern Web App</span>
+            </Button>
           </div>
         </div>
 
         {/* ── 100% SHARED STATE CALLOUT ── */}
-        <div style={{
-          marginTop: 28, padding: '16px 20px', borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexWrap: 'wrap', gap: 14, textAlign: 'left'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <RefreshCw size={20} style={{ color: 'var(--color-success-text)', flexShrink: 0 }} />
+        <div className="mt-7 p-4 sm:p-5 rounded-2xl bg-card border border-border flex items-center justify-between flex-wrap gap-3.5 text-left shadow-xs">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="size-5 text-emerald-500 shrink-0" />
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+              <div className="text-xs sm:text-sm font-bold text-foreground">
                 100% Synchronized Progress &amp; Zero Lock-in
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+              <div className="text-xs text-muted-foreground mt-0.5">
                 Every problem solved, daily streak, and note taken in one interface is immediately reflected in the other. Switch back and forth anytime with 1 click.
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>
+          <div className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
             <span>Dual View</span>
             <span>·</span>
             <span>Single Store</span>
             <span>·</span>
-            <span style={{ color: 'var(--color-success-text)' }}>Cloud-First</span>
+            <span className="text-emerald-500 font-semibold">Cloud-First</span>
           </div>
         </div>
 
         {/* Quick metrics bar */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12,
-          marginTop: 48, paddingTop: 28, borderTop: '1px solid var(--border-default)',
-          textAlign: 'center'
-        }}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-12 pt-7 border-t border-border text-center">
           <div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+            <div className="text-2xl font-bold font-mono text-foreground">
               {CURRICULUM.totalDays}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Curated Days</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Curated Days</div>
           </div>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+            <div className="text-2xl font-bold font-mono text-foreground">
               {CURRICULUM.totalProblems}+
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Problems</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Problems</div>
           </div>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+            <div className="text-2xl font-bold font-mono text-foreground">
               {CURRICULUM.top150Count}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>LeetCode Benchmark</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">LeetCode Benchmark</div>
           </div>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+            <div className="text-2xl font-bold font-mono text-foreground">
               &lt; 50 ms
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Cloud Sync Latency</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Cloud Sync Latency</div>
           </div>
         </div>
       </section>
 
       {/* ── INTERACTIVE DEMO CARD ── */}
-      <section id="demo" style={{ maxWidth: 840, margin: '0 auto', padding: '16px 20px 64px' }}>
-        <div style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-md)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+      <section id="demo" className="max-w-4xl mx-auto px-5 py-4 pb-16">
+        <div className="bg-card border border-border rounded-3xl p-6 shadow-md">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2.5">
             <div>
-              <div className="section-label" style={{ marginBottom: 2 }}>Live Experience Demo</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+              <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+                Live Experience Demo
+              </span>
+              <h3 className="text-base font-bold text-foreground m-0">
                 Day 14: Sliding Window &amp; Two Pointers
-              </div>
+              </h3>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-mono">
                 {solvedDemoCount} / 3 complete
               </span>
-              <div className="progress-track" style={{ width: 80 }}>
+              <div className="h-1.5 w-20 rounded-full bg-muted overflow-hidden">
                 <div
-                  className="progress-fill progress-fill-success"
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                   style={{ width: `${(solvedDemoCount / 3) * 100}%` }}
                 />
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {[
-              { id: 'p1', name: 'Longest Substring Without Repeating Characters', diff: 'Medium', tags: ['Google', 'Meta'], diffColor: 'var(--color-warning-text)' },
-              { id: 'p2', name: 'Minimum Window Substring', diff: 'Hard', tags: ['Amazon', 'Uber'], diffColor: 'var(--color-danger-text)' },
-              { id: 'p3', name: 'Container With Most Water', diff: 'Medium', tags: ['Apple', 'Microsoft'], diffColor: 'var(--color-warning-text)' },
+              { id: 'p1', name: 'Longest Substring Without Repeating Characters', diff: 'Medium', tags: ['Google', 'Meta'], diffColor: 'text-amber-500' },
+              { id: 'p2', name: 'Minimum Window Substring', diff: 'Hard', tags: ['Amazon', 'Uber'], diffColor: 'text-destructive' },
+              { id: 'p3', name: 'Container With Most Water', diff: 'Medium', tags: ['Apple', 'Microsoft'], diffColor: 'text-amber-500' },
             ].map((p) => {
               const isChecked = !!demoSolved[p.id];
               return (
                 <div
                   key={p.id}
                   onClick={() => toggleDemoProblem(p.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 14px', borderRadius: 'var(--radius-md)',
-                    background: isChecked ? 'var(--color-success-bg)' : 'var(--bg-elevated)',
-                    border: `1px solid ${isChecked ? 'var(--color-success-border)' : 'var(--border-default)'}`,
-                    cursor: 'pointer', transition: 'all var(--transition-fast)'
-                  }}
+                  className={`p-3 rounded-xl border flex items-center gap-3 transition-colors cursor-pointer ${
+                    isChecked
+                      ? 'bg-emerald-500/10 border-emerald-500/30'
+                      : 'bg-muted/30 border-border hover:bg-muted/60'
+                  }`}
                 >
-                  <div className={`checkbox-done ${isChecked ? 'checked' : ''}`}>
-                    {isChecked && <Check size={11} style={{ color: '#fff' }} />}
+                  <div className={`size-4.5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
+                    isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-muted-foreground/40 bg-background'
+                  }`}>
+                    {isChecked && <Check className="size-3 text-white" />}
                   </div>
 
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <span style={{
-                      fontSize: 13, fontWeight: 600,
-                      color: isChecked ? 'var(--text-muted)' : 'var(--text-primary)',
-                      textDecoration: isChecked ? 'line-through' : 'none'
-                    }}>
+                  <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                    <span className={`text-xs sm:text-sm font-semibold ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                       {p.name}
                     </span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: p.diffColor }}>{p.diff}</span>
+                    <span className={`text-xs font-semibold ${p.diffColor}`}>{p.diff}</span>
                     {p.tags.map(t => (
-                      <span key={t} className="badge-mono">
+                      <Badge key={t} variant="outline" className="text-[10px] font-mono px-1.5 py-0 bg-background/50">
                         {t}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -617,136 +564,124 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
       </section>
 
       {/* ── EARLY ACCESS & CURRICULUM ARCHITECTURE ── */}
-      <section style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px 64px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="section-label" style={{ marginBottom: 4 }}>Early Access</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+      <section className="max-w-4xl mx-auto px-5 pb-16">
+        <div className="text-center mb-7">
+          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+            Early Access
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 mb-2 font-sans">
             Built for Engineers Who Are Serious About Tier-1 Roles
           </h2>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 540, margin: '0 auto' }}>
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-lg mx-auto m-0 leading-relaxed">
             GrindOS is currently in early access. Be among the first engineers to master the full cloud-synced dual-engine curriculum.
           </p>
         </div>
 
         {/* Structured curriculum trust metrics */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12,
-          marginBottom: 24, textAlign: 'center'
-        }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>140</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Structured Days</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-center">
+          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
+            <div className="text-2xl font-bold font-mono text-foreground">140</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Structured Days</div>
           </div>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-success-text)', fontFamily: 'var(--font-mono)' }}>332</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Curated Problems</div>
+          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
+            <div className="text-2xl font-bold font-mono text-emerald-500">332</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Curated Problems</div>
           </div>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>20</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Weeks of Structure</div>
+          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
+            <div className="text-2xl font-bold font-mono text-foreground">20</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Weeks of Structure</div>
           </div>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: '16px 12px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-warning-text)', fontFamily: 'var(--font-mono)' }}>$29</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Lifetime Pro Access</div>
+          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
+            <div className="text-2xl font-bold font-mono text-amber-500">$29</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Lifetime Pro Access</div>
           </div>
         </div>
 
         {/* Early access invitation card */}
-        <div style={{
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '28px',
-          textAlign: 'center',
-          boxShadow: 'var(--shadow-xs)'
-        }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 text-center shadow-xs">
+          <div className="text-base font-bold text-foreground mb-2">
             Join the Early Access Cohort
           </div>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 480, margin: '0 auto 18px', lineHeight: 1.6 }}>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto m-0 mb-5 leading-relaxed">
             The Free Community tier is fully operational with live Supabase cloud sync. Lifetime Pro access is locked in at $29 for early adopters before public scaling.
           </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <button
+          <div className="flex justify-center gap-2.5 flex-wrap">
+            <Button
+              size="sm"
               onClick={() => setIsAuthModalOpen(true)}
-              className="btn btn-primary"
-              style={{ fontSize: 12, padding: '8px 20px', fontWeight: 600 }}
+              className="text-xs h-9 px-5 font-semibold"
             >
               Start Free • No Credit Card
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setIsPricingModalOpen(true)}
-              className="btn btn-default"
-              style={{ fontSize: 12, padding: '8px 16px', fontWeight: 600 }}
+              className="text-xs h-9 px-4 font-semibold"
             >
               View Plan Details
-            </button>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* ── SIDE-BY-SIDE INTERFACE COMPARISON MATRIX ── */}
-      <section id="compare" style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px 64px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="section-label" style={{ marginBottom: 4 }}>Compare Workstations</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+      <section id="compare" className="max-w-4xl mx-auto px-5 pb-16">
+        <div className="text-center mb-8">
+          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+            Compare Workstations
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
             Choose The Mode That Fits Your Workflow
           </h2>
         </div>
 
-        <div style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-lg)', overflow: 'hidden'
-        }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-default)' }}>
-                <th style={{ padding: '12px 16px', color: 'var(--text-muted)', fontWeight: 600 }}>Feature</th>
-                <th style={{ padding: '12px 16px', color: '#3ddc84', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-                  🖥️ Retro Terminal OS
-                </th>
-                <th style={{ padding: '12px 16px', color: 'var(--text-primary)', fontWeight: 700 }}>
-                  ✨ Modern Web App
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { feature: 'Primary Aesthetic', os: '90s VT220 CRT Phosphor Terminal', web: 'Clean Swiss Monochrome SaaS' },
-                { feature: 'Window Management', os: 'Multi-window draggable desktop', web: 'Streamlined dedicated page views' },
-                { feature: 'Audio Synthesis', os: '8-bit Web Audio chiptune synth', web: 'Crisp minimal modern clicks' },
-                { feature: 'Command Tools', os: 'Interactive CLI Terminal emulator', web: 'Command Palette (Ctrl+K)' },
-                { feature: 'Focus Pomodoro', os: 'Retro CLI timer with arcade breaks', web: 'Persistent status bar timer' },
-                { feature: 'Analytics View', os: 'ASCII metrics console & logs', web: 'Recharts interactive charts & heatmap' },
-                { feature: 'Data & Progress', os: '100% Shared Real-Time State', web: '100% Shared Real-Time State' },
-                { feature: 'Cloud & Device Sync', os: 'Direct Supabase Cloud Sync', web: 'Direct Supabase Cloud Sync' }
-              ].map((row, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--text-primary)' }}>{row.feature}</td>
-                  <td style={{ padding: '12px 16px', color: '#9bb8a5', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{row.os}</td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-secondary)', fontSize: 12 }}>{row.web}</td>
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="bg-muted/40 border-b border-border">
+                  <th className="p-3.5 sm:p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Feature</th>
+                  <th className="p-3.5 sm:p-4 text-xs font-bold text-[#3ddc84] font-mono">
+                    🖥️ Retro Terminal OS
+                  </th>
+                  <th className="p-3.5 sm:p-4 text-xs font-bold text-foreground">
+                    ✨ Modern Web App
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {[
+                  { feature: 'Primary Aesthetic', os: '90s VT220 CRT Phosphor Terminal', web: 'Clean Swiss Monochrome SaaS' },
+                  { feature: 'Window Management', os: 'Multi-window draggable desktop', web: 'Streamlined dedicated page views' },
+                  { feature: 'Audio Synthesis', os: '8-bit Web Audio chiptune synth', web: 'Crisp minimal modern clicks' },
+                  { feature: 'Command Tools', os: 'Interactive CLI Terminal emulator', web: 'Command Palette (Ctrl+K)' },
+                  { feature: 'Focus Pomodoro', os: 'Retro CLI timer with arcade breaks', web: 'Persistent status bar timer' },
+                  { feature: 'Analytics View', os: 'ASCII metrics console & logs', web: 'Recharts interactive charts & heatmap' },
+                  { feature: 'Data & Progress', os: '100% Shared Real-Time State', web: '100% Shared Real-Time State' },
+                  { feature: 'Cloud & Device Sync', os: 'Direct Supabase Cloud Sync', web: 'Direct Supabase Cloud Sync' }
+                ].map((row, idx) => (
+                  <tr key={idx} className="border-b border-border/40 hover:bg-muted/20 transition-colors">
+                    <td className="p-3.5 sm:p-4 font-semibold text-foreground">{row.feature}</td>
+                    <td className="p-3.5 sm:p-4 text-[#9bb8a5] font-mono text-xs">{row.os}</td>
+                    <td className="p-3.5 sm:p-4 text-muted-foreground text-xs">{row.web}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Which Mode Should I Choose? (Decision Guide) */}
-        <div style={{
-          marginTop: 20,
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '24px'
-        }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="mt-5 bg-card border border-border rounded-2xl p-6 shadow-xs">
+          <h3 className="text-sm sm:text-base font-bold text-foreground m-0 mb-4 flex items-center gap-2">
             <span>🧭</span> Which workstation should you start with?
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div style={{
               background: '#040805',
               border: '1px solid #1a6b42',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: '0.75rem',
               padding: '16px',
               display: 'flex',
               flexDirection: 'column',
@@ -766,7 +701,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               <button
                 onClick={() => handleLaunch('os')}
                 style={{
-                  background: '#3ddc84', color: '#000', border: 'none', borderRadius: 4,
+                  background: '#3ddc84', color: '#000', border: 'none', borderRadius: 6,
                   padding: '8px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
                   cursor: 'pointer', textAlign: 'center'
                 }}
@@ -775,119 +710,94 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               </button>
             </div>
 
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-default)',
-              borderRadius: 'var(--radius-md)',
-              padding: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              gap: 12
-            }}>
+            <div className="bg-muted/30 border border-border rounded-xl p-4 flex flex-col justify-between gap-3">
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
+                <div className="text-xs sm:text-sm font-bold text-foreground mb-1.5">
                   Choose Modern Web Dashboard if you:
                 </div>
-                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <ul className="m-0 pl-4 text-xs text-muted-foreground leading-relaxed flex flex-col gap-1 list-disc">
                   <li>Prefer <strong>executive telemetry</strong>: velocity graphs, heatmaps, and readiness dials.</li>
                   <li>Are tracking <strong>active interview rounds &amp; offers</strong> via the Kanban pipeline.</li>
                   <li>Want a mobile/laptop-responsive layout with seamless fast browsing.</li>
                 </ul>
               </div>
-              <button
+              <Button
+                size="sm"
                 onClick={() => handleLaunch('web')}
-                className="btn btn-primary"
-                style={{ padding: '8px 12px', fontSize: 11, fontWeight: 700, textAlign: 'center', justifyContent: 'center' }}
+                className="w-full text-xs h-8 font-semibold"
               >
                 Start in Modern Web →
-              </button>
+              </Button>
             </div>
           </div>
-          <div style={{ marginTop: 14, fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
+          <div className="mt-4 text-xs text-muted-foreground text-center">
             💡 <strong>No lock-in:</strong> You can switch back and forth at any second with 1 click in the top navigation. Your entire progress and notes remain synchronized across both in Supabase cloud.
           </div>
         </div>
       </section>
 
       {/* ── BENTO FEATURES ── */}
-      <section id="features" style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px 64px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="section-label" style={{ marginBottom: 4 }}>System Capabilities</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+      <section id="features" className="max-w-4xl mx-auto px-5 pb-16">
+        <div className="text-center mb-8">
+          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+            System Capabilities
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
             Engineered for Placement Conversion
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {/* Card 1: Placement Readiness Engine */}
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
-          }}>
-            <Target size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Placement Readiness Engine</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
+            <Target className="size-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground m-0">Placement Readiness Engine</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed m-0">
               Calculates your interview odds formula, tracks pace against your target offer deadline, and benchmarks topic mastery across all 25 curriculum categories.
             </p>
           </div>
 
           {/* Card 2: Placement Pipeline */}
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
-          }}>
-            <Briefcase size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Placement Pipeline Tracker</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
+            <Briefcase className="size-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground m-0">Placement Pipeline Tracker</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed m-0">
               Track applications across Wishlist, OA, Technical Rounds, and Offers with compensation metrics and notes.
             </p>
           </div>
 
           {/* Card 3: Company Tagging */}
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
-          }}>
-            <Building2 size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Company-Specific Tracks</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
+            <Building2 className="size-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground m-0">Company-Specific Tracks</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed m-0">
               Filter curriculum problems directly by target companies: Google, Amazon, Microsoft, Meta, Uber, and Apple.
             </p>
           </div>
 
           {/* Card 4: Cohort Competition */}
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
-          }}>
-            <Users size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Campus &amp; Squad Cohorts</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
+            <Users className="size-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground m-0">Campus &amp; Squad Cohorts</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed m-0">
               Create or join private 6-character code cohorts to compare streaks and progress with your college batch or friends.
             </p>
           </div>
 
           {/* Card 5: Cloud Persistence */}
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
-          }}>
-            <Shield size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Enterprise Cloud Persistence</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
+            <Shield className="size-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground m-0">Enterprise Cloud Persistence</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed m-0">
               All progress is synced directly to your secure Supabase cloud database. One-click JSON backup and data exports anytime.
             </p>
           </div>
 
           {/* Card 6: Focus Stopwatch */}
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
-          }}>
-            <Timer size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Deep-Work Practice Timer</h3>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
+            <Timer className="size-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground m-0">Deep-Work Practice Timer</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed m-0">
               Built-in 25m, 45m, and 60m focus blocks that persist across page navigation to enforce timed problem-solving discipline.
             </p>
           </div>
@@ -895,68 +805,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
       </section>
 
       {/* ── CURRICULUM ACCORDION ── */}
-      <section id="curriculum" style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px 64px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div className="section-label" style={{ marginBottom: 4 }}>
+      <section id="curriculum" className="max-w-4xl mx-auto px-5 pb-16">
+        <div className="text-center mb-8">
+          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
             {CURRICULUM.totalWeeks} Weeks · {CURRICULUM.totalDays} Days · {CURRICULUM.totalProblems} Problems
-          </div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
             Structured Algorithmic Syllabus
           </h2>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
           {PHASES.map((phase) => {
             const isOpen = openPhase === phase.id;
             return (
               <div
                 key={phase.id}
-                style={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-lg)', overflow: 'hidden'
-                }}
+                className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs transition-colors"
               >
                 <div
                   onClick={() => setOpenPhase(isOpen ? null : phase.id)}
-                  style={{
-                    padding: '14px 18px', display: 'flex', alignItems: 'center',
-                    justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none'
-                  }}
+                  className="p-3.5 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-muted/30 transition-colors"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span className="badge-neutral" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <div className="flex items-center gap-2.5 sm:gap-3">
+                    <Badge variant="outline" className="font-mono text-xs px-2 py-0.5 bg-muted/50 text-foreground border-border">
                       {phase.weeks}
-                    </span>
+                    </Badge>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <div className="text-xs sm:text-sm font-semibold text-foreground">
                         {phase.title}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{phase.subtitle}</div>
+                      <div className="text-[11px] text-muted-foreground">{phase.subtitle}</div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {phase.problems} problems
                     </span>
-                    {isOpen ? <ChevronUp size={14} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />}
+                    {isOpen ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
                   </div>
                 </div>
 
                 {isOpen && (
-                  <div style={{ padding: '12px 18px 16px', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)' }}>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 10px', lineHeight: 1.5 }}>
+                  <div className="p-4 sm:p-5 border-t border-border/60 bg-muted/20 text-xs">
+                    <p className="text-xs text-muted-foreground m-0 mb-3 leading-relaxed">
                       {phase.description}
                     </p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                    <div className="flex flex-wrap gap-1.5 mb-3">
                       {phase.keyPatterns.map(pattern => (
-                        <span key={pattern} className="badge-mono">
+                        <Badge key={pattern} variant="secondary" className="font-mono text-[10px] px-2 py-0.5">
                           {pattern}
-                        </span>
+                        </Badge>
                       ))}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      <strong>Key Benchmarks:</strong> {phase.sampleProblems.join(' • ')}
+                    <div className="text-[11px] text-muted-foreground">
+                      <strong className="text-foreground">Key Benchmarks:</strong> {phase.sampleProblems.join(' • ')}
                     </div>
                   </div>
                 )}
@@ -967,15 +871,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" style={{ maxWidth: 840, margin: '0 auto', padding: '0 20px 64px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="section-label" style={{ marginBottom: 4 }}>Common Questions</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+      <section id="faq" className="max-w-4xl mx-auto px-5 pb-16">
+        <div className="text-center mb-8">
+          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+            Common Questions
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
             Frequently Asked Questions
           </h2>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="flex flex-col gap-2">
           {[
             {
               q: 'Why are there two different interfaces (Retro OS vs Modern Web)?',
@@ -1002,23 +908,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             return (
               <div
                 key={idx}
-                style={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-md)', overflow: 'hidden'
-                }}
+                className="bg-card border border-border rounded-xl overflow-hidden shadow-xs transition-colors"
               >
                 <div
                   onClick={() => setActiveFaq(isOpen ? null : idx)}
-                  style={{
-                    padding: '12px 16px', display: 'flex', alignItems: 'center',
-                    justifyContent: 'space-between', cursor: 'pointer', fontSize: 13, fontWeight: 600
-                  }}
+                  className="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-semibold text-foreground hover:bg-muted/30 transition-colors"
                 >
                   <span>{item.q}</span>
-                  {isOpen ? <ChevronUp size={13} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={13} style={{ color: 'var(--text-muted)' }} />}
+                  {isOpen ? <ChevronUp className="size-3.5 text-muted-foreground" /> : <ChevronDown className="size-3.5 text-muted-foreground" />}
                 </div>
                 {isOpen && (
-                  <div style={{ padding: '0 16px 14px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  <div className="px-4 pb-3.5 pt-0 text-xs text-muted-foreground leading-relaxed">
                     {item.a}
                   </div>
                 )}
@@ -1029,41 +929,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{
-        borderTop: '1px solid var(--border-default)', padding: '28px 20px',
-        textAlign: 'center', fontSize: 12, color: 'var(--text-muted)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 10, flexWrap: 'wrap' }}>
-          <button onClick={() => handleLaunch('os')} className="btn btn-ghost" style={{ fontSize: 12 }}>
-            <Terminal size={12} /> Retro Terminal OS
-          </button>
-          <button onClick={() => handleLaunch('web')} className="btn btn-ghost" style={{ fontSize: 12 }}>
-            <Sparkles size={12} /> Modern Web App
-          </button>
-          <Link to="/curriculum" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
+      <footer className="border-t border-border py-8 px-5 text-center text-xs text-muted-foreground flex flex-col gap-3">
+        <div className="flex justify-center gap-4 flex-wrap items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleLaunch('os')}
+            className="text-xs h-8 gap-1.5 font-mono text-muted-foreground hover:text-foreground"
+          >
+            <Terminal className="size-3.5" />
+            <span>Retro Terminal OS</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleLaunch('web')}
+            className="text-xs h-8 gap-1.5 font-semibold text-muted-foreground hover:text-foreground"
+          >
+            <Sparkles className="size-3.5" />
+            <span>Modern Web App</span>
+          </Button>
+          <Link to="/curriculum" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Curriculum
           </Link>
-          <Link to="/analytics" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
+          <Link to="/analytics" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Analytics
           </Link>
-          <Link to="/leaderboard" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
+          <Link to="/leaderboard" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Leaderboard
           </Link>
           <button
+            type="button"
             onClick={() => setIsPricingModalOpen(true)}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, padding: 0 }}
-            className="hover:underline"
+            className="text-xs text-muted-foreground hover:text-foreground hover:underline cursor-pointer bg-transparent border-none p-0"
           >
             Pricing &amp; Pro
           </button>
-          <Link to="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
+          <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Terms
           </Link>
-          <Link to="/privacy" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
+          <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Privacy
           </Link>
         </div>
-        <div>
+        <div className="font-mono text-[11px] text-muted-foreground/80">
           {APP_CONFIG.name} • Minimalist Placement Operating System • Dual-Engine Architecture
         </div>
       </footer>
