@@ -1,5 +1,5 @@
 // GrindOS — Stealth Admin & Community Research Service
-// Connects to Supabase admin tables with local offline fallback for testing & local development.
+// Connects to Supabase admin tables with secure cloud verification.
 
 import { getSupabase } from '../../config/supabaseClient';
 import type { AuthUser } from '../../services/authService';
@@ -184,14 +184,7 @@ export class AdminService {
    */
   public static async fetchAnnouncements(): Promise<SystemAnnouncement[]> {
     const sb = getSupabase();
-    if (!sb) {
-      try {
-        const local = localStorage.getItem('grindos_admin_announcements');
-        return local ? JSON.parse(local) : [];
-      } catch {
-        return [];
-      }
-    }
+    if (!sb) return [];
 
     try {
       const { data, error } = await sb
@@ -228,20 +221,7 @@ export class AdminService {
     payload: Omit<SystemAnnouncement, 'id' | 'createdAt'>
   ): Promise<boolean> {
     const sb = getSupabase();
-    if (!sb) {
-      try {
-        const current = await this.fetchAnnouncements();
-        const newRecord: SystemAnnouncement = {
-          ...payload,
-          id: crypto.randomUUID ? crypto.randomUUID() : `local-${Date.now()}`,
-          createdAt: new Date().toISOString()
-        };
-        localStorage.setItem('grindos_admin_announcements', JSON.stringify([newRecord, ...current]));
-        return true;
-      } catch {
-        return false;
-      }
-    }
+    if (!sb) return false;
 
     try {
       const { error } = await sb.from('system_announcements').insert({
@@ -268,16 +248,7 @@ export class AdminService {
    */
   public static async toggleAnnouncement(id: string, isActive: boolean): Promise<boolean> {
     const sb = getSupabase();
-    if (!sb) {
-      try {
-        const current = await this.fetchAnnouncements();
-        const updated = current.map(a => a.id === id ? { ...a, isActive } : a);
-        localStorage.setItem('grindos_admin_announcements', JSON.stringify(updated));
-        return true;
-      } catch {
-        return false;
-      }
-    }
+    if (!sb) return false;
 
     try {
       const { error } = await sb
@@ -295,16 +266,7 @@ export class AdminService {
    */
   public static async deleteAnnouncement(id: string): Promise<boolean> {
     const sb = getSupabase();
-    if (!sb) {
-      try {
-        const current = await this.fetchAnnouncements();
-        const filtered = current.filter(a => a.id !== id);
-        localStorage.setItem('grindos_admin_announcements', JSON.stringify(filtered));
-        return true;
-      } catch {
-        return false;
-      }
-    }
+    if (!sb) return false;
 
     try {
       const { error } = await sb
@@ -322,18 +284,7 @@ export class AdminService {
    */
   public static async fetchPublicActiveAnnouncement(): Promise<SystemAnnouncement | null> {
     const sb = getSupabase();
-    if (!sb) {
-      try {
-        const local = localStorage.getItem('grindos_admin_announcements');
-        if (local) {
-          const list: SystemAnnouncement[] = JSON.parse(local);
-          return list.find(a => a.isActive) || null;
-        }
-        return null;
-      } catch {
-        return null;
-      }
-    }
+    if (!sb) return null;
 
     try {
       const { data, error } = await sb
