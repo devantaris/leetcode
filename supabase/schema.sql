@@ -294,9 +294,18 @@ ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.admin_users
-    WHERE user_id = auth.uid()::text
+  RETURN (
+    EXISTS (
+      SELECT 1 FROM public.admin_users
+      WHERE user_id = auth.uid()::text
+         OR lower(email) = lower(auth.jwt()->>'email')
+    )
+    OR lower(auth.jwt()->>'email') IN (
+      'admin@grindos.dev',
+      'founder@grindos.dev',
+      'email2devanshkr@gmail.com',
+      'devantaris@gmail.com'
+    )
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

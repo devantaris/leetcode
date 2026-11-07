@@ -28,6 +28,22 @@ export class AdminService {
     const allWhitelisted = [...DEFAULT_ADMIN_EMAILS, ...envEmails];
 
     if (allWhitelisted.includes(user.email.toLowerCase())) {
+      const sb = getSupabase();
+      if (sb && user.id) {
+        sb.from('admin_users')
+          .upsert(
+            {
+              user_id: user.id,
+              email: user.email.toLowerCase(),
+              role: 'superadmin',
+            },
+            { onConflict: 'user_id' }
+          )
+          .then(({ error }) => {
+            if (error) console.warn('[AdminService] Auto-provision admin error:', error.message);
+          })
+          .catch(() => {});
+      }
       return true;
     }
 
