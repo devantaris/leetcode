@@ -3,13 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Timer, ArrowRight, ChevronDown, ChevronUp,
   Check, Target, Building2, Briefcase, Users, Shield,
-  Terminal, Sparkles, RefreshCw
+  Terminal, Sparkles, RefreshCw, LogIn, CreditCard, UserCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { APP_CONFIG } from '../config/appConfig';
 import { useProgress } from '../context/ProgressContext';
 import { CURRICULUM } from '../data/curriculumStats';
 import { sounds } from '../utils/audio';
+import { AuthModal } from '../components/modals/AuthModal';
+import { PricingModal } from '../components/modals/PricingModal';
 
 const PHASES = [
   {
@@ -70,7 +72,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
   const navigate = useNavigate();
-  const { isOnboarded, userProfile, stats } = useProgress();
+  const { isOnboarded, userProfile, stats, authUser } = useProgress();
 
   const [demoSolved, setDemoSolved] = useState<Record<string, boolean>>({
     'p1': true,
@@ -80,6 +82,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
 
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [openPhase, setOpenPhase] = useState<number | null>(1);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
   const handleLaunch = (mode: 'os' | 'web') => {
     sounds.playTickSound();
@@ -150,9 +154,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           <a href="#features" style={{ fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }} className="hidden sm:inline">
             Features
           </a>
+          <button
+            onClick={() => setIsPricingModalOpen(true)}
+            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer', padding: 0 }}
+            className="hidden sm:inline hover:underline"
+          >
+            Pricing
+          </button>
           <a href="#faq" style={{ fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }} className="hidden sm:inline">
             FAQ
           </a>
+
+          {/* Authentication Action */}
+          {authUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)' }} className="hidden md:flex">
+              <UserCheck size={14} style={{ color: 'var(--color-success-text)' }} />
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{userProfile.name}</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="btn btn-default"
+              style={{ fontSize: 12, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <LogIn size={12} /> Sign In
+            </button>
+          )}
 
           {/* Direct interface launching triggers */}
           <button
@@ -200,11 +227,47 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
 
         <p style={{
           fontSize: 'clamp(15px, 2vw, 17px)', color: 'var(--text-secondary)',
-          lineHeight: 1.6, maxWidth: 680, margin: '0 auto 28px'
+          lineHeight: 1.6, maxWidth: 680, margin: '0 auto 24px'
         }}>
           Master {CURRICULUM.totalProblems} curated algorithmic problems across {CURRICULUM.totalWeeks} disciplined weeks.
           Choose between the deep retro immersion of a 90s terminal OS, or the crisp efficiency of a modern engineering dashboard.
         </p>
+
+        {/* Primary Conversion Funnel CTA */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+          {authUser ? (
+            <button
+              onClick={() => handleLaunch('web')}
+              className="btn btn-primary"
+              style={{ fontSize: 14, fontWeight: 700, padding: '10px 24px', gap: 8, display: 'inline-flex', alignItems: 'center' }}
+            >
+              <span>Go to Dashboard</span>
+              <ArrowRight size={14} />
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="btn btn-primary"
+                style={{ fontSize: 14, fontWeight: 700, padding: '10px 24px', gap: 8, display: 'inline-flex', alignItems: 'center' }}
+              >
+                <span>Start 140-Day Prep Free</span>
+                <ArrowRight size={14} />
+              </button>
+              <button
+                onClick={() => setIsPricingModalOpen(true)}
+                className="btn btn-default"
+                style={{ fontSize: 13, padding: '10px 18px', gap: 6, display: 'inline-flex', alignItems: 'center' }}
+              >
+                <CreditCard size={14} />
+                <span>Lifetime Pro ($29)</span>
+              </button>
+            </>
+          )}
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 32, fontFamily: 'var(--font-mono)' }}>
+          ✓ Free Community Tier • ✓ Real-Time Cloud Sync • ✓ No Credit Card Required
+        </div>
 
         {/* User state resume banner if already has data */}
         {(stats.solvedCount > 0 || isOnboarded) && (
@@ -863,6 +926,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           <Link to="/leaderboard" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
             Leaderboard
           </Link>
+          <button
+            onClick={() => setIsPricingModalOpen(true)}
+            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, padding: 0 }}
+            className="hover:underline"
+          >
+            Pricing &amp; Pro
+          </button>
           <Link to="/terms" style={{ color: 'var(--text-secondary)', textDecoration: 'none', alignSelf: 'center' }}>
             Terms
           </Link>
@@ -874,6 +944,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           {APP_CONFIG.name} • Minimalist Placement Operating System • Dual-Engine Architecture
         </div>
       </footer>
+
+      {/* Auth & Pricing Modals */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
     </div>
   );
 };
