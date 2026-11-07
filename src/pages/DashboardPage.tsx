@@ -8,13 +8,14 @@ import { Top150Card } from '../components/Top150Card';
 import { StatsAnalyticsDashboard } from '../components/StatsAnalyticsDashboard';
 import { HeatmapGrid } from '../components/HeatmapGrid';
 import { CatchUpQueueCard } from '../components/CatchUpQueueCard';
-import { ArrowUpRight, Plus, Download } from 'lucide-react';
+import { CheckCircle2, Flame, Target, Award, Plus, Download, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 export const DashboardPage: React.FC = () => {
-  const { stats, exportJSON } = useProgress();
+  const { stats, exportJSON, userProfile } = useProgress();
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
+  const dailyTarget = userProfile?.dailyQuota || CURRICULUM.dailyTarget;
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8 w-full">
@@ -52,14 +53,14 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── 4 SUMMARY METRIC TILES (DONEZO STYLE) ── */}
+      {/* ── 4 SUMMARY METRIC TILES ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
         {/* Tile 1: Signature Forest Green Primary Tile */}
         <div className="bg-primary text-primary-foreground rounded-2xl p-5 shadow-xs flex flex-col justify-between min-h-[140px] transition-transform hover:-translate-y-0.5 duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold opacity-90">Total Solved</span>
             <div className="size-7 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-              <ArrowUpRight className="size-4 text-white" />
+              <CheckCircle2 className="size-4 text-white" />
             </div>
           </div>
           <div>
@@ -76,8 +77,8 @@ export const DashboardPage: React.FC = () => {
         <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between min-h-[140px] transition-transform hover:-translate-y-0.5 duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Active Streak</span>
-            <div className="size-7 rounded-full border border-border bg-muted flex items-center justify-center shrink-0">
-              <ArrowUpRight className="size-4 text-muted-foreground" />
+            <div className="size-7 rounded-full border border-border bg-amber-500/10 flex items-center justify-center shrink-0">
+              <Flame className="size-4 text-amber-500" />
             </div>
           </div>
           <div>
@@ -94,13 +95,13 @@ export const DashboardPage: React.FC = () => {
         <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between min-h-[140px] transition-transform hover:-translate-y-0.5 duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Daily Target</span>
-            <div className="size-7 rounded-full border border-border bg-muted flex items-center justify-center shrink-0">
-              <ArrowUpRight className="size-4 text-muted-foreground" />
+            <div className="size-7 rounded-full border border-border bg-primary/10 flex items-center justify-center shrink-0">
+              <Target className="size-4 text-primary" />
             </div>
           </div>
           <div>
             <div className="text-3xl font-bold tracking-tight text-foreground font-sans">
-              {CURRICULUM.dailyTarget}
+              {dailyTarget}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
               Problems required daily
@@ -112,8 +113,8 @@ export const DashboardPage: React.FC = () => {
         <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between min-h-[140px] transition-transform hover:-translate-y-0.5 duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Interview Readiness</span>
-            <div className="size-7 rounded-full border border-border bg-muted flex items-center justify-center shrink-0">
-              <ArrowUpRight className="size-4 text-muted-foreground" />
+            <div className="size-7 rounded-full border border-border bg-primary/10 flex items-center justify-center shrink-0">
+              <Award className="size-4 text-primary" />
             </div>
           </div>
           <div>
@@ -126,6 +127,29 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Day 1 Onboarding Kickoff Prompt if user has zero solves */}
+      {stats.solvedCount === 0 && (
+        <div className="p-4 sm:p-5 rounded-2xl border border-primary/30 bg-primary/5 flex items-center justify-between flex-wrap gap-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+              <Sparkles className="size-4.5" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-foreground">Welcome to Day 1, {userProfile?.name || 'Candidate'}!</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Your 140-day algorithmic preparation sequence is initialized. Start with today&apos;s mission below to begin your solve trajectory.
+              </div>
+            </div>
+          </div>
+          <Link to="/curriculum">
+            <Button size="sm" className="h-8.5 text-xs font-semibold gap-1.5">
+              <span>View Day 1 Mission</span>
+              <ArrowRight className="size-3.5" />
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Dynamic Motivation & Streak Alert */}
       <BrutalityBanner />
