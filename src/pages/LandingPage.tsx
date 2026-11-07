@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { 
   Timer, ArrowRight, ChevronDown, ChevronUp,
   Check, Target, Building2, Briefcase, Users, Shield,
@@ -74,7 +75,8 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
   const navigate = useNavigate();
-  const { isOnboarded, userProfile, stats, authUser } = useProgress();
+  const [searchParams] = useSearchParams();
+  const { isOnboarded, userProfile, stats, authUser, isDemoMode, loadDemoData } = useProgress();
 
   const [demoSolved, setDemoSolved] = useState<Record<string, boolean>>({
     'p1': true,
@@ -87,8 +89,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
+  // Automatically prompt auth modal if user arrived from an auth-guarded route
+  useEffect(() => {
+    if (searchParams.get('auth') === 'required' && !authUser && !isDemoMode) {
+      setIsAuthModalOpen(true);
+      toast('Please sign in or create an account to access GrindOS.', {
+        icon: '🔒',
+        id: 'auth-required-toast',
+      });
+    }
+  }, [searchParams, authUser, isDemoMode]);
+
   const handleLaunch = (mode: 'os' | 'web') => {
     sounds.playTickSound();
+    if (!authUser && !isDemoMode) {
+      setIsAuthModalOpen(true);
+      toast('Please sign in or create an account to access GrindOS.', {
+        icon: '🔒',
+        id: 'auth-launch-toast',
+      });
+      return;
+    }
     if (onSelectMode) {
       onSelectMode(mode);
     } else {
@@ -102,6 +123,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
       } else {
         navigate('/dashboard');
       }
+    }
+  };
+
+  const handleTryDemo = (mode: 'os' | 'web' = 'web') => {
+    sounds.playTickSound();
+    loadDemoData();
+    toast.success('Loaded interactive demo dataset! 🚀');
+    if (mode === 'os') {
+      navigate('/os');
+    } else {
+      navigate('/dashboard');
     }
   };
 
@@ -163,10 +195,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
 
           {/* Authentication Action */}
           {authUser ? (
-            <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
-              <UserCheck size={14} className="text-emerald-500" />
-              <span className="font-semibold text-foreground">{userProfile.name}</span>
-            </div>
+            <button
+              onClick={() => handleLaunch('web')}
+              className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center gap-1.5 hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
+            >
+              <UserCheck size={12} className="text-emerald-400" />
+              <span>Enter App ({userProfile.name})</span>
+              <ArrowRight size={12} />
+            </button>
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
@@ -232,6 +268,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               >
                 <span>Start 140-Day Prep Free</span>
                 <ArrowRight size={14} />
+              </button>
+              <button
+                onClick={() => handleTryDemo('web')}
+                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Preview GrindOS with sample solved problems and telemetry"
+              >
+                <Sparkles size={14} />
+                <span>Explore Interactive Demo</span>
               </button>
               <button
                 onClick={() => setIsPricingModalOpen(true)}
@@ -364,19 +408,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               </div>
             </div>
 
-            <button
-              onClick={() => handleLaunch('os')}
-              style={{
-                background: '#3ddc84', color: '#000',
-                border: '1px solid #3ddc84',
-                borderRadius: 6, padding: '12px 18px',
-                fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-mono)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 8, cursor: 'pointer', transition: 'all 0.15s ease'
-              }}
-            >
-              <Terminal size={14} /> Launch Retro Terminal OS
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+              <button
+                onClick={() => handleLaunch('os')}
+                style={{
+                  background: '#3ddc84', color: '#000',
+                  border: '1px solid #3ddc84',
+                  borderRadius: 6, padding: '12px 18px',
+                  fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-mono)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 8, cursor: 'pointer', transition: 'all 0.15s ease',
+                  flex: 1
+                }}
+              >
+                <Terminal size={14} /> Launch Retro Terminal OS
+              </button>
+              <button
+                onClick={() => handleTryDemo('os')}
+                style={{
+                  background: '#0a1a12', color: '#3ddc84',
+                  border: '1px solid rgba(61, 220, 132, 0.4)',
+                  borderRadius: 6, padding: '12px 14px',
+                  fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 6, cursor: 'pointer', transition: 'all 0.15s ease'
+                }}
+                title="Preview Retro OS in guest demo mode"
+              >
+                Demo OS
+              </button>
+            </div>
           </div>
 
           {/* OPTION 2: MODERN MINIMALIST WEB */}
@@ -433,14 +494,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               </div>
             </div>
 
-            <Button
-              size="lg"
-              onClick={() => handleLaunch('web')}
-              className="w-full h-11 text-xs font-semibold gap-2 shadow-xs"
-            >
-              <Sparkles className="size-4" />
-              <span>Launch Modern Web App</span>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                size="lg"
+                onClick={() => handleLaunch('web')}
+                className="flex-1 h-11 text-xs font-semibold gap-2 shadow-xs cursor-pointer"
+              >
+                <Sparkles className="size-4" />
+                <span>Launch Modern Web App</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleTryDemo('web')}
+                className="h-11 text-xs font-semibold gap-1.5 border-border cursor-pointer"
+                title="Preview Modern Dashboard with sample data"
+              >
+                Explore Demo
+              </Button>
+            </div>
           </div>
         </div>
 

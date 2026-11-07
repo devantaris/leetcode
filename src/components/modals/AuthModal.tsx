@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useProgress } from '../../context/ProgressContext';
 import { Mail, Lock, User, LogIn, UserPlus, Cloud, Shield, RefreshCw, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -34,6 +35,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     signInWithOAuth,
   } = useProgress();
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const [tab, setTab] = useState<AuthTab>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,6 +46,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const handlePostAuthRedirect = () => {
+    const redirectUrl = searchParams.get('redirect');
+    if (redirectUrl) {
+      navigate(redirectUrl);
+    } else if (location.pathname === '/' || location.pathname === '/landing') {
+      navigate('/dashboard');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +70,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         } else {
           setSuccess('Signed in! Your progress is now synced to the cloud. ☁️');
           toast.success('Welcome back!');
-          setTimeout(onClose, 1200);
+          setTimeout(() => {
+            onClose();
+            handlePostAuthRedirect();
+          }, 800);
         }
       } else {
         if (!name.trim()) {
@@ -70,7 +87,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         } else {
           setSuccess('Account created! Your local progress is safely synced to the cloud. 🚀');
           toast.success('Account created successfully!');
-          setTimeout(onClose, 1500);
+          setTimeout(() => {
+            onClose();
+            handlePostAuthRedirect();
+          }, 1000);
         }
       }
     } finally {

@@ -18,9 +18,6 @@ import toast from 'react-hot-toast';
 import { differenceInCalendarDays, parseISO, format, addDays } from 'date-fns';
 import { APP_CONFIG } from '../config/appConfig';
 import { STORAGE_KEYS, migrateLegacyStorageKeys } from '../config/storageKeys';
-
-// Migrate old 'dsa_*' keys to 'go_*' BEFORE any state initialization reads localStorage
-migrateLegacyStorageKeys();
 import { AuthService } from '../services/authService';
 import type { AuthUser } from '../services/authService';
 import { CloudSyncService } from '../services/cloudSync';
@@ -37,6 +34,9 @@ import type { CatchUpItem } from '../utils/progressHelpers';
 export type { UserProfile } from '../utils/progressHelpers';
 export { problemLookupMap } from '../utils/progressHelpers';
 export type { CatchUpItem } from '../utils/progressHelpers';
+
+// Migrate old 'dsa_*' keys to 'go_*' BEFORE any state initialization reads localStorage
+migrateLegacyStorageKeys();
 
 // ─── Solve Log Types ───────────────────────────────────────────────────────────
 export interface DailySolveItem {
@@ -99,6 +99,7 @@ interface ProgressContextType {
   soundEnabled: boolean;
   toggleSound: () => void;
   authUser: AuthUser | null;
+  isAuthLoading: boolean;
   login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, pass: string, name: string) => Promise<{ success: boolean; error?: string }>;
   signInWithMagicLink: (email: string) => Promise<{ success: boolean; error?: string }>;
@@ -218,6 +219,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // ── Auth & Live Cloud Sync State ───────────────────────────────────────────
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
   const [lastCloudSync, setLastCloudSync] = useState<Date | null>(null);
   const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
@@ -754,7 +756,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
 
-    AuthService.init().then(handleUserSync);
+    AuthService.init()
+      .then(handleUserSync)
+      .finally(() => {
+        if (!unmounted) setIsAuthLoading(false);
+      });
 
     const unsubscribe = AuthService.subscribe((u) => {
       if (!unmounted) handleUserSync(u);
@@ -1037,6 +1043,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     soundEnabled,
     toggleSound,
     authUser,
+    isAuthLoading,
     login,
     signup,
     signInWithMagicLink,
@@ -1059,7 +1066,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,
     updatePlacement, deletePlacement, activeCohort, createCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
     importJSON, resetAll, soundEnabled, toggleSound,
-    authUser, login, signup, signInWithMagicLink, signInWithOAuth, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue,
+    authUser, isAuthLoading, login, signup, signInWithMagicLink, signInWithOAuth, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue,
     isPro, upgradeToPro, isDemoMode, loadDemoData, clearDemoData
   ]);
 
