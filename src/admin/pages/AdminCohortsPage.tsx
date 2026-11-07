@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminService } from '../services/adminService';
 import type { CohortInfo } from '../../types';
-import { Users, Copy, Check, RefreshCw } from 'lucide-react';
+import { Users, Copy, Check, RefreshCw, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,19 @@ export const AdminCohortsPage: React.FC = () => {
     setCopiedCode(code);
     toast.success(`Copied invite code: ${code}`);
     setTimeout(() => setCopiedCode(null), 1500);
+  };
+
+  const handleDissolve = async (code: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to dissolve cohort "${name}" (${code})? This will remove all members from the squad.`)) {
+      return;
+    }
+    const success = await AdminService.dissolveCohort(code);
+    if (success) {
+      toast.success(`Cohort "${name}" dissolved.`);
+      setCohorts(prev => prev.filter(c => c.code !== code));
+    } else {
+      toast.error('Failed to dissolve cohort.');
+    }
   };
 
   return (
@@ -72,19 +85,32 @@ export const AdminCohortsPage: React.FC = () => {
                   </Badge>
                 </div>
 
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-muted-foreground">Invite Code:</span>
-                  <span className="font-mono text-xs font-bold text-foreground bg-muted px-2 py-0.5 rounded border border-border/80">
-                    {c.code}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => copyCode(c.code)}
-                    className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
-                    title="Copy Invite Code"
+                <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-border/40">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Invite Code:</span>
+                    <span className="font-mono text-xs font-bold text-foreground bg-muted px-2 py-0.5 rounded border border-border/80">
+                      {c.code}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => copyCode(c.code)}
+                      className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                      title="Copy Invite Code"
+                    >
+                      {copiedCode === c.code ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}
+                    </button>
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => handleDissolve(c.code, c.name)}
+                    className="text-xs text-destructive hover:bg-destructive/10 h-7 px-2 gap-1"
+                    title="Dissolve Cohort"
                   >
-                    {copiedCode === c.code ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}
-                  </button>
+                    <Trash2 className="size-3" />
+                    <span>Dissolve</span>
+                  </Button>
                 </div>
               </div>
             </Card>

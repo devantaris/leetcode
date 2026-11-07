@@ -491,4 +491,20 @@ export class AdminService {
       return [];
     }
   }
+
+  /**
+   * Dissolve / delete a study cohort
+   */
+  public static async dissolveCohort(code: string): Promise<boolean> {
+    const sb = getSupabase();
+    if (!sb) return true;
+
+    try {
+      await sb.from('cohort_members').delete().eq('cohort_code', code);
+      const { error } = await sb.from('cohorts').delete().eq('code', code);
+      return !error;
+    } catch {
+      return false;
+    }
+  }
 }
