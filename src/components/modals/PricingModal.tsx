@@ -33,7 +33,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
             Built for Engineers Landing Tier-1 Roles
           </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            100% offline-friendly software. Keep your data, study in cohorts, and maximize interview velocity.
+            Production cloud-synced software. Keep your data, study in cohorts, and maximize interview velocity.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) =
               <div className="flex flex-col gap-2 text-xs">
                 {[
                   'Complete 140-day curriculum (332 problems)',
-                  'Local-first storage & offline persistence',
+                  'Live Supabase cloud persistence & multi-device sync',
                   'Daily streaks & catch-up backlog queue',
                   'Global leaderboard access',
                   'Pomodoro deep work timer & tactile sounds',

@@ -122,7 +122,7 @@ export const OnboardingPage: React.FC = () => {
                   <div className="flex flex-col gap-2">
                     {[
                       { label: 'Structured Daily Cadence', desc: `${CURRICULUM.dailyTarget} curated problems per practice day with built-in rest.` },
-                      { label: 'Cloud & Offline Persistence', desc: 'Syncs automatically to Supabase with instantaneous offline cache.' },
+                      { label: 'Cloud-First Persistence', desc: 'Syncs automatically to Supabase with instantaneous multi-device updates.' },
                       { label: 'Placement Pipeline Tracker', desc: 'Log applications, interviews, OA results and track conversion.' },
                     ].map((feat) => (
                       <div key={feat.label} className="p-3 bg-muted/40 border border-border/60 rounded-xl">
@@ -378,7 +378,7 @@ export const OnboardingPage: React.FC = () => {
         </AnimatePresence>
 
         <p className="text-center text-[11px] text-muted-foreground mt-4">
-          100% cloud &amp; local sync · Zero data silos
+          100% cloud sync across devices · Zero data silos
         </p>
       </div>
     </div>

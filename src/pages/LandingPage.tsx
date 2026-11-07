@@ -468,7 +468,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             <span>·</span>
             <span>Single Store</span>
             <span>·</span>
-            <span style={{ color: 'var(--color-success-text)' }}>Local-First</span>
+            <span style={{ color: 'var(--color-success-text)' }}>Cloud-First</span>
           </div>
         </div>
 
@@ -498,9 +498,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           </div>
           <div>
             <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-              0 ms
+              &lt; 50 ms
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Offline Latency</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Cloud Sync Latency</div>
           </div>
         </div>
       </section>
@@ -611,7 +611,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                 { feature: 'Focus Pomodoro', os: 'Retro CLI timer with arcade breaks', web: 'Persistent status bar timer' },
                 { feature: 'Analytics View', os: 'ASCII metrics console & logs', web: 'Recharts interactive charts & heatmap' },
                 { feature: 'Data & Progress', os: '100% Shared Real-Time State', web: '100% Shared Real-Time State' },
-                { feature: 'Offline & Cloud Sync', os: 'Local-First + Supabase Sync', web: 'Local-First + Supabase Sync' }
+                { feature: 'Cloud & Device Sync', os: 'Direct Supabase Cloud Sync', web: 'Direct Supabase Cloud Sync' }
               ].map((row, idx) => (
                 <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                   <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--text-primary)' }}>{row.feature}</td>
@@ -682,15 +682,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             </p>
           </div>
 
-          {/* Card 5: Local First */}
+          {/* Card 5: Cloud Persistence */}
           <div style={{
             background: 'var(--bg-card)', border: '1px solid var(--border-default)',
             borderRadius: 'var(--radius-lg)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 8
           }}>
             <Shield size={20} style={{ color: 'var(--text-primary)' }} />
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>100% Offline &amp; Private</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Enterprise Cloud Persistence</h3>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-              All progress is stored directly in your browser. Single-click JSON export and import for seamless backup and device sync.
+              All progress is synced directly to your secure Supabase cloud database. One-click JSON backup and data exports anytime.
             </p>
           </div>
 
@@ -804,8 +804,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
               a: 'In Retro OS, click the "MODERN UI" button in the taskbar or Start Menu. In Modern Web, click the "OS Shell" button in the top navigation bar. You can also return to this landing page at any time.'
             },
             {
-              q: 'Is GrindOS completely free and offline-friendly?',
-              a: 'Yes. GrindOS is 100% open, local-first software. Your data stays in your browser, works completely offline, and includes one-click JSON backup and restore.'
+              q: 'How is my progress stored and synchronized across devices?',
+              a: 'GrindOS uses direct cloud synchronization backed by Supabase. Your solved problems, notes, streaks, and interview pipelines are securely synchronized across any device in real-time, with one-click full JSON export available anytime.'
             },
             {
               q: 'How does the Placement Readiness algorithm work?',
