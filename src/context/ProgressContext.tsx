@@ -220,6 +220,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
   const [lastCloudSync, setLastCloudSync] = useState<Date | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
+
+  const isPro = Boolean(userProfile?.isPro);
 
   const { dailySolveLog, streak } = useMemo(
     () => computeLogAndStreak(solveHistory, userProfile?.restDay || 'sunday'),
@@ -898,10 +901,6 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     return () => clearTimeout(timer);
   }, [authUser, isDemoMode, progress, userProfile, placements, solveHistory, problemNotes, flaggedProblems, streak, stats.solvedCount]);
-
-  const isPro = Boolean(userProfile?.isPro);
-
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
 
   const loadDemoData = useCallback(() => {
     const now = new Date();

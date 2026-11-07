@@ -60,8 +60,8 @@ export function normalizeSupabaseUrl(rawUrl: string): string {
 export function getActiveSupabaseCredentials(): { url: string; key: string; source: 'env' | 'custom' | 'none' } {
   // Purge any defunct URL in browser localStorage
   try {
-    const customUrl = localStorage.getItem(STORAGE_URL_KEY)?.trim();
-    if (customUrl && isDefunctSupabaseUrl(customUrl)) {
+    const storedUrl = localStorage.getItem(STORAGE_URL_KEY)?.trim();
+    if (storedUrl && isDefunctSupabaseUrl(storedUrl)) {
       localStorage.removeItem(STORAGE_URL_KEY);
       localStorage.removeItem(STORAGE_ANON_KEY);
     }
