@@ -16,6 +16,8 @@ const STAGES: PlacementStage[] = [
   'Technical Round 2',
   'Managerial / HR',
   'Offer Received 🎉',
+  'Offer Accepted 🏆',
+  'Offer Declined',
   'Rejected',
 ];
 

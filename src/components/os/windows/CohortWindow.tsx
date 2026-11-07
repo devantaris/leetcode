@@ -35,7 +35,7 @@ export const CohortWindow: React.FC<CohortWindowProps> = ({ onLog, userXP }) => 
     try {
       const rows = await CloudSyncService.fetchLiveLeaderboard();
       if (rows && rows.length > 0) {
-        const mapped: Peer[] = rows.map((r: any) => ({
+        const mapped: Peer[] = rows.map((r: { display_name?: string; solved_count: number; streak: number }) => ({
           handle: r.display_name || 'Anonymous',
           xp: (r.solved_count * 15) + (r.streak * 20),
           streak: r.streak || 0,
