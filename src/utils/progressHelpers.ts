@@ -12,6 +12,7 @@ export interface UserProfile {
   secondarySkill: string;
   dailyQuota?: number;
   targetTier?: string;
+  isPro?: boolean;
 }
 
 export const DEFAULT_PROFILE: UserProfile = {
@@ -23,6 +24,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   secondarySkill: 'project',
   dailyQuota: 3,
   targetTier: 'tier1',
+  isPro: false,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,6 +45,7 @@ export function normalizeUserProfile(raw: any): UserProfile | null {
     secondarySkill: (raw.secondarySkill && typeof raw.secondarySkill === 'string') ? raw.secondarySkill : 'project',
     dailyQuota: (typeof raw.dailyQuota === 'number' && [2, 3, 4].includes(raw.dailyQuota)) ? raw.dailyQuota : 3,
     targetTier: (typeof raw.targetTier === 'string') ? raw.targetTier : 'tier1',
+    isPro: Boolean(raw.isPro || raw.is_pro),
   };
 }
 

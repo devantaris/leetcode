@@ -108,6 +108,8 @@ interface ProgressContextType {
   lastCloudSync: Date | null;
   triggerCloudSync: () => Promise<boolean>;
   catchUpQueue: CatchUpItem[];
+  isPro: boolean;
+  upgradeToPro: () => Promise<boolean>;
 }
 
 export const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -894,6 +896,34 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => clearTimeout(timer);
   }, [authUser, progress, userProfile, placements, solveHistory, problemNotes, flaggedProblems, streak, stats.solvedCount]);
 
+  const isPro = Boolean(userProfile?.isPro);
+
+  const upgradeToPro = useCallback(async (): Promise<boolean> => {
+    if (!authUser) {
+      toast.error('Please sign in first to link your Pro license to your account.');
+      return false;
+    }
+
+    const sb = getSupabase();
+    if (sb) {
+      try {
+        const { error } = await sb
+          .from('user_profiles')
+          .update({ is_pro: true })
+          .eq('user_id', authUser.id);
+
+        if (error) {
+          console.warn('[ProgressContext] Error saving Pro status to cloud:', error.message);
+        }
+      } catch (err) {
+        console.warn('[ProgressContext] Cloud Pro update exception:', err);
+      }
+    }
+
+    setUserProfile((prev) => (prev ? { ...prev, isPro: true } : { ...DEFAULT_PROFILE, isPro: true }));
+    return true;
+  }, [authUser]);
+
   const contextValue = useMemo(() => ({
     progress,
     solveHistory,
@@ -945,6 +975,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     lastCloudSync,
     triggerCloudSync,
     catchUpQueue,
+    isPro,
+    upgradeToPro,
   }), [
     progress, solveHistory, problemNotes, flaggedProblems, setProblemNote, toggleProblemFlag,
     streak, dailySolveLog, stats, userProfile, isOnboarded,
@@ -953,7 +985,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,
     updatePlacement, deletePlacement, activeCohort, createCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
     importJSON, resetAll, soundEnabled, toggleSound,
-    authUser, login, signup, signInWithMagicLink, signInWithOAuth, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue
+    authUser, login, signup, signInWithMagicLink, signInWithOAuth, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue,
+    isPro, upgradeToPro
   ]);
 
   return (

@@ -232,6 +232,7 @@ export class CloudSyncService {
             restDay: profileData.rest_day || 'sunday',
             secondarySkill: profileData.secondary_skill || 'project',
             targetTier: profileData.target_company || 'top_tech',
+            isPro: profileData.is_pro || false,
           }
         : undefined;
 
