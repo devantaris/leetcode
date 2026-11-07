@@ -8,13 +8,21 @@ import { Top150Card } from '../components/Top150Card';
 import { StatsAnalyticsDashboard } from '../components/StatsAnalyticsDashboard';
 import { HeatmapGrid } from '../components/HeatmapGrid';
 import { CatchUpQueueCard } from '../components/CatchUpQueueCard';
-import { CheckCircle2, Flame, Target, Award, Plus, Download, ArrowRight, Sparkles } from 'lucide-react';
+import { CheckCircle2, Flame, Target, Award, Plus, Download, ArrowRight, Sparkles, Eye, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
 
 export const DashboardPage: React.FC = () => {
-  const { stats, exportJSON, userProfile, placements } = useProgress();
+  const {
+    stats,
+    exportJSON,
+    userProfile,
+    placements,
+    isDemoMode,
+    loadDemoData,
+    clearDemoData
+  } = useProgress();
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
   const dailyTarget = userProfile?.dailyQuota || CURRICULUM.dailyTarget;
 
@@ -138,8 +146,29 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Day 1 Onboarding Kickoff Prompt if user has zero solves */}
-      {stats.solvedCount === 0 && (
+      {/* Interactive Demo Mode Active Banner */}
+      {isDemoMode && (
+        <div className="p-3.5 sm:p-4 rounded-xl border border-primary/40 bg-primary/10 flex items-center justify-between flex-wrap gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="size-4 text-primary shrink-0" />
+            <div className="text-xs text-foreground font-medium">
+              <strong className="text-primary font-bold">Interactive Demo Active:</strong> You are exploring simulated candidate trajectory and sample telemetry.
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={clearDemoData}
+            className="text-xs h-7.5 gap-1.5 border-primary/30 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
+          >
+            <RotateCcw className="size-3" />
+            <span>Reset to Clean Slate</span>
+          </Button>
+        </div>
+      )}
+
+      {/* Day 1 Onboarding Kickoff Prompt if user has zero solves and not in demo */}
+      {!isDemoMode && stats.solvedCount === 0 && (
         <div className="p-4 sm:p-5 rounded-2xl border border-primary/30 bg-primary/5 flex items-center justify-between flex-wrap gap-4 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="size-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
@@ -148,16 +177,27 @@ export const DashboardPage: React.FC = () => {
             <div>
               <div className="text-sm font-semibold text-foreground">Welcome to Day 1, {userProfile?.name || 'Candidate'}!</div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Your 140-day algorithmic preparation sequence is initialized. Start with today&apos;s mission below to begin your solve trajectory.
+                Your 140-day algorithmic preparation sequence is initialized. Start with today&apos;s mission or inspect sample telemetry.
               </div>
             </div>
           </div>
-          <Link to="/curriculum">
-            <Button size="sm" className="h-8.5 text-xs font-semibold gap-1.5">
-              <span>View Day 1 Mission</span>
-              <ArrowRight className="size-3.5" />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadDemoData}
+              className="h-8.5 text-xs font-medium gap-1.5 border-primary/40 text-primary hover:bg-primary/10"
+            >
+              <Eye className="size-3.5" />
+              <span>Preview Demo Tour</span>
             </Button>
-          </Link>
+            <Link to="/curriculum">
+              <Button size="sm" className="h-8.5 text-xs font-semibold gap-1.5">
+                <span>View Day 1 Mission</span>
+                <ArrowRight className="size-3.5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
 

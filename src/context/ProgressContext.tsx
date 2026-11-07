@@ -110,6 +110,9 @@ interface ProgressContextType {
   catchUpQueue: CatchUpItem[];
   isPro: boolean;
   upgradeToPro: () => Promise<boolean>;
+  isDemoMode: boolean;
+  loadDemoData: () => void;
+  clearDemoData: () => void;
 }
 
 export const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -873,7 +876,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Debounced auto-sync when solves change
   useEffect(() => {
-    if (!authUser) return;
+    if (!authUser || isDemoMode) return;
     const timer = setTimeout(() => {
       CloudSyncService.pushToCloud({
         userId: authUser.id,
@@ -894,9 +897,84 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, 4000);
 
     return () => clearTimeout(timer);
-  }, [authUser, progress, userProfile, placements, solveHistory, problemNotes, flaggedProblems, streak, stats.solvedCount]);
+  }, [authUser, isDemoMode, progress, userProfile, placements, solveHistory, problemNotes, flaggedProblems, streak, stats.solvedCount]);
 
   const isPro = Boolean(userProfile?.isPro);
+
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
+
+  const loadDemoData = useCallback(() => {
+    const now = new Date();
+    const d0 = now.toISOString();
+    const d1 = new Date(Date.now() - 1 * 86400000).toISOString();
+    const d2 = new Date(Date.now() - 2 * 86400000).toISOString();
+    const d3 = new Date(Date.now() - 3 * 86400000).toISOString();
+    const d4 = new Date(Date.now() - 4 * 86400000).toISOString();
+
+    const sampleProgress: UserProgressMap = {
+      'w1d1p1': true,
+      'w1d1p2': true,
+      'w1d2p1': true,
+      'w1d2p2': true,
+      'w1d3p1': true,
+      'w1d4p1': true,
+      'w1d5p1': true,
+      'w2d1p1': true,
+      'w2d2p1': true,
+      'w2d3p1': true,
+    };
+
+    const sampleHistory: SolveRecordMap = {
+      'w1d1p1': d4,
+      'w1d1p2': d4,
+      'w1d2p1': d3,
+      'w1d2p2': d3,
+      'w1d3p1': d2,
+      'w1d4p1': d2,
+      'w1d5p1': d1,
+      'w2d1p1': d1,
+      'w2d2p1': d0,
+      'w2d3p1': d0,
+    };
+
+    const samplePlacements: PlacementRecord[] = [
+      {
+        id: 'demo-google',
+        company: 'Google',
+        role: 'Software Engineer (L4)',
+        stage: 'Technical Round 1',
+        appliedDate: new Date(Date.now() - 10 * 86400000).toISOString().split('T')[0],
+        compensation: '$180k Base + Stock',
+        notes: 'Round 1 focused on Two Pointers & Monotonic Stack. Next is System Design.'
+      },
+      {
+        id: 'demo-amazon',
+        company: 'Amazon',
+        role: 'SDE-1',
+        stage: 'OA Cleared',
+        appliedDate: new Date(Date.now() - 14 * 86400000).toISOString().split('T')[0],
+        compensation: '$155k Base',
+        notes: 'OA had 2 medium problems on Sliding Window. Passed all test cases.'
+      }
+    ];
+
+    setProgress(sampleProgress);
+    setSolveHistory(sampleHistory);
+    setProblemNotes({ 'w1d1p1': 'Optimal O(N) using HashMap for complement lookup.' });
+    setPlacements(samplePlacements);
+    setIsDemoMode(true);
+    toast.success('Loaded interactive demo telemetry! 🚀');
+  }, []);
+
+  const clearDemoData = useCallback(() => {
+    setProgress({});
+    setSolveHistory({});
+    setProblemNotes({});
+    setFlaggedProblems({});
+    setPlacements([]);
+    setIsDemoMode(false);
+    toast.success('Demo data cleared! Dashboard reset to blank state.');
+  }, []);
 
   const upgradeToPro = useCallback(async (): Promise<boolean> => {
     if (!authUser) {
@@ -977,6 +1055,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     catchUpQueue,
     isPro,
     upgradeToPro,
+    isDemoMode,
+    loadDemoData,
+    clearDemoData,
   }), [
     progress, solveHistory, problemNotes, flaggedProblems, setProblemNote, toggleProblemFlag,
     streak, dailySolveLog, stats, userProfile, isOnboarded,
@@ -986,7 +1067,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     updatePlacement, deletePlacement, activeCohort, createCohort, joinCohort, leaveCohort, exportJSON, exportJSONString,
     importJSON, resetAll, soundEnabled, toggleSound,
     authUser, login, signup, signInWithMagicLink, signInWithOAuth, logout, cloudSyncStatus, lastCloudSync, triggerCloudSync, catchUpQueue,
-    isPro, upgradeToPro
+    isPro, upgradeToPro, isDemoMode, loadDemoData, clearDemoData
   ]);
 
   return (
