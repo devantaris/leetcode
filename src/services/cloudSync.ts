@@ -106,8 +106,12 @@ export class CloudSyncService {
             company: p.company,
             role: p.role,
             stage: p.stage,
+            applied_date: p.appliedDate || new Date().toISOString().split('T')[0],
+            interview_date: p.interviewDate || null,
+            contact_info: p.contactInfo || '',
             compensation: p.compensation || '',
             notes: p.notes || '',
+            updated_at: new Date().toISOString(),
           };
         });
 
@@ -213,6 +217,8 @@ export class CloudSyncService {
         role: row.role,
         stage: row.stage,
         appliedDate: row.applied_date || row.created_at,
+        interviewDate: row.interview_date || undefined,
+        contactInfo: row.contact_info || undefined,
         compensation: row.compensation,
         notes: row.notes,
       }));
@@ -416,6 +422,8 @@ export class CloudSyncService {
         role: placement.role,
         stage: placement.stage,
         applied_date: placement.appliedDate || new Date().toISOString().split('T')[0],
+        interview_date: placement.interviewDate || null,
+        contact_info: placement.contactInfo || '',
         compensation: placement.compensation || '',
         notes: placement.notes || '',
         updated_at: new Date().toISOString(),

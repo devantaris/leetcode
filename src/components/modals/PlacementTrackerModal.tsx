@@ -355,6 +355,7 @@ export const PlacementTrackerModal: React.FC<PlacementTrackerModalProps> = ({ is
                         <Input
                           defaultValue={p.notes || ''}
                           placeholder="Add feedback, topics asked, or next steps..."
+                          onChange={(e) => updatePlacement(p.id, { notes: e.target.value })}
                           onBlur={(e) => updatePlacement(p.id, { notes: e.target.value })}
                           className="text-xs h-7.5 bg-background"
                         />

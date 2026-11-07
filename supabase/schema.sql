@@ -41,11 +41,17 @@ CREATE TABLE IF NOT EXISTS public.placement_records (
   role           TEXT NOT NULL DEFAULT 'Software Engineer',
   stage          TEXT NOT NULL DEFAULT 'Applied',
   applied_date   DATE DEFAULT CURRENT_DATE,
+  interview_date DATE,
+  contact_info   TEXT DEFAULT '',
   compensation   TEXT DEFAULT '',
   notes          TEXT DEFAULT '',
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Idempotent migrations for existing deployments
+ALTER TABLE public.placement_records ADD COLUMN IF NOT EXISTS interview_date DATE;
+ALTER TABLE public.placement_records ADD COLUMN IF NOT EXISTS contact_info TEXT DEFAULT '';
 
 -- 4. LEADERBOARD ENTRIES
 CREATE TABLE IF NOT EXISTS public.leaderboard_entries (
