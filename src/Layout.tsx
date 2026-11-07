@@ -380,9 +380,15 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
 
   return (
     <TooltipProvider delay={200}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-md font-medium text-xs"
+      >
+        Skip to main content
+      </a>
       <div className="min-h-screen flex bg-background text-foreground selection:bg-primary/20 selection:text-primary">
         {/* ── DESKTOP SIDEBAR ── */}
-        <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-card p-5 sticky top-0 h-screen overflow-y-auto">
+        <aside aria-label="Desktop Navigation" className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-card p-5 sticky top-0 h-screen overflow-y-auto">
           <NavContent />
         </aside>
 
@@ -660,13 +666,13 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
           </header>
 
           {/* ── MAIN CONTENT CONTAINER (CENTERED, CLEAN BENTO CANVAS) ── */}
-          <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mb-16 lg:mb-0">
+          <main id="main-content" tabIndex={-1} className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mb-16 lg:mb-0 outline-none">
             <Outlet />
           </main>
         </div>
 
         {/* ── MOBILE BOTTOM NAVIGATION ── */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border flex items-center justify-around h-16 pb-[max(0.25rem,env(safe-area-inset-bottom))] px-1 shadow-lg">
+        <nav aria-label="Mobile Bottom Navigation" className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border flex items-center justify-around h-16 pb-[max(0.25rem,env(safe-area-inset-bottom))] px-1 shadow-lg">
           <NavLink
             to="/dashboard"
             className={({ isActive }) =>
