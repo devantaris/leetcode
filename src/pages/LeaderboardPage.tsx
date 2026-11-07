@@ -3,6 +3,7 @@ import { useProgress } from '../context/ProgressContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { CloudSyncService } from '../services/cloudSync';
 import { AuthModal } from '../components/modals/AuthModal';
+import { PricingModal } from '../components/modals/PricingModal';
 import { RefreshCw, Users, Globe, Copy, Check, Eye, EyeOff, LogIn, Cloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,7 +31,7 @@ interface CohortMemberEntry {
 }
 
 export const LeaderboardPage: React.FC = () => {
-  const { stats, userProfile, activeCohort, createCohort, joinCohort, leaveCohort, authUser } = useProgress();
+  const { stats, userProfile, activeCohort, createCohort, joinCohort, leaveCohort, authUser, isPro } = useProgress();
   const [boardType, setBoardType] = useState<'global' | 'cohort'>('global');
   const [cohortAction, setCohortAction] = useState<'join' | 'create'>('join');
   const [cohortInput, setCohortInput] = useState('');
@@ -40,6 +41,7 @@ export const LeaderboardPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
   const {
     entries,
@@ -91,6 +93,11 @@ export const LeaderboardPage: React.FC = () => {
   const handleCreateCohortSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCohortName.trim()) return;
+    if (!isPro) {
+      setIsPricingModalOpen(true);
+      toast.error('Creating private cohorts is a Pro feature! You can still join existing squads with an invite code.');
+      return;
+    }
     setIsSubmitting(true);
     await createCohort(newCohortName.trim());
     setIsSubmitting(false);
@@ -365,11 +372,16 @@ export const LeaderboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCohortAction('create')}
-                  className={`flex-1 py-1.5 rounded-md font-medium transition-colors ${
+                  className={`flex-1 py-1.5 rounded-md font-medium transition-colors flex items-center justify-center gap-1 ${
                     cohortAction === 'create' ? 'bg-background shadow-xs text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  Create Cohort
+                  <span>Create Cohort</span>
+                  {!isPro && (
+                    <Badge variant="outline" className="text-[9px] py-0 px-1 border-primary/40 text-primary font-mono font-bold leading-none">
+                      PRO
+                    </Badge>
+                  )}
                 </button>
               </div>
 
@@ -454,6 +466,7 @@ export const LeaderboardPage: React.FC = () => {
       )}
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
     </div>
   );
 };

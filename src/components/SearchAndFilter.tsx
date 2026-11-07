@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { Search, X, RotateCcw } from 'lucide-react';
 import type { CompanyTag } from '../types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { PricingModal } from './modals/PricingModal';
+import toast from 'react-hot-toast';
 
 export const SearchAndFilter: React.FC = () => {
   const {
@@ -14,8 +16,11 @@ export const SearchAndFilter: React.FC = () => {
     statusFilter,
     setStatusFilter,
     companyFilter,
-    setCompanyFilter
+    setCompanyFilter,
+    isPro
   } = useProgress();
+
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
   const hasActiveFilters = searchQuery || selectedDifficulty !== 'All' || statusFilter !== 'all' || companyFilter !== 'all';
 
@@ -24,6 +29,15 @@ export const SearchAndFilter: React.FC = () => {
     setSelectedDifficulty('All');
     setStatusFilter('all');
     setCompanyFilter('all');
+  };
+
+  const handleCompanyChange = (val: string) => {
+    if (val !== 'all' && !isPro) {
+      setIsPricingModalOpen(true);
+      toast.error('Filtering by specific company tags is a Pro feature! 🌟');
+      return;
+    }
+    setCompanyFilter(val as CompanyTag | 'all');
   };
 
   return (
@@ -76,18 +90,18 @@ export const SearchAndFilter: React.FC = () => {
           {/* Company filter */}
           <select
             value={companyFilter}
-            onChange={(e) => setCompanyFilter(e.target.value as CompanyTag | 'all')}
+            onChange={(e) => handleCompanyChange(e.target.value)}
             className="h-8 rounded-md border border-input bg-background px-3 text-xs text-foreground outline-none focus:border-ring"
           >
             <option value="all">All Companies</option>
-            <option value="amazon">Amazon</option>
-            <option value="google">Google</option>
-            <option value="microsoft">Microsoft</option>
-            <option value="meta">Meta</option>
-            <option value="uber">Uber</option>
-            <option value="apple">Apple</option>
-            <option value="adobe">Adobe</option>
-            <option value="netflix">Netflix</option>
+            <option value="amazon">Amazon {!isPro ? '🔒' : ''}</option>
+            <option value="google">Google {!isPro ? '🔒' : ''}</option>
+            <option value="microsoft">Microsoft {!isPro ? '🔒' : ''}</option>
+            <option value="meta">Meta {!isPro ? '🔒' : ''}</option>
+            <option value="uber">Uber {!isPro ? '🔒' : ''}</option>
+            <option value="apple">Apple {!isPro ? '🔒' : ''}</option>
+            <option value="adobe">Adobe {!isPro ? '🔒' : ''}</option>
+            <option value="netflix">Netflix {!isPro ? '🔒' : ''}</option>
           </select>
 
           {/* Status filter */}
@@ -116,6 +130,8 @@ export const SearchAndFilter: React.FC = () => {
           </Button>
         )}
       </div>
+
+      <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
     </div>
   );
 };
