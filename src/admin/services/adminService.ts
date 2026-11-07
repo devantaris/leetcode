@@ -88,7 +88,17 @@ export class AdminService {
     if (!sb) return fallbackTelemetry;
 
     try {
-      // 1. User Profiles count & company breakdown
+      // 1. Preferred secure path: Invoke Supabase Edge Function using service_role
+      const { data, error } = await sb.functions.invoke('admin-telemetry');
+      if (!error && data && typeof data.totalRegisteredUsers === 'number') {
+        return data as AdminTelemetry;
+      }
+    } catch (edgeErr) {
+      console.warn('[AdminService] Edge function invoke failed, attempting direct table read fallback:', edgeErr);
+    }
+
+    try {
+      // 2. Direct read fallback for environments where Edge function is initializing
       const { data: profiles, error: pErr } = await sb
         .from('user_profiles')
         .select('target_company, target_tier, created_at');
