@@ -216,3 +216,657 @@ body.os-mode ::-webkit-scrollbar-thumb:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
+/* ============ RETRO OS DESKTOP SHELL & WINDOW MANAGER ============ */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 900;
+  padding: 8vh 8vw;
+  font-size: 13px;
+  line-height: 1.85;
+  user-select: none;
+}
+.boot-screen .ln {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.boot-screen .ok {
+  color: var(--fg);
+}
+.boot-screen .dim {
+  color: var(--dim);
+}
+.boot-screen .warn {
+  color: var(--amb);
+}
+.boot-screen .bar {
+  width: min(360px, 60vw);
+  height: 10px;
+  border: 1px solid var(--line);
+  padding: 1px;
+  margin: 8px 0;
+}
+.boot-screen .bar i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--fg);
+}
+.boot-screen .skip {
+  position: absolute;
+  bottom: 8vh;
+  left: 8vw;
+  color: var(--dim);
+  animation: blink 1.2s steps(1) infinite;
+  cursor: pointer;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ============ OS DESKTOP ============ */
+.os-desktop {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  user-select: none;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.os-desktop .desktop-grid {
+  position: absolute;
+  inset: 0;
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  pointer-events: none;
+}
+
+.icons {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  z-index: 10;
+}
+
+.icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 96px;
+  padding: 8px 4px;
+  color: var(--dim);
+  border: 1px solid transparent;
+  transition: color 0.1s;
+}
+
+.icon:hover {
+  color: var(--fg);
+}
+
+.icon.sel {
+  color: var(--fg);
+  border-color: var(--fg);
+  background: rgba(61, 220, 132, 0.04);
+}
+
+.icon .glyph {
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.icon span {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* Windows */
+.win {
+  position: absolute;
+  min-width: 320px;
+  background: #020403;
+  border: 1px solid var(--fg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0 1px #000, 8px 8px 0 var(--accent-glow);
+}
+
+.win.focused {
+  border-color: var(--fg);
+  box-shadow: 0 0 0 1px #000, 8px 8px 0 var(--accent-glow);
+}
+
+.win:not(.focused) {
+  border-color: var(--line);
+  color: var(--dim);
+  box-shadow: 0 0 0 1px #000, 4px 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+.win:not(.focused) .tbar {
+  background: var(--faint);
+  color: var(--dim);
+}
+
+.tbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--fg);
+  color: #000;
+  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.tbar:active {
+  cursor: grabbing;
+}
+
+.tbar .ttl {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tbar .x {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  background: #000;
+  color: var(--fg);
+  font-weight: 700;
+  font-size: 10px;
+  cursor: pointer;
+  border: none;
+}
+
+.tbar .x:hover {
+  background: var(--red);
+  color: #000;
+}
+
+.wbody {
+  padding: 14px 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+  user-select: text;
+  line-height: 1.75;
+  background: var(--bg);
+}
+
+/* Rows for problem items / lists */
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 6px;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: background 0.1s;
+}
+
+.row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.row .id {
+  color: var(--dim);
+  width: 58px;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.row .nm {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fg);
+}
+
+.row .tag {
+  font-size: 10px;
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
+.row.done .nm,
+.row[data-done] .nm {
+  text-decoration: line-through;
+  color: var(--dim);
+}
+
+.row.done:hover .nm,
+.row[data-done]:hover .nm {
+  color: var(--dim);
+}
+
+.tag.m {
+  color: var(--amb);
+  border-color: #4d3d14;
+}
+
+.tag.h {
+  color: var(--red);
+  border-color: #4d1a1a;
+}
+
+.tag.e {
+  color: var(--fg);
+  border-color: var(--line);
+}
+
+.tag.d3 {
+  color: var(--red);
+  border-color: #4d1a1a;
+}
+
+.tag.d7 {
+  color: var(--amb);
+  border-color: #4d3d14;
+}
+
+.tag.d21 {
+  color: var(--dim);
+  border-style: dashed;
+}
+
+.chk {
+  color: var(--dim);
+  width: 22px;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.row.done .chk,
+.row[data-done] .chk {
+  color: var(--fg);
+}
+
+hr {
+  border: none;
+  border-top: 1px dashed var(--line);
+  margin: 10px 0;
+}
+
+h4 {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  margin: 12px 0 6px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+h4:first-child {
+  margin-top: 0;
+}
+
+.dimtxt { color: var(--dim); }
+.ambtxt { color: var(--amb); }
+.redtxt { color: var(--red); }
+.blink { animation: blink 1.2s steps(1) infinite; }
+
+/* Buttons in windows */
+.k {
+  display: inline-block;
+  border: 1px solid var(--fg);
+  padding: 3px 14px;
+  margin: 8px 8px 0 0;
+  color: var(--fg);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.1s;
+}
+
+.k:hover {
+  background: var(--fg);
+  color: #000;
+}
+
+.k:active {
+  transform: translate(1px, 1px);
+}
+
+.k.ghost {
+  border-color: var(--line);
+  color: var(--dim);
+}
+
+.k.ghost:hover {
+  border-color: var(--fg);
+  color: var(--fg);
+  background: transparent;
+}
+
+.k.danger {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.k.danger:hover {
+  background: var(--red);
+  color: #000;
+}
+
+.k.small {
+  padding: 1px 8px;
+  font-size: 10px;
+}
+
+/* Timer digits */
+.clock {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  color: var(--fg);
+}
+
+.pips {
+  margin: 10px 0;
+}
+
+.pips i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--line);
+  margin-right: 5px;
+}
+
+.pips i.full {
+  background: var(--fg);
+}
+
+/* Taskbar */
+#taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34px;
+  background: #020403;
+  border-top: 1px solid var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  z-index: 400;
+  font-size: 11px;
+}
+
+#taskbar .start {
+  border: 1px solid var(--fg);
+  padding: 2px 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+#taskbar .start:hover,
+#taskbar .start.active {
+  background: var(--fg);
+  color: #000;
+}
+
+.task {
+  margin: 0 2px;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  color: var(--dim);
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.task.on {
+  border-color: var(--line);
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.task.focused {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+
+.task:hover {
+  color: var(--fg);
+}
+
+#tray {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+  color: var(--dim);
+  align-items: center;
+}
+
+#tray b {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+/* Start Menu */
+#startmenu {
+  position: fixed;
+  left: 8px;
+  bottom: 40px;
+  border: 1px solid var(--fg);
+  background: #020403;
+  z-index: 401;
+  min-width: 240px;
+  box-shadow: 0 0 0 1px #000, 6px 6px 0 var(--accent-glow);
+}
+
+#startmenu .sm-h {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+#startmenu button {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--dim);
+  text-align: left;
+  border: none;
+  cursor: pointer;
+}
+
+#startmenu button:hover {
+  background: var(--fg);
+  color: #000;
+}
+
+#startmenu button .k2 {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* Hint bar */
+#hintbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 34px;
+  border-top: 1px solid var(--line);
+  background: #020403;
+  color: var(--dim);
+  font-size: 10px;
+  padding: 3px 10px;
+  letter-spacing: 0.1em;
+  z-index: 399;
+  display: flex;
+  gap: 24px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Input elements inside retro windows */
+.retro-input {
+  background: #000;
+  border: 1px solid var(--line);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 8px;
+  outline: none;
+  width: 100%;
+}
+.retro-input:focus {
+  border-color: var(--fg);
+}
+.retro-select {
+  background: #000;
+  border: 1px solid var(--line);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 8px;
+  outline: none;
+}
+.retro-select:focus {
+  border-color: var(--fg);
+}
+
+/* Responsive Mobile & Tablet Rules */
+@media (max-width: 768px) {
+  .icons {
+    top: 8px;
+    left: 8px;
+    gap: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 16px);
+  }
+  .icon {
+    width: 76px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .icon .glyph {
+    font-size: 20px;
+  }
+  .icon span {
+    font-size: 9px;
+  }
+  .win {
+    left: 4px !important;
+    top: 4px !important;
+    width: calc(100vw - 8px) !important;
+    max-width: calc(100vw - 8px) !important;
+    max-height: calc(100vh - 72px) !important;
+    min-width: 0 !important;
+  }
+  .wbody {
+    max-height: calc(100vh - 120px) !important;
+    padding: 10px 12px;
+  }
+  #taskbar {
+    font-size: 10px;
+    padding: 0 4px;
+  }
+  #taskbar .start {
+    padding: 2px 8px;
+  }
+  #tray {
+    gap: 8px;
+    font-size: 10px;
+  }
+  #tray .tray-mem {
+    display: none;
+  }
+  #hintbar {
+    display: none;
+  }
+}
+
+/* Mobile Bottom Bar for Modern UI */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .site-header {
+    padding: 8px 14px;
+  }
+  .site-header .nav-segment {
+    display: none;
+  }
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: 58px;
+    background: rgba(8, 9, 15, 0.94);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-default);
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  [data-theme="light"] .mobile-bottom-nav {
+    background: rgba(248, 250, 252, 0.94);
+  }
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+  }
+  .mobile-nav-item.active {
+    color: var(--text-accent);
+  }
+  .mobile-nav-item.active svg {
+    color: var(--text-accent);
+  }
+  main {
+    padding-bottom: 64px;
+  }
+}
+
+

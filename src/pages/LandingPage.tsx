@@ -76,7 +76,7 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isOnboarded, userProfile, stats, authUser, isDemoMode, loadDemoData } = useProgress();
+  const { userProfile, stats, authUser, isDemoMode, loadDemoData } = useProgress();
 
   const [demoSolved, setDemoSolved] = useState<Record<string, boolean>>({
     'p1': true,
@@ -291,8 +291,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           ✓ Free Community Tier • ✓ Real-Time Cloud Sync • ✓ No Credit Card Required
         </div>
 
-        {/* User state resume banner if already has data */}
-        {(stats.solvedCount > 0 || isOnboarded) && (
+        {/* User state resume banner if authenticated and has active solve data */}
+        {authUser && stats.solvedCount > 0 && (
           <div className="max-w-2xl mx-auto mb-9 bg-card border border-border rounded-2xl p-4 sm:p-5 flex items-center justify-between flex-wrap gap-3.5 text-left shadow-xs">
             <div className="flex items-center gap-3">
               <div className="size-9 rounded-xl bg-muted border border-border flex items-center justify-center text-base">
