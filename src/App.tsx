@@ -1,26 +1,39 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { ProgressProvider } from './context/ProgressContext';
-import { GrindOSDesktop } from './components/os/GrindOSDesktop';
 import { Layout } from './Layout';
-import { LandingPage } from './pages/LandingPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { CurriculumPage } from './pages/CurriculumPage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
-import { LeaderboardPage } from './pages/LeaderboardPage';
-import { TrackerPage } from './pages/TrackerPage';
-import { TermsPage } from './pages/TermsPage';
-import { PrivacyPage } from './pages/PrivacyPage';
-import { NotFoundPage } from './pages/NotFoundPage';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
+// Lazy-loaded route views for optimal bundle splitting without cyclic vendor chunks
+const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const CurriculumPage = lazy(() => import('./pages/CurriculumPage').then(m => ({ default: m.CurriculumPage })));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage').then(m => ({ default: m.LeaderboardPage })));
+const TrackerPage = lazy(() => import('./pages/TrackerPage').then(m => ({ default: m.TrackerPage })));
+const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const GrindOSDesktop = lazy(() => import('./components/os/GrindOSDesktop').then(m => ({ default: m.GrindOSDesktop })));
+
 // Stealth Admin Dashboard
-import { AdminGuard } from './admin/AdminGuard';
-import { AdminLayout } from './admin/AdminLayout';
-import { AdminOverviewPage } from './admin/pages/AdminOverviewPage';
-import { AdminBroadcastPage } from './admin/pages/AdminBroadcastPage';
-import { AdminUsersPage } from './admin/pages/AdminUsersPage';
-import { AdminCohortsPage } from './admin/pages/AdminCohortsPage';
+const AdminGuard = lazy(() => import('./admin/AdminGuard').then(m => ({ default: m.AdminGuard })));
+const AdminLayout = lazy(() => import('./admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminOverviewPage = lazy(() => import('./admin/pages/AdminOverviewPage').then(m => ({ default: m.AdminOverviewPage })));
+const AdminBroadcastPage = lazy(() => import('./admin/pages/AdminBroadcastPage').then(m => ({ default: m.AdminBroadcastPage })));
+const AdminUsersPage = lazy(() => import('./admin/pages/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
+const AdminCohortsPage = lazy(() => import('./admin/pages/AdminCohortsPage').then(m => ({ default: m.AdminCohortsPage })));
+
+function RouteLoadingFallback() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-[#020403] text-emerald-400 font-mono text-xs">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500/20 border-t-emerald-400" />
+        <span className="tracking-widest uppercase text-muted-foreground animate-pulse">Initializing GrindOS...</span>
+      </div>
+    </div>
+  );
+}
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -49,7 +62,8 @@ function AppRoutes() {
   };
 
   return (
-    <Routes>
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <Routes>
       {/* Default to the modern Bento dashboard */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/landing" element={<LandingPage onSelectMode={handleSelectMode} />} />
@@ -97,6 +111,7 @@ function AppRoutes() {
       {/* Catch-all 404 page */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </Suspense>
   );
 }
 
