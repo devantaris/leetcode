@@ -789,6 +789,84 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             </tbody>
           </table>
         </div>
+
+        {/* Which Mode Should I Choose? (Decision Guide) */}
+        <div style={{
+          marginTop: 20,
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '24px'
+        }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>🧭</span> Which workstation should you start with?
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+            <div style={{
+              background: '#040805',
+              border: '1px solid #1a6b42',
+              borderRadius: 'var(--radius-md)',
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: 12
+            }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#3ddc84', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+                  Choose Retro Terminal OS if you:
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: '#9bb8a5', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <li>Want <strong>zero-distraction deep work</strong> with multi-window desktop tiling.</li>
+                  <li>Love <strong>keyboard-first terminal workflows</strong> and retro CRT/audio immersion.</li>
+                  <li>Are grinding coding sessions on desktop with built-in Pomodoro &amp; mini-breaks.</li>
+                </ul>
+              </div>
+              <button
+                onClick={() => handleLaunch('os')}
+                style={{
+                  background: '#3ddc84', color: '#000', border: 'none', borderRadius: 4,
+                  padding: '8px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
+                  cursor: 'pointer', textAlign: 'center'
+                }}
+              >
+                Start in Retro OS →
+              </button>
+            </div>
+
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-md)',
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: 12
+            }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
+                  Choose Modern Web Dashboard if you:
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <li>Prefer <strong>executive telemetry</strong>: velocity graphs, heatmaps, and readiness dials.</li>
+                  <li>Are tracking <strong>active interview rounds &amp; offers</strong> via the Kanban pipeline.</li>
+                  <li>Want a mobile/laptop-responsive layout with seamless fast browsing.</li>
+                </ul>
+              </div>
+              <button
+                onClick={() => handleLaunch('web')}
+                className="btn btn-primary"
+                style={{ padding: '8px 12px', fontSize: 11, fontWeight: 700, textAlign: 'center', justifyContent: 'center' }}
+              >
+                Start in Modern Web →
+              </button>
+            </div>
+          </div>
+          <div style={{ marginTop: 14, fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
+            💡 <strong>No lock-in:</strong> You can switch back and forth at any second with 1 click in the top navigation. Your entire progress and notes remain synchronized across both in Supabase cloud.
+          </div>
+        </div>
       </section>
 
       {/* ── BENTO FEATURES ── */}
