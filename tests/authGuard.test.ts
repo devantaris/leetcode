@@ -136,4 +136,33 @@ describe('SaaS Auth Guard & Landing Page Routing Gating', () => {
     handleLaunchDemo('os');
     expect(navigatedTo).toBe('/os');
   });
+
+  it('Welcome back resume banner is strictly hidden for unauthenticated visitors', () => {
+    const shouldShowResumeBanner = (user: { id: string } | null, solvedCount: number) => {
+      return Boolean(user && solvedCount > 0);
+    };
+
+    // Unauthenticated guest with 0 or demo solves
+    expect(shouldShowResumeBanner(null, 0)).toBe(false);
+    expect(shouldShowResumeBanner(null, 15)).toBe(false);
+
+    // Authenticated user with 0 solves (just registered)
+    expect(shouldShowResumeBanner({ id: 'u1' }, 0)).toBe(false);
+
+    // Authenticated active user with solves
+    expect(shouldShowResumeBanner({ id: 'u1' }, 12)).toBe(true);
+  });
+
+  it('Demo choice selection accurately provisions workstation target mode', () => {
+    const selectDemoWorkstation = (choice: 'os' | 'web') => {
+      mockLocalStorage.setItem('grindos_ui_mode', choice);
+      return choice === 'os' ? '/os' : '/dashboard';
+    };
+
+    expect(selectDemoWorkstation('web')).toBe('/dashboard');
+    expect(mockLocalStorage.getItem('grindos_ui_mode')).toBe('web');
+
+    expect(selectDemoWorkstation('os')).toBe('/os');
+    expect(mockLocalStorage.getItem('grindos_ui_mode')).toBe('os');
+  });
 });

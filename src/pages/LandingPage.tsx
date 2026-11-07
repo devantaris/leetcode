@@ -13,6 +13,7 @@ import { CURRICULUM } from '../data/curriculumStats';
 import { sounds } from '../utils/audio';
 import { AuthModal } from '../components/modals/AuthModal';
 import { PricingModal } from '../components/modals/PricingModal';
+import { DemoChoiceModal } from '../components/modals/DemoChoiceModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -88,6 +89,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
   const [openPhase, setOpenPhase] = useState<number | null>(1);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   // Automatically prompt auth modal if user arrived from an auth-guarded route
   useEffect(() => {
@@ -270,7 +272,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                 <ArrowRight size={14} />
               </button>
               <button
-                onClick={() => handleTryDemo('web')}
+                onClick={() => setIsDemoModalOpen(true)}
                 className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-colors cursor-pointer"
                 title="Preview GrindOS with sample solved problems and telemetry"
               >
@@ -1049,9 +1051,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
         </div>
       </footer>
 
-      {/* Auth & Pricing Modals */}
+      {/* Auth, Pricing & Demo Choice Modals */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
+      <DemoChoiceModal
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+        onSelectMode={onSelectMode}
+      />
     </div>
   );
 };
