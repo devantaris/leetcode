@@ -11,11 +11,21 @@ import { CatchUpQueueCard } from '../components/CatchUpQueueCard';
 import { CheckCircle2, Flame, Target, Award, Plus, Download, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import toast from 'react-hot-toast';
 
 export const DashboardPage: React.FC = () => {
-  const { stats, exportJSON, userProfile } = useProgress();
+  const { stats, exportJSON, userProfile, placements } = useProgress();
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
   const dailyTarget = userProfile?.dailyQuota || CURRICULUM.dailyTarget;
+
+  const handleExport = () => {
+    if (stats.solvedCount === 0 && (!placements || placements.length === 0)) {
+      toast.error('No progress or applications logged yet to export.');
+      return;
+    }
+    exportJSON();
+    toast.success('Curriculum progress and notes exported to JSON! 📁');
+  };
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8 w-full">
@@ -44,7 +54,7 @@ export const DashboardPage: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={exportJSON}
+            onClick={handleExport}
             className="h-9 px-3.5 rounded-xl text-xs gap-1.5 border-border bg-card text-foreground hover:bg-muted"
           >
             <Download className="size-3.5" />

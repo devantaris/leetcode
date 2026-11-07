@@ -27,6 +27,8 @@ const STAGES: PlacementStage[] = [
   'Technical Round 2',
   'Managerial / HR',
   'Offer Received 🎉',
+  'Offer Accepted 🏆',
+  'Offer Declined',
   'Rejected'
 ];
 
@@ -73,24 +75,25 @@ export const PlacementTrackerModal: React.FC<PlacementTrackerModalProps> = ({ is
 
   const handleStageChange = (id: string, newStage: PlacementStage) => {
     updatePlacement(id, { stage: newStage });
-    if (newStage === 'Offer Received 🎉') {
+    if (newStage === 'Offer Received 🎉' || newStage === 'Offer Accepted 🏆') {
       sounds.playVictorySound();
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       });
-      toast.success('🎉 Congratulations on securing an offer!');
+      toast.success(newStage === 'Offer Accepted 🏆' ? '🏆 Huge congrats on accepting your offer!' : '🎉 Congratulations on securing an offer!');
     }
   };
 
-  const offersCount = placements.filter(p => p.stage === 'Offer Received 🎉').length;
-  const inProgressCount = placements.filter(p => p.stage !== 'Offer Received 🎉' && p.stage !== 'Rejected').length;
+  const isOfferStage = (stage: string) => stage.includes('Offer');
+  const offersCount = placements.filter(p => isOfferStage(p.stage)).length;
+  const inProgressCount = placements.filter(p => !isOfferStage(p.stage) && p.stage !== 'Rejected').length;
   const conversionRate = placements.length > 0 ? Math.round((offersCount / placements.length) * 100) : 0;
 
   const filteredPlacements = placements.filter(p => {
-    if (filterTab === 'active') return p.stage !== 'Offer Received 🎉' && p.stage !== 'Rejected';
-    if (filterTab === 'offers') return p.stage === 'Offer Received 🎉';
+    if (filterTab === 'active') return !isOfferStage(p.stage) && p.stage !== 'Rejected';
+    if (filterTab === 'offers') return isOfferStage(p.stage);
     if (filterTab === 'rejected') return p.stage === 'Rejected';
     return true;
   });
@@ -253,7 +256,7 @@ export const PlacementTrackerModal: React.FC<PlacementTrackerModalProps> = ({ is
         ) : (
           <div className="flex flex-col gap-2 max-h-[380px] overflow-y-auto pr-1">
             {filteredPlacements.map((p) => {
-              const isOffer = p.stage === 'Offer Received 🎉';
+              const isOffer = isOfferStage(p.stage);
               const isRejected = p.stage === 'Rejected';
               const isExpanded = expandedId === p.id;
 
