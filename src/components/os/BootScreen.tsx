@@ -11,7 +11,7 @@ interface BootLine {
 }
 
 const BOOT_LINES: BootLine[] = [
-  { text: 'GRINDOS BIOS v2.4 — 178-DAY PLACEMENT OS', type: 'dim' },
+  { text: 'GRINDOS BIOS v2.4 — 140-DAY PLACEMENT OS', type: 'dim' },
   { text: '', type: '' },
   { text: 'CPU : CONSISTENCY ENGINE @ 100% ............ [OK]', type: 'ok' },
   { text: 'MEM : 640K RETENTION ....................... [OK]', type: 'ok' },

@@ -376,7 +376,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
                   <span>[ _ ▢ ✕ ]</span>
                 </div>
                 <div>C:\&gt; grindos --boot</div>
-                <div style={{ color: '#e8c35a' }}>[OK] 25 WEEKS / 178 DAYS INITIALIZED</div>
+                <div style={{ color: '#e8c35a' }}>[OK] 20 WEEKS / 140 DAYS / 332 PROBLEMS INITIALIZED</div>
                 <div>[OK] WINDOW MANAGER &amp; CHIP SYNTH ONLINE</div>
                 <div style={{ color: '#888' }}>&gt; MISSIONS.EXE • ORACLE.EXE • POMO.EXE</div>
               </div>

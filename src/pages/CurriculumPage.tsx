@@ -3,11 +3,12 @@ import { SearchAndFilter } from '../components/SearchAndFilter';
 import { WeekAccordion } from '../components/WeekAccordion';
 import { useProgress } from '../context/ProgressContext';
 import { CURRICULUM } from '../data/curriculumStats';
-import { BookOpen, CheckCircle2, Flame, Award } from 'lucide-react';
+import { BookOpen, CheckCircle2, Flame, Award, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { APP_CONFIG } from '../config/appConfig';
 
 export const CurriculumPage: React.FC = () => {
-  const { stats } = useProgress();
+  const { stats, isPro } = useProgress();
   const pct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
 
   return (
@@ -24,7 +25,7 @@ export const CurriculumPage: React.FC = () => {
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            20-week structured progression covering {CURRICULUM.totalProblems} foundational patterns and interview questions.
+            {APP_CONFIG.tracks.full} — 20 weeks &amp; 140 days covering foundational patterns and {CURRICULUM.totalProblems} curated interview questions.
           </p>
         </div>
 
@@ -44,9 +45,16 @@ export const CurriculumPage: React.FC = () => {
             </Badge>
           )}
 
-          <Badge variant="outline" className="font-mono text-xs py-1 px-2.5 gap-1.5 border-primary/30 text-primary bg-primary/10">
-            <Award className="size-3.5" />
-            <span>Top 150 Benchmark</span>
+          <Badge
+            variant="outline"
+            className={`font-mono text-xs py-1 px-2.5 gap-1.5 ${
+              isPro
+                ? 'border-primary/40 text-primary bg-primary/10'
+                : 'border-border text-muted-foreground'
+            }`}
+          >
+            {isPro ? <Sparkles className="size-3.5 text-primary" /> : <Award className="size-3.5" />}
+            <span>{isPro ? 'Top 150 Benchmark (Pro)' : 'Top 150 Benchmark Track'}</span>
           </Badge>
         </div>
       </div>

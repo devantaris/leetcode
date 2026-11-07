@@ -4,9 +4,9 @@
 export const APP_CONFIG = {
   // Brand Identity
   name: 'GrindOS',
-  tagline: '140-Day Algorithmic Placement Operating System',
+  tagline: '140-Day Algorithmic Placement Operating System (332 Curated Problems)',
   shortName: 'G//',
-  description: 'A minimal, distraction-free 140-day algorithmic preparation system for technical interviews.',
+  description: 'A structured 140-day, 332-problem algorithmic placement operating system with Top 150 benchmark tracking.',
 
   // Favicon config (used in index.html SVG)
   favicon: {
@@ -17,8 +17,8 @@ export const APP_CONFIG = {
 
   // Track naming
   tracks: {
-    primary: 'Interview 150',
-    full: '20-Week Curriculum',
+    primary: 'Top 150 Benchmark Track',
+    full: '140-Day Master Curriculum (332 Problems)',
   },
 
   // Smart defaults

@@ -5,7 +5,7 @@ export const ReadmeWindow: React.FC = () => {
     <div className="wbody" style={{ width: 480, maxWidth: '90vw' }}>
       <h4>▸ WHAT THIS IS</h4>
       <div style={{ marginBottom: 10 }}>
-        GrindOS is a focused 178-day, 25-week operating system designed to get engineers and students placement-ready
+        GrindOS is a focused 140-day, 20-week operating system (332 curated problems) designed to get engineers and students placement-ready
         for Tier-1 tech companies (Google, Amazon, Meta, Microsoft, Uber).
         <br />
         <br />
@@ -35,15 +35,15 @@ export const ReadmeWindow: React.FC = () => {
         <code>CTRL + M</code> — Toggle audio synthesizer (Mute/Unmute)
       </div>
 
-      <h4>▸ LOCAL-FIRST PRIVACY</h4>
+      <h4>▸ CLOUD-FIRST REAL-TIME SYNC</h4>
       <div style={{ marginBottom: 10 }}>
-        All progress, solve logs, placement applications, and streaks live exclusively in your browser's local
-        persistence engine. Nothing ever leaves your machine without your consent.
+        All progress, solve logs, placement applications, and streaks synchronize directly to Supabase cloud
+        with instant real-time mirroring between Retro OS and Modern Web interfaces.
       </div>
 
       <hr />
       <div className="dimtxt" style={{ fontSize: 10 }}>
-        VERSION 2.4 — 178-DAY PLACEMENT KERNEL (BUILD 2026.11)
+        VERSION 2.4 — 140-DAY PLACEMENT KERNEL (332 PROBLEMS · BUILD 2026.11)
       </div>
     </div>
   );
