@@ -28,7 +28,9 @@ const REST_DAY_OPTIONS = [
 ];
 
 const TARGET_COMPANIES = [
-  'Google', 'Meta', 'Amazon', 'Microsoft', 'Apple', 'Uber', 'Netflix', 'Top Tech / FAANG', 'High-Growth Startup'
+  'Google', 'Meta', 'Amazon', 'Microsoft', 'Apple', 'Uber', 'Netflix',
+  'Flipkart', 'Swiggy', 'Zomato', 'Zepto', 'Atlassian', 'Adobe', 'TCS', 'Infosys',
+  'Top Tech / FAANG', 'High-Growth Startup'
 ];
 
 const TOTAL_STEPS = 3;
