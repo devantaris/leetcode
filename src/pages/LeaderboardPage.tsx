@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useProgress } from '../context/ProgressContext';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { CloudSyncService } from '../services/cloudSync';
@@ -18,13 +18,24 @@ import {
   TableCell
 } from '@/components/ui/table';
 
+interface CohortMemberEntry {
+  id?: string;
+  user_id: string;
+  display_name: string;
+  tagline?: string;
+  is_anonymous?: boolean;
+  solved_count: number;
+  streak: number;
+  readiness_pct: number;
+}
+
 export const LeaderboardPage: React.FC = () => {
   const { stats, userProfile, activeCohort, createCohort, joinCohort, leaveCohort, authUser } = useProgress();
   const [boardType, setBoardType] = useState<'global' | 'cohort'>('global');
   const [cohortAction, setCohortAction] = useState<'join' | 'create'>('join');
   const [cohortInput, setCohortInput] = useState('');
   const [newCohortName, setNewCohortName] = useState('');
-  const [cohortEntries, setCohortEntries] = useState<any[]>([]);
+  const [cohortEntries, setCohortEntries] = useState<CohortMemberEntry[]>([]);
   const [isCohortLoading, setIsCohortLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,6 +107,43 @@ export const LeaderboardPage: React.FC = () => {
         .finally(() => setIsCohortLoading(false));
     }
   }, [boardType, activeCohort]);
+
+  const rankedCohortEntries = useMemo(() => {
+    const list: CohortMemberEntry[] = [...cohortEntries];
+    const currentUserId = authUser?.id || myEntry?.user_id;
+
+    // Check if current user is already present in cohort entries
+    const foundIdx = list.findIndex(e => currentUserId && e.user_id === currentUserId);
+
+    if (foundIdx >= 0) {
+      list[foundIdx] = {
+        ...list[foundIdx],
+        display_name: userProfile.name || list[foundIdx].display_name,
+        tagline: userProfile.tagline || list[foundIdx].tagline,
+        solved_count: Math.max(list[foundIdx].solved_count || 0, stats.solvedCount),
+        streak: Math.max(list[foundIdx].streak || 0, stats.streak),
+        readiness_pct: Math.max(list[foundIdx].readiness_pct || 0, stats.oddsPercentage),
+      };
+    } else {
+      list.push({
+        id: 'me',
+        user_id: currentUserId || 'current-user',
+        display_name: `${userProfile.name} (You)`,
+        tagline: userProfile.tagline,
+        is_anonymous: false,
+        solved_count: stats.solvedCount,
+        streak: stats.streak,
+        readiness_pct: stats.oddsPercentage,
+      });
+    }
+
+    return list.sort((a, b) => {
+      if (b.solved_count !== a.solved_count) {
+        return b.solved_count - a.solved_count;
+      }
+      return (b.streak || 0) - (a.streak || 0);
+    });
+  }, [cohortEntries, authUser?.id, myEntry?.user_id, userProfile.name, userProfile.tagline, stats.solvedCount, stats.streak, stats.oddsPercentage]);
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
@@ -255,32 +303,30 @@ export const LeaderboardPage: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow className="bg-primary/5 font-semibold text-xs">
-                    <TableCell>{renderRankBadge(1)}</TableCell>
-                    <TableCell className="text-primary">{userProfile.name} (You)</TableCell>
-                    <TableCell className="text-right font-mono text-emerald-500">{stats.solvedCount}</TableCell>
-                    <TableCell className="text-right font-mono text-amber-500">🔥 {stats.streak}d</TableCell>
-                    <TableCell className="text-right font-mono text-primary">{stats.oddsPercentage}%</TableCell>
-                  </TableRow>
+                  {rankedCohortEntries.map((member, idx) => {
+                    const isMe = member.user_id === (authUser?.id || myEntry?.user_id) || member.id === 'me';
+                    return (
+                      <TableRow key={member.id || member.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
+                        <TableCell>{renderRankBadge(idx + 1)}</TableCell>
+                        <TableCell className="font-medium text-foreground">
+                          <div className="flex items-center gap-2">
+                            <span>{member.is_anonymous ? 'Anonymous Grinder 🎭' : member.display_name}</span>
+                            {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
+                          </div>
+                          {member.tagline && !member.is_anonymous && (
+                            <div className="text-muted-foreground text-[11px] font-normal mt-0.5">
+                              {member.tagline}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-emerald-500 font-semibold">{member.solved_count}</TableCell>
+                        <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {member.streak}d</TableCell>
+                        <TableCell className="text-right font-mono text-primary font-semibold">{member.readiness_pct}%</TableCell>
+                      </TableRow>
+                    );
+                  })}
 
-                  {cohortEntries.filter(e => e.user_id !== myEntry?.user_id).map((peer, idx) => (
-                    <TableRow key={peer.id || peer.user_id} className="text-xs">
-                      <TableCell>{renderRankBadge(idx + 2)}</TableCell>
-                      <TableCell className="font-medium text-foreground">
-                        {peer.is_anonymous ? 'Anonymous Grinder 🎭' : peer.display_name}
-                        {peer.tagline && !peer.is_anonymous && (
-                          <span className="text-muted-foreground text-[11px] ml-2 font-normal">
-                            {peer.tagline}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-emerald-500">{peer.solved_count}</TableCell>
-                      <TableCell className="text-right font-mono text-amber-500">🔥 {peer.streak}d</TableCell>
-                      <TableCell className="text-right font-mono text-primary">{peer.readiness_pct}%</TableCell>
-                    </TableRow>
-                  ))}
-
-                  {cohortEntries.length === 0 && (
+                  {rankedCohortEntries.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-6 text-xs text-muted-foreground">
                         {isCohortLoading ? 'Refreshing cohort standings...' : `No other batchmates yet. Share code "${activeCohort.code}" to compete together!`}
