@@ -983,7 +983,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             },
             {
               q: 'Does my progress transfer when I switch between interfaces?',
-              a: 'Yes, 100%. Both interfaces read and write from the exact same local state and cloud sync engine. When you mark a problem solved or update a note in Modern Web, it is immediately reflected when you launch Retro OS, and vice versa.'
+              a: 'Yes, 100%. Both interfaces read and write from the exact same Supabase cloud database. When you mark a problem solved or update a note in Modern Web, it is immediately reflected when you launch Retro OS, and vice versa — in real-time.'
             },
             {
               q: 'How do I switch between Retro OS and Modern Web after choosing?',
