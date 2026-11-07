@@ -57,10 +57,10 @@ export const TermsPage: React.FC = () => {
         <section className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col gap-3">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2 m-0">
             <CheckCircle2 className="size-4 text-primary" />
-            <span>3. Local-First Data Ownership &amp; User Content</span>
+            <span>3. Cloud Data Ownership &amp; User Content</span>
           </h2>
           <p className="text-muted-foreground text-xs leading-relaxed m-0">
-            You retain 100% ownership of all solve history, notes, code snippets, and placement records entered into {APP_CONFIG.name}. By default, all data is stored locally in your browser storage. When utilizing optional Supabase Cloud Sync, your progress data is encrypted and transferred solely to synchronize state across your authorized devices.
+            You retain 100% ownership of all solve history, notes, code snippets, and placement records entered into {APP_CONFIG.name}. Your data is stored securely in our Supabase PostgreSQL cloud infrastructure protected by strict Row-Level Security (RLS). You can download an unencrypted JSON export of your entire history at any time with one click.
           </p>
         </section>
 

@@ -26,7 +26,7 @@ export const PrivacyPage: React.FC = () => {
               Privacy Policy
             </h1>
             <p className="text-xs text-muted-foreground font-mono mt-1">
-              Last updated: November 2026 • Privacy-by-design &amp; Local-First
+              Last updated: November 2026 • Privacy-by-design &amp; Cloud Security
             </p>
           </div>
         </div>
@@ -47,25 +47,25 @@ export const PrivacyPage: React.FC = () => {
         <section className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col gap-3">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2 m-0">
             <Database className="size-4 text-primary" />
-            <span>2. Local-First Architecture</span>
+            <span>2. Cloud Persistence &amp; Row Level Security</span>
           </h2>
           <p className="text-muted-foreground text-xs leading-relaxed m-0">
-            All your solve records, problem approach notes, flagged review queues, and placement application data are saved directly to your browser&apos;s localStorage. If you choose not to sign in, zero personal data ever leaves your device. You can completely export or wipe your data with one click at any time.
+            All your solve records, problem approach notes, flagged review queues, and interview applications are stored directly in your secure Supabase PostgreSQL database. PostgreSQL Row-Level Security (RLS) policies ensure that only your authenticated account can ever read or modify your private preparation records.
           </p>
         </section>
 
         <section className="p-5 rounded-2xl bg-card border border-border/70 flex flex-col gap-3">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2 m-0">
             <KeyRound className="size-4 text-primary" />
-            <span>3. Optional Supabase Cloud Sync</span>
+            <span>3. Multi-Device Real-Time Synchronization</span>
           </h2>
           <p className="text-muted-foreground text-xs leading-relaxed m-0">
-            When you create an account to sync progress across computers:
+            When you sign in to sync progress across laptops and browsers:
           </p>
           <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-1.5 m-0">
             <li><strong>Authentication:</strong> We use Supabase Auth with industry-standard secure token hashing. Passwords are never stored in plaintext.</li>
-            <li><strong>Row Level Security (RLS):</strong> Supabase PostgreSQL Row Level Security strictly ensures only your authenticated session can read and write your personal progress records, notes, and placement applications.</li>
-            <li><strong>Leaderboard Visibility:</strong> Your display name, streak, and solved count are only shared to the public or cohort leaderboard if you opt in.</li>
+            <li><strong>Data Protection:</strong> TLS encryption in transit protects all cloud queries between your device and the cloud database.</li>
+            <li><strong>Leaderboard Visibility:</strong> Your display name, streak, and solved count are only shared to public or cohort rankings if you join the leaderboard.</li>
           </ul>
         </section>
 
