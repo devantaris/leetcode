@@ -63,25 +63,40 @@ export class CloudSyncService {
 
     this.isSyncing = true;
     try {
-      // 1. Upsert user profile
-      const { error: profileErr } = await sb.from('user_profiles').upsert(
-        {
+      // 1. Upsert user profile (with graceful fallback if newer schema columns aren't present)
+      const fullProfileRow: Record<string, any> = {
+        user_id: payload.userId,
+        display_name: payload.userProfile.name,
+        tagline: payload.userProfile.tagline || 'Software Engineer',
+        target_company: payload.userProfile.targetCompany || 'Top Tech Roles',
+        start_date: payload.userProfile.startDate,
+        target_date: payload.userProfile.targetDate,
+        rest_day: payload.userProfile.restDay || 'sunday',
+        secondary_skill: payload.userProfile.secondarySkill || 'project',
+        theme: payload.userProfile.theme || 'light',
+        updated_at: new Date().toISOString(),
+      };
+      const { error: profileErr } = await sb.from('user_profiles').upsert(fullProfileRow, { onConflict: 'user_id' });
+      if (profileErr) {
+        // Fallback to baseline profile schema
+        const baseProfileRow = {
           user_id: payload.userId,
           display_name: payload.userProfile.name,
-          tagline: payload.userProfile.tagline,
+          tagline: payload.userProfile.tagline || 'Software Engineer',
           start_date: payload.userProfile.startDate,
           target_date: payload.userProfile.targetDate,
-          rest_day: payload.userProfile.restDay,
-          theme: payload.userProfile.theme || 'light',
+          rest_day: payload.userProfile.restDay || 'sunday',
+          secondary_skill: payload.userProfile.secondarySkill || 'project',
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      );
-      if (profileErr) console.warn('[CloudSync] Profile upsert warning:', profileErr.message);
+        };
+        const { error: baseProfErr } = await sb.from('user_profiles').upsert(baseProfileRow, { onConflict: 'user_id' });
+        if (baseProfErr) console.warn('[CloudSync] Profile upsert fallback warning:', baseProfErr.message);
+      }
 
-      // 2. Upsert solves, notes, and flags into user_progress
+      // 2. Upsert solves into user_progress (with graceful fallback if notes/flag columns aren't present)
       const allProblemIds = new Set([
         ...Object.keys(payload.progress).filter((id) => payload.progress[id]),
+        ...Object.keys(payload.solveHistory || {}),
         ...Object.keys(payload.problemNotes || {}),
         ...Object.keys(payload.flaggedProblems || {}).filter((id) => payload.flaggedProblems?.[id]),
       ]);
@@ -101,11 +116,22 @@ export class CloudSyncService {
           const { error: progErr } = await sb.from('user_progress').upsert(batch, {
             onConflict: 'user_id,problem_id',
           });
-          if (progErr) console.warn('[CloudSync] Progress batch upsert warning:', progErr.message);
+          if (progErr) {
+            // Fallback to baseline schema (user_id, problem_id, solved_at)
+            const baseBatch = batch.map((item) => ({
+              user_id: item.user_id,
+              problem_id: item.problem_id,
+              solved_at: item.solved_at,
+            }));
+            const { error: baseProgErr } = await sb.from('user_progress').upsert(baseBatch, {
+              onConflict: 'user_id,problem_id',
+            });
+            if (baseProgErr) console.warn('[CloudSync] Progress batch upsert fallback warning:', baseProgErr.message);
+          }
         }
       }
 
-      // 3. Upsert placements
+      // 3. Upsert placements (with fallback if interview_date/contact_info columns aren't present)
       if (payload.placements.length > 0) {
         const placementRows = payload.placements.map((p) => {
           const isValidUUID = p.id && p.id.includes('-') && p.id.length === 36;
@@ -113,8 +139,8 @@ export class CloudSyncService {
             ...(isValidUUID ? { id: p.id } : {}),
             user_id: payload.userId,
             company: p.company,
-            role: p.role,
-            stage: p.stage,
+            role: p.role || 'Software Engineer',
+            stage: p.stage || 'Applied',
             applied_date: p.appliedDate || new Date().toISOString().split('T')[0],
             interview_date: p.interviewDate || null,
             contact_info: p.contactInfo || '',
@@ -125,18 +151,46 @@ export class CloudSyncService {
         });
 
         const { error: placeErr } = await sb.from('placement_records').upsert(placementRows);
-        if (placeErr) console.warn('[CloudSync] Placement upsert warning:', placeErr.message);
+        if (placeErr) {
+          // Fallback to baseline placement columns
+          const basePlacementRows = payload.placements.map((p) => {
+            const isValidUUID = p.id && p.id.includes('-') && p.id.length === 36;
+            return {
+              ...(isValidUUID ? { id: p.id } : {}),
+              user_id: payload.userId,
+              company: p.company,
+              role: p.role || 'Software Engineer',
+              stage: p.stage || 'Applied',
+              applied_date: p.appliedDate || new Date().toISOString().split('T')[0],
+              compensation: p.compensation || '',
+              notes: p.notes || '',
+            };
+          });
+          const { error: basePlaceErr } = await sb.from('placement_records').upsert(basePlacementRows);
+          if (basePlaceErr) console.warn('[CloudSync] Placement upsert fallback warning:', basePlaceErr.message);
+        }
       }
 
       // 4. Upsert global leaderboard entry
       const totalProblems = CURRICULUM.totalProblems || 332;
+      let daysRemaining = 140;
+      try {
+        if (payload.userProfile?.targetDate) {
+          const diff = new Date(payload.userProfile.targetDate).getTime() - Date.now();
+          daysRemaining = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+        }
+      } catch {
+        daysRemaining = 140;
+      }
+
       const { error: lbErr } = await sb.from('leaderboard_entries').upsert(
         {
           user_id: payload.userId,
           display_name: payload.userProfile.name,
-          tagline: payload.userProfile.tagline,
+          tagline: payload.userProfile.tagline || 'Software Engineer',
           solved_count: payload.solvedCount,
           streak: payload.streak,
+          days_remaining: daysRemaining,
           readiness_pct: Math.min(100, Math.round((payload.solvedCount / totalProblems) * 100)),
           last_synced_at: new Date().toISOString(),
         },
@@ -172,11 +226,28 @@ export class CloudSyncService {
         .eq('user_id', userId)
         .maybeSingle();
 
-      // 2. Fetch progress solves, notes, and flags
-      const { data: progressData } = await sb
+      // 2. Fetch progress solves, notes, and flags with graceful fallback
+      let progressData: any[] | null = null;
+      const { data: richProgData, error: richProgErr } = await sb
         .from('user_progress')
         .select('problem_id, solved_at, approach_notes, is_flagged')
         .eq('user_id', userId);
+
+      if (richProgErr) {
+        // Fallback to baseline columns (problem_id, solved_at)
+        const { data: baseProgData, error: baseProgErr } = await sb
+          .from('user_progress')
+          .select('problem_id, solved_at')
+          .eq('user_id', userId);
+
+        if (baseProgErr) {
+          console.warn('[CloudSync] Pull user_progress error:', baseProgErr.message);
+          return { success: false, error: baseProgErr.message };
+        }
+        progressData = baseProgData || [];
+      } else {
+        progressData = richProgData || [];
+      }
 
       // 3. Fetch placements
       const { data: placementData } = await sb
@@ -211,7 +282,7 @@ export class CloudSyncService {
       const notesMap: Record<string, string> = {};
       const flagMap: Record<string, boolean> = {};
 
-      if (progressData) {
+      if (progressData && progressData.length > 0) {
         progressData.forEach((row: any) => {
           progressMap[row.problem_id] = true;
           if (row.solved_at) historyMap[row.problem_id] = row.solved_at;
@@ -291,8 +362,19 @@ export class CloudSyncService {
         { onConflict: 'user_id,problem_id' }
       );
       if (error) {
-        console.warn('[CloudSync] recordSolve warning:', error.message);
-        return { success: false, error: error.message };
+        // Fallback without difficulty column
+        const { error: baseErr } = await sb.from('user_progress').upsert(
+          {
+            user_id: userId,
+            problem_id: problemId,
+            solved_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,problem_id' }
+        );
+        if (baseErr) {
+          console.warn('[CloudSync] recordSolve fallback warning:', baseErr.message);
+          return { success: false, error: baseErr.message };
+        }
       }
       return { success: true };
     } catch (err: unknown) {
@@ -353,8 +435,19 @@ export class CloudSyncService {
       });
 
       if (error) {
-        console.warn('[CloudSync] recordBatchSolves warning:', error.message);
-        return { success: false, error: error.message };
+        // Fallback without difficulty column
+        const baseRows = solves.map((s) => ({
+          user_id: userId,
+          problem_id: s.problem_id,
+          solved_at: s.solved_at || new Date().toISOString(),
+        }));
+        const { error: baseErr } = await sb.from('user_progress').upsert(baseRows, {
+          onConflict: 'user_id,problem_id',
+        });
+        if (baseErr) {
+          console.warn('[CloudSync] recordBatchSolves fallback warning:', baseErr.message);
+          return { success: false, error: baseErr.message };
+        }
       }
       return { success: true };
     } catch (err: unknown) {
@@ -394,7 +487,6 @@ export class CloudSyncService {
         .map((k) => ({
           user_id: userId,
           problem_id: k,
-          difficulty: 'Medium',
           solved_at: localHistory[k] || new Date().toISOString(),
         }));
 
@@ -429,8 +521,8 @@ export class CloudSyncService {
         ...(isValidUUID ? { id: placement.id } : {}),
         user_id: userId,
         company: placement.company,
-        role: placement.role,
-        stage: placement.stage,
+        role: placement.role || 'Software Engineer',
+        stage: placement.stage || 'Applied',
         applied_date: placement.appliedDate || new Date().toISOString().split('T')[0],
         interview_date: placement.interviewDate || null,
         contact_info: placement.contactInfo || '',
@@ -441,8 +533,22 @@ export class CloudSyncService {
 
       const { error } = await sb.from('placement_records').upsert(row);
       if (error) {
-        console.warn('[CloudSync] savePlacement warning:', error.message);
-        return { success: false, error: error.message };
+        // Fallback to baseline placement columns
+        const baseRow = {
+          ...(isValidUUID ? { id: placement.id } : {}),
+          user_id: userId,
+          company: placement.company,
+          role: placement.role || 'Software Engineer',
+          stage: placement.stage || 'Applied',
+          applied_date: placement.appliedDate || new Date().toISOString().split('T')[0],
+          compensation: placement.compensation || '',
+          notes: placement.notes || '',
+        };
+        const { error: baseErr } = await sb.from('placement_records').upsert(baseRow);
+        if (baseErr) {
+          console.warn('[CloudSync] savePlacement fallback warning:', baseErr.message);
+          return { success: false, error: baseErr.message };
+        }
       }
       return { success: true };
     } catch (err: unknown) {
@@ -490,24 +596,36 @@ export class CloudSyncService {
     if (!sb || !userId) return { success: false, error: 'Database unauthenticated' };
 
     try {
-      const { error } = await sb.from('user_profiles').upsert(
-        {
+      const fullRow = {
+        user_id: userId,
+        display_name: profile.name,
+        tagline: profile.tagline || 'Software Engineer',
+        target_company: profile.targetCompany || 'Top Tech Roles',
+        start_date: profile.startDate,
+        target_date: profile.targetDate,
+        rest_day: profile.restDay || 'sunday',
+        secondary_skill: profile.secondarySkill || 'project',
+        theme: profile.theme || 'light',
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await sb.from('user_profiles').upsert(fullRow, { onConflict: 'user_id' });
+      if (error) {
+        // Fallback to baseline profile schema
+        const baseRow = {
           user_id: userId,
           display_name: profile.name,
           tagline: profile.tagline || 'Software Engineer',
-          target_company: profile.targetCompany || 'Top Tech Roles',
           start_date: profile.startDate,
           target_date: profile.targetDate,
           rest_day: profile.restDay || 'sunday',
           secondary_skill: profile.secondarySkill || 'project',
-          theme: profile.theme || 'light',
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      );
-      if (error) {
-        console.warn('[CloudSync] saveProfile warning:', error.message);
-        return { success: false, error: error.message };
+        };
+        const { error: baseErr } = await sb.from('user_profiles').upsert(baseRow, { onConflict: 'user_id' });
+        if (baseErr) {
+          console.warn('[CloudSync] saveProfile fallback warning:', baseErr.message);
+          return { success: false, error: baseErr.message };
+        }
       }
       return { success: true };
     } catch (err: unknown) {
@@ -748,7 +866,10 @@ export class CloudSyncService {
         },
         { onConflict: 'user_id,problem_id' }
       );
-      if (error) return { success: false, error: error.message };
+      if (error) {
+        console.warn('[CloudSync] Note sync warning (approach_notes column not in DB):', error.message);
+        return { success: false, error: error.message };
+      }
       return { success: true };
     } catch (err: unknown) {
       return { success: false, error: err instanceof Error ? err.message : String(err) };
@@ -776,7 +897,10 @@ export class CloudSyncService {
         },
         { onConflict: 'user_id,problem_id' }
       );
-      if (error) return { success: false, error: error.message };
+      if (error) {
+        console.warn('[CloudSync] Flag sync warning (is_flagged column not in DB):', error.message);
+        return { success: false, error: error.message };
+      }
       return { success: true };
     } catch (err: unknown) {
       return { success: false, error: err instanceof Error ? err.message : String(err) };

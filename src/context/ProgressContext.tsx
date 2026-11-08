@@ -705,20 +705,20 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (user && user.provider === 'supabase') {
         setCloudSyncStatus('syncing');
 
-        // Authoritative pull from Supabase (cloud-only: no local merge)
+        // Authoritative pull from Supabase
         const pull = await CloudSyncService.pullFromCloud(user.id);
         if (pull.success && pull.data) {
-          if (pull.data.progress) {
-            setProgress(pull.data.progress);
+          if (pull.data.progress && Object.keys(pull.data.progress).length > 0) {
+            setProgress((prev) => ({ ...prev, ...pull.data.progress }));
           }
-          if (pull.data.solveHistory) {
-            setSolveHistory(pull.data.solveHistory);
+          if (pull.data.solveHistory && Object.keys(pull.data.solveHistory).length > 0) {
+            setSolveHistory((prev) => ({ ...prev, ...pull.data.solveHistory }));
           }
-          if (pull.data.problemNotes) {
-            setProblemNotes(pull.data.problemNotes);
+          if (pull.data.problemNotes && Object.keys(pull.data.problemNotes).length > 0) {
+            setProblemNotes((prev) => ({ ...prev, ...pull.data.problemNotes }));
           }
-          if (pull.data.flaggedProblems) {
-            setFlaggedProblems(pull.data.flaggedProblems);
+          if (pull.data.flaggedProblems && Object.keys(pull.data.flaggedProblems).length > 0) {
+            setFlaggedProblems((prev) => ({ ...prev, ...pull.data.flaggedProblems }));
           }
           if (pull.data.activeCohort) {
             setActiveCohort(pull.data.activeCohort);
@@ -740,7 +740,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setCloudSyncStatus('synced');
           setLastCloudSync(new Date());
         } else {
-          setCloudSyncStatus('synced');
+          setCloudSyncStatus(pull.success ? 'synced' : 'error');
         }
       } else {
         // User signed out — wipe all progress state
@@ -781,15 +781,23 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     setAuthUser(res.user);
     if (res.user && res.user.provider === 'supabase') {
-      // Pull authoritative cloud state (cloud-only: no local merge)
+      // Pull authoritative cloud state
       const pull = await CloudSyncService.pullFromCloud(res.user.id);
       if (pull.success && pull.data) {
-        if (pull.data.progress) setProgress(pull.data.progress);
-        if (pull.data.solveHistory) setSolveHistory(pull.data.solveHistory);
-        if (pull.data.problemNotes) setProblemNotes(pull.data.problemNotes);
-        if (pull.data.flaggedProblems) setFlaggedProblems(pull.data.flaggedProblems);
+        if (pull.data.progress && Object.keys(pull.data.progress).length > 0) {
+          setProgress((prev) => ({ ...prev, ...pull.data.progress }));
+        }
+        if (pull.data.solveHistory && Object.keys(pull.data.solveHistory).length > 0) {
+          setSolveHistory((prev) => ({ ...prev, ...pull.data.solveHistory }));
+        }
+        if (pull.data.problemNotes && Object.keys(pull.data.problemNotes).length > 0) {
+          setProblemNotes((prev) => ({ ...prev, ...pull.data.problemNotes }));
+        }
+        if (pull.data.flaggedProblems && Object.keys(pull.data.flaggedProblems).length > 0) {
+          setFlaggedProblems((prev) => ({ ...prev, ...pull.data.flaggedProblems }));
+        }
         if (pull.data.activeCohort) setActiveCohort(pull.data.activeCohort);
-        if (pull.data.placements) setPlacements(pull.data.placements);
+        if (pull.data.placements && pull.data.placements.length > 0) setPlacements(pull.data.placements);
         if (pull.data.userProfile) setUserProfile(pull.data.userProfile);
       }
       setCloudSyncStatus('synced');
