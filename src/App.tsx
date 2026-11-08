@@ -25,7 +25,7 @@ import { AdminUsersPage } from './admin/pages/AdminUsersPage';
 import { AdminCohortsPage } from './admin/pages/AdminCohortsPage';
 
 function RootRoute({ onSelectMode }: { onSelectMode: (mode: 'os' | 'web') => void }) {
-  const { authUser, isAuthLoading } = useProgress();
+  const { isAuthLoading } = useProgress();
 
   if (isAuthLoading) {
     return (
@@ -36,13 +36,8 @@ function RootRoute({ onSelectMode }: { onSelectMode: (mode: 'os' | 'web') => voi
     );
   }
 
-  // If user is already authenticated, take them directly into their chosen workstation
-  if (authUser) {
-    const savedMode = localStorage.getItem('grindos_ui_mode');
-    return <Navigate to={savedMode === 'os' ? '/os' : '/dashboard'} replace />;
-  }
-
-  // Unauthenticated guests see the marketing landing page
+  // The landing page at root `/` is accessible to both guests and authenticated users.
+  // Authenticated users see personalized "Enter App" and "Resume" controls rather than being force-redirected.
   return <LandingPage onSelectMode={onSelectMode} />;
 }
 

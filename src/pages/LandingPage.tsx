@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { 
   Timer, ArrowRight, ChevronDown, ChevronUp,
@@ -14,6 +14,7 @@ import { sounds } from '../utils/audio';
 import { AuthModal } from '../components/modals/AuthModal';
 import { PricingModal } from '../components/modals/PricingModal';
 import { DemoChoiceModal } from '../components/modals/DemoChoiceModal';
+import MeadowRiseFooter from '@/components/ui/meadow-rise-footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -234,17 +235,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
       </header>
 
       {/* ── HERO SECTION: DUAL FORK ── */}
-      <section className="max-w-5xl mx-auto px-5 pt-16 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-xs text-muted-foreground mb-5 shadow-xs">
-          <span className="text-emerald-500 font-semibold">● 100% Shared Cloud Database</span>
-          <span className="text-border">•</span>
-          <span>Two Complementary Interfaces</span>
-          <span className="text-border">•</span>
-          <span>Zero Data Silos</span>
+      <section className="relative max-w-5xl mx-auto px-5 pt-16 pb-10 text-center">
+        {/* Ambient atmospheric backdrop glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[420px] pointer-events-none overflow-hidden -z-10">
+          <div className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[550px] h-[280px] bg-emerald-500/10 blur-[110px] rounded-full" />
         </div>
 
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto mb-4 text-foreground">
-          One Structured Syllabus.<br />Two Distinct Realities.
+        {/* 21st.dev luxury status pill */}
+        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-card/80 border border-emerald-500/20 text-xs text-muted-foreground mb-6 shadow-sm backdrop-blur-xs">
+          <span className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="text-emerald-400 font-medium">100% Shared Cloud State</span>
+          <span className="text-border">/</span>
+          <span>Two Interfaces</span>
+          <span className="text-border">/</span>
+          <span className="text-foreground/80">Zero Silos</span>
+        </div>
+
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] max-w-4xl mx-auto mb-5 text-foreground">
+          One Structured Syllabus.<br />
+          <span style={{ fontFamily: '"Instrument Serif", "Cormorant Garamond", Georgia, serif' }} className="italic font-normal text-emerald-400">
+            Two Distinct Realities.
+          </span>
         </h1>
 
         <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-6">
@@ -257,7 +271,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
           {authUser ? (
             <button
               onClick={() => handleLaunch('web')}
-              className="text-sm font-bold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
+              className="text-sm font-bold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               <span>Go to Dashboard</span>
               <ArrowRight size={14} />
@@ -266,22 +280,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
             <>
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="text-sm font-bold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
+                className="text-sm font-semibold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 <span>Start 140-Day Prep Free</span>
                 <ArrowRight size={14} />
               </button>
               <button
                 onClick={() => setIsDemoModalOpen(true)}
-                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-xs"
                 title="Preview GrindOS with sample solved problems and telemetry"
               >
-                <Sparkles size={14} />
+                <Sparkles size={14} className="text-emerald-400" />
                 <span>Explore Interactive Demo</span>
               </button>
               <button
                 onClick={() => setIsPricingModalOpen(true)}
-                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-foreground flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-border bg-card/80 hover:bg-muted text-foreground flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 <CreditCard size={14} />
                 <span>Lifetime Pro ($29)</span>
@@ -1002,54 +1016,61 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="border-t border-border py-8 px-5 text-center text-xs text-muted-foreground flex flex-col gap-3">
-        <div className="flex justify-center gap-4 flex-wrap items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleLaunch('os')}
-            className="text-xs h-8 gap-1.5 font-mono text-muted-foreground hover:text-foreground"
-          >
-            <Terminal className="size-3.5" />
-            <span>Retro Terminal OS</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleLaunch('web')}
-            className="text-xs h-8 gap-1.5 font-semibold text-muted-foreground hover:text-foreground"
-          >
-            <Sparkles className="size-3.5" />
-            <span>Modern Web App</span>
-          </Button>
-          <Link to="/curriculum" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Curriculum
-          </Link>
-          <Link to="/analytics" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Analytics
-          </Link>
-          <Link to="/leaderboard" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Leaderboard
-          </Link>
-          <button
-            type="button"
-            onClick={() => setIsPricingModalOpen(true)}
-            className="text-xs text-muted-foreground hover:text-foreground hover:underline cursor-pointer bg-transparent border-none p-0"
-          >
-            Pricing &amp; Pro
-          </button>
-          <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Terms
-          </Link>
-          <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Privacy
-          </Link>
-        </div>
-        <div className="font-mono text-[11px] text-muted-foreground/80">
-          {APP_CONFIG.name} • Minimalist Placement Operating System • Dual-Engine Architecture
-        </div>
-      </footer>
+      {/* ── MEADOW RISE INTERACTIVE CANVAS FOOTER ── */}
+      <MeadowRiseFooter
+        name="GrindOS"
+        brandHref="/"
+        heading="Master 140 days of *algorithmic prep* today."
+        subheading="332 curated LeetCode problems. Spaced repetition telemetry. Dual-engine workstation."
+        cta={{
+          label: "Start 140-Day Prep Free",
+          onClick: () => setIsAuthModalOpen(true),
+        }}
+        tagline="A disciplined placement operating system designed to get engineers and students placement-ready for Tier-1 tech companies."
+        placeholder="Enter your email for placement drops"
+        onSubscribe={async (email) => {
+          toast.success(`Subscribed ${email} for placement drops! 🚀`);
+        }}
+        columns={[
+          {
+            title: "Workstation",
+            links: [
+              { label: "Modern Bento App", onClick: () => handleLaunch('web') },
+              { label: "Retro Terminal OS", onClick: () => handleLaunch('os') },
+              { label: "Interactive Demo Sandbox", onClick: () => setIsDemoModalOpen(true) },
+              { label: "Curriculum Syllabus", href: "#curriculum" },
+            ],
+          },
+          {
+            title: "Preparation",
+            links: [
+              { label: "Placement Tracker", onClick: () => handleLaunch('web') },
+              { label: "Global Peer Cohorts", onClick: () => handleLaunch('web') },
+              { label: "Top 150 Benchmarks", href: "#features" },
+              { label: "Lifetime Pro License", onClick: () => setIsPricingModalOpen(true) },
+            ],
+          },
+          {
+            title: "Legal & System",
+            links: [
+              { label: "Pricing & Plans", onClick: () => setIsPricingModalOpen(true) },
+              { label: "Terms of Service", href: "/terms" },
+              { label: "Privacy Policy", href: "/privacy" },
+              { label: "Stealth Ops Console", href: "/_ops" },
+            ],
+          },
+        ]}
+        socialTitle="Community"
+        socials={[
+          { icon: "x", href: "https://x.com", label: "X (Twitter)" },
+          { icon: "linkedin", href: "https://linkedin.com", label: "LinkedIn" },
+        ]}
+        legal={[
+          { label: "Privacy Policy", href: "/privacy" },
+          { label: "Terms of Service", href: "/terms" },
+        ]}
+        copyright={`© ${new Date().getFullYear()} GrindOS. All rights reserved. Dual-Engine Placement Workstation.`}
+      />
 
       {/* Auth, Pricing & Demo Choice Modals */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

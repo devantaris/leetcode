@@ -175,18 +175,19 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col justify-between h-full gap-6">
       <div className="flex flex-col gap-6">
-        {/* Brand Header */}
+        {/* Brand Header — Links to Landing Page / Home */}
         <Link
-          to="/dashboard"
+          to="/"
           onClick={onNavigate}
-          className="flex items-center gap-3 px-2 py-1 transition-opacity hover:opacity-90"
+          className="flex items-center gap-3 px-2 py-1 transition-opacity hover:opacity-90 group"
+          title="Return to GrindOS Home & Landing Page"
         >
-          <div className="size-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-mono font-bold text-sm shadow-xs shrink-0">
+          <div className="size-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-mono font-bold text-sm shadow-xs shrink-0 group-hover:scale-105 transition-transform">
             {APP_CONFIG.shortName}
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="font-sans font-bold text-lg tracking-tight text-foreground">
+              <span className="font-sans font-bold text-lg tracking-tight text-foreground group-hover:text-primary transition-colors">
                 {APP_CONFIG.name}
               </span>
               <button
@@ -637,7 +638,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted/80 transition-colors text-left"
                       >
                         <LayoutDashboard className="size-4 text-muted-foreground" />
-                        <span>Experience Portal</span>
+                        <span>GrindOS Home &amp; Landing</span>
                       </button>
                     )}
 

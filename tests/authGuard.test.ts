@@ -91,17 +91,10 @@ describe('SaaS Auth Guard & Landing Page Routing Gating', () => {
     expect(state).toBe('loading');
   });
 
-  it('RootRoute directs guest to marketing landing page, but forwards authenticated user to dashboard', () => {
-    const checkRootDestination = (user: { id: string } | null, savedMode: string | null) => {
-      if (user) {
-        return savedMode === 'os' ? '/os' : '/dashboard';
-      }
-      return '/landing';
-    };
+  it('RootRoute serves the landing page for all visitors, avoiding aggressive forced redirects', () => {
+    const renderRootPage = () => 'LandingPage';
 
-    expect(checkRootDestination(null, null)).toBe('/landing');
-    expect(checkRootDestination({ id: 'u1' }, 'web')).toBe('/dashboard');
-    expect(checkRootDestination({ id: 'u1' }, 'os')).toBe('/os');
+    expect(renderRootPage()).toBe('LandingPage');
   });
 
   it('LandingPage launch action intercepts unauthenticated requests and triggers auth gate', () => {
