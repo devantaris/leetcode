@@ -1388,39 +1388,6 @@ export default function MeadowRiseFooter({
     let raf = 0
     let last = 0
 
-    const measure = () => {
-      W = Math.max(1, scene.clientWidth)
-      H = Math.max(1, hero.offsetHeight)
-      const bodyH = Math.max(0, root.offsetHeight - H)
-      overlap = Math.round(Math.min(340, Math.max(160, bodyH * 0.6)))
-      SH = H + overlap
-      scene.style.height = SH + "px"
-      cs = Math.min(window.devicePixelRatio || 1, 2)
-      const cw = Math.round(W * cs)
-      const ch = Math.round(SH * cs)
-      if (canvas.width !== cw || canvas.height !== ch) {
-        canvas.width = cw
-        canvas.height = ch
-      }
-      const sig = W + "x" + H + "x" + SH
-      if (sig !== builtFor) {
-        // Keep drawing the old ridges until the new ones are painted, so a
-        // resize never blinks to an empty sky.
-        window.clearTimeout(rebuildTimer)
-        const first = builtFor === ""
-        builtFor = sig
-        const go = () => {
-          building = 0
-          job = null
-          makeMist()
-          makeStars()
-          wake()
-        }
-        if (first) go()
-        else rebuildTimer = window.setTimeout(go, 140)
-      }
-    }
-
     // Ridges paint a slice of columns at a time inside a per-frame budget, so
     // the page never stalls; the horizon line is the progress bar.
     type Job = { i: number; c: HTMLCanvasElement; g: CanvasRenderingContext2D; img: ImageData; o: MrfPaintOptions; w: number; h: number; col: number }
@@ -1657,6 +1624,39 @@ export default function MeadowRiseFooter({
 
     const wake = () => {
       if (!raf && (visible || building < n)) raf = requestAnimationFrame(tick)
+    }
+
+    const measure = () => {
+      W = Math.max(1, scene.clientWidth)
+      H = Math.max(1, hero.offsetHeight)
+      const bodyH = Math.max(0, root.offsetHeight - H)
+      overlap = Math.round(Math.min(340, Math.max(160, bodyH * 0.6)))
+      SH = H + overlap
+      scene.style.height = SH + "px"
+      cs = Math.min(window.devicePixelRatio || 1, 2)
+      const cw = Math.round(W * cs)
+      const ch = Math.round(SH * cs)
+      if (canvas.width !== cw || canvas.height !== ch) {
+        canvas.width = cw
+        canvas.height = ch
+      }
+      const sig = W + "x" + H + "x" + SH
+      if (sig !== builtFor) {
+        // Keep drawing the old ridges until the new ones are painted, so a
+        // resize never blinks to an empty sky.
+        window.clearTimeout(rebuildTimer)
+        const first = builtFor === ""
+        builtFor = sig
+        const go = () => {
+          building = 0
+          job = null
+          makeMist()
+          makeStars()
+          wake()
+        }
+        if (first) go()
+        else rebuildTimer = window.setTimeout(go, 140)
+      }
     }
 
     const onMove = (e: PointerEvent) => {
