@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+demo-video/
+*.webm
+scripts/*.png
 
 # Editor directories and files
 .vscode/*

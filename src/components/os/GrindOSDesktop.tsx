@@ -441,8 +441,10 @@ export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb, o
   }, [closeApp, openApp, toggleSound, windows, onSwitchToWeb, onGoToHome]);
 
   // Handle Boot Complete
-  const handleBootComplete = () => {
-    sessionStorage.setItem('grindos_booted', 'true');
+  const handleBootComplete = useCallback(() => {
+    try {
+      sessionStorage.setItem('grindos_booted', 'true');
+    } catch {}
     setIsBooted(true);
     addSysLog('desktop shell loaded — system ready', 'ok');
 
@@ -450,7 +452,7 @@ export const GrindOSDesktop: React.FC<GrindOSDesktopProps> = ({ onSwitchToWeb, o
     if (userProfile.name === 'User') {
       setTimeout(() => openApp('setup'), 300);
     }
-  };
+  }, [userProfile.name, openApp, addSysLog]);
 
   const currentDayNum = Math.min(Math.max(stats.currentDay || 1, 1), CURRICULUM.totalDays);
   const operatorHandle = userProfile.name.toLowerCase().replace(/\s+/g, '_');

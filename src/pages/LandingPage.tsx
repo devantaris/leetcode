@@ -1,75 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { 
-  Timer, ArrowRight, ChevronDown, ChevronUp,
-  Check, Target, Building2, Briefcase, Users, Shield,
-  Terminal, Sparkles, RefreshCw, LogIn, CreditCard, UserCheck
-} from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { APP_CONFIG } from '../config/appConfig';
 import { useProgress } from '../context/ProgressContext';
-import { CURRICULUM } from '../data/curriculumStats';
 import { sounds } from '../utils/audio';
 import { AuthModal } from '../components/modals/AuthModal';
 import { PricingModal } from '../components/modals/PricingModal';
 import { DemoChoiceModal } from '../components/modals/DemoChoiceModal';
-import MeadowRiseFooter from '@/components/ui/meadow-rise-footer';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-
-const PHASES = [
-  {
-    id: 1,
-    weeks: 'Weeks 1-5',
-    title: 'Linear Foundations & Core Pointers',
-    subtitle: 'Arrays, Two Pointers, Sliding Window, Prefix Sums & Hash Maps',
-    problems: 65,
-    description: 'Master core patterns tested in 70% of technical phone screens. Eliminates brute-force O(N^2) habits.',
-    keyPatterns: ['Opposite & Fast/Slow Pointers', 'Dynamic & Fixed Sliding Window', 'Prefix Sums & Frequency Counting', 'Monotonic Stack / Queue'],
-    sampleProblems: ['3Sum (LC 15)', 'Longest Substring Without Repeating (LC 3)', 'Daily Temperatures (LC 739)', 'Trapping Rain Water (LC 42)']
-  },
-  {
-    id: 2,
-    weeks: 'Weeks 6-10',
-    title: 'Hierarchical & Graph Algorithms',
-    subtitle: 'Binary Trees, BSTs, BFS/DFS, Topological Sort & Shortest Path',
-    problems: 75,
-    description: 'Deconstruct complex tree traversals and graph algorithms into reusable recursive and iterative mental models.',
-    keyPatterns: ['Tree DFS & Path Sum', 'Tree Level-Order BFS', 'Connected Components (Flood Fill)', 'Topological Sort (Kahn\'s Algorithm)', 'Dijkstra & Shortest Path'],
-    sampleProblems: ['Lowest Common Ancestor (LC 236)', 'Course Schedule (LC 207)', 'Number of Islands (LC 200)', 'Word Ladder (LC 127)']
-  },
-  {
-    id: 3,
-    weeks: 'Weeks 11-15',
-    title: 'Dynamic Programming & Memoization',
-    subtitle: '1D/2D DP, Subsequences, Knapsack & State Transitions',
-    problems: 65,
-    description: 'Demystify DP by learning state definitions and recurrence transitions rather than memorizing solutions.',
-    keyPatterns: ['0/1 Knapsack & Unbounded Knapsack', 'Longest Common Subsequence (LCS)', 'State Machine DP (Stock Series)', 'Interval DP & Matrix Chain'],
-    sampleProblems: ['Coin Change (LC 322)', 'Longest Increasing Subsequence (LC 300)', 'Edit Distance (LC 72)', 'Target Sum (LC 494)']
-  },
-  {
-    id: 4,
-    weeks: 'Weeks 16-18',
-    title: 'Architecture & System Design Foundations',
-    subtitle: 'Distributed Caching, Rate Limiting, Partitioning & Resiliency',
-    problems: 28,
-    description: 'Bridge algorithmic thinking with high-throughput distributed system design evaluated in senior and FAANG loops.',
-    keyPatterns: ['Token Bucket & Leaky Bucket Rate Limiters', 'Consistent Hashing & Ring Partitions', 'Cache-Aside & Write-Through Strategies', 'Distributed Unique IDs (Snowflake)'],
-    sampleProblems: ['Design URL Shortener (TinyURL)', 'Design Distributed Rate Limiter', 'Design Key-Value Store with LSM', 'Design Notification Pipeline']
-  },
-  {
-    id: 5,
-    weeks: 'Weeks 19-25',
-    title: 'Offer Sprint & Timed Mock Pressure',
-    subtitle: 'High-Frequency Speedruns, Top 150 Benchmarks & Mock Interviews',
-    problems: 74,
-    description: 'Simulate live interview pressure under strict 45-minute constraints. Focuses exclusively on top company-tagged variants.',
-    keyPatterns: ['45-Minute Timed Mock Runs', 'Cross-Topic Pattern Blending', 'Complexity Verbalization', 'Edge-Case Explaining Under Pressure'],
-    sampleProblems: ['LRU Cache (LC 146)', 'Median of Two Sorted Arrays (LC 4)', 'Merge k Sorted Lists (LC 23)', 'Alien Dictionary (LC 269)']
-  }
-];
+import { MeadowRiseHero } from '../components/ui/meadow-rise-hero';
+import { MeadowRiseFooterExact } from '../components/ui/meadow-rise-footer-exact';
 
 interface LandingPageProps {
   onSelectMode?: (mode: 'os' | 'web') => void;
@@ -78,21 +17,25 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { userProfile, stats, authUser, isDemoMode, loadDemoData } = useProgress();
+  const { userProfile, authUser, isDemoMode, loadDemoData } = useProgress();
 
-  const [demoSolved, setDemoSolved] = useState<Record<string, boolean>>({
-    'p1': true,
-    'p2': false,
-    'p3': false
+  // Interactive Demo Checklist State (Day 14: Sliding Window & Two Pointers)
+  const [demoSolved, setDemoSolved] = useState<Record<number, boolean>>({
+    1: true,
+    2: false,
+    3: false,
   });
 
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  // Accordion states
   const [openPhase, setOpenPhase] = useState<number | null>(1);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Modal open states
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
-  // Automatically prompt auth modal if user arrived from an auth-guarded route
+  // Automatically prompt auth modal if arriving from an auth-guarded route
   useEffect(() => {
     if (searchParams.get('auth') === 'required' && !authUser && !isDemoMode) {
       setIsAuthModalOpen(true);
@@ -103,6 +46,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
     }
   }, [searchParams, authUser, isDemoMode]);
 
+  // Mode launch helper
   const handleLaunch = (mode: 'os' | 'web') => {
     sounds.playTickSound();
     if (!authUser && !isDemoMode) {
@@ -119,7 +63,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
       try {
         localStorage.setItem('grindos_ui_mode', mode);
       } catch {
-        // ignore
+        // ignore storage errors
       }
       if (mode === 'os') {
         navigate('/os');
@@ -129,10 +73,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
     }
   };
 
+  // Demo launch helper
   const handleTryDemo = (mode: 'os' | 'web' = 'web') => {
     sounds.playTickSound();
     loadDemoData();
-    toast.success('Loaded interactive demo dataset! 🚀');
     if (mode === 'os') {
       navigate('/os');
     } else {
@@ -140,946 +84,1282 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onSelectMode }) => {
     }
   };
 
-  const toggleDemoProblem = (id: string) => {
-    setDemoSolved(prev => {
-      const next = { ...prev, [id]: !prev[id] };
-      if (!prev[id]) {
-        sounds.playTickSound();
-        const allDone = Object.values(next).every(Boolean);
-        if (allDone) {
-          sounds.playVictorySound();
-          confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-        }
+  // Toggle problem inside the live demo card
+  const toggleProblem = (id: number) => {
+    sounds.playTickSound();
+    setDemoSolved((prev) => {
+      const updated = { ...prev, [id]: !prev[id] };
+      const solvedCount = Object.values(updated).filter(Boolean).length;
+      if (solvedCount === 3) {
+        sounds.playVictorySound();
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
       }
-      return next;
+      return updated;
     });
   };
 
   const solvedDemoCount = Object.values(demoSolved).filter(Boolean).length;
-  const progressPct = Math.round((stats.solvedCount / Math.max(1, stats.totalProblems)) * 100);
+  const demoProgressPct = (solvedDemoCount / 3) * 100;
+
+  // Toggle curriculum accordion
+  const toggleAccordion = (id: number) => {
+    sounds.playTickSound();
+    setOpenPhase((prev) => (prev === id ? null : id));
+  };
+
+  // Toggle FAQ accordion
+  const toggleFaq = (id: number) => {
+    sounds.playTickSound();
+    setOpenFaq((prev) => (prev === id ? null : id));
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary">
-      {/* ── TOP NAV ── */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="size-7 rounded-lg bg-foreground text-background flex items-center justify-center font-extrabold text-xs font-mono">
-            {APP_CONFIG.shortName}
+    <div className="min-h-screen bg-[#253019] text-[#eef1e6] font-['Inter_Tight',sans-serif] selection:bg-[#4d5d2c] selection:text-white">
+      {/* ── Scoped Meadow Rise Styles ── */}
+      <style>{`
+        :root {
+          --mrf-sans: "Inter Tight", "Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
+          --mrf-serif: "Instrument Serif", "Cormorant Garamond", Georgia, serif;
+          --mrf-mono: "JetBrains Mono", monospace;
+          --mrf-ground: #253019;
+          --mrf-ink: #11140d;
+          --mrf-sub: #3b4234;
+          --mrf-pill: #ffffff;
+          --mrf-pill-ink: #11140d;
+          --mrf-text: #eef1e6;
+          --mrf-muted: #a9b49c;
+          --mrf-line: rgba(238, 241, 230, 0.16);
+          --mrf-max: 1240px;
+        }
+
+        .mrf-scene {
+          position: absolute;
+          inset: 0 0 auto 0;
+          height: 100%;
+          z-index: 0;
+          pointer-events: none;
+        }
+        .mrf-scene canvas {
+          display: block;
+          width: 100%;
+          height: 100%;
+          max-width: none;
+        }
+
+        .mrf-h {
+          margin: 0;
+          max-width: 16ch;
+          font-family: var(--mrf-sans);
+          font-weight: 500;
+          font-size: clamp(38px, 6.3vw, 86px);
+          line-height: 1.02;
+          letter-spacing: -0.042em;
+          color: var(--mrf-ink);
+          text-wrap: balance;
+        }
+        .mrf-line { display: block; white-space: normal; }
+        .mrf-w {
+          display: inline-block;
+          overflow: hidden;
+          padding: 0.04em 0.06em 0.16em;
+          margin: -0.04em -0.06em -0.16em;
+          vertical-align: top;
+        }
+        .mrf-wi {
+          display: inline-block;
+          transform: translate3d(0, 108%, 0) rotate(4deg);
+          transform-origin: 0 100%;
+          transition: transform 1150ms cubic-bezier(.16, 1, .3, 1);
+          transition-delay: calc(var(--d, 0) * 1ms);
+        }
+        .mrf-acc .mrf-wi {
+          font-family: var(--mrf-serif);
+          font-style: italic;
+          font-weight: 400;
+          font-size: 1.07em;
+          letter-spacing: -0.02em;
+          padding-right: 0.04em;
+          transform: translate3d(-0.08em, 0, 0) skewX(-10deg);
+          clip-path: inset(-20% 100% -30% -5%);
+          filter: blur(6px);
+          opacity: 0.2;
+          transition: clip-path 1400ms cubic-bezier(.65, 0, .25, 1), transform 1600ms cubic-bezier(.16, 1, .3, 1), filter 1100ms ease, opacity 900ms ease;
+          transition-delay: calc(var(--d, 0) * 1ms);
+        }
+        .mrf-in .mrf-wi { transform: none; }
+        .mrf-in .mrf-acc .mrf-wi { clip-path: inset(-20% -10% -30% -5%); filter: blur(0); opacity: 1; }
+
+        .mrf-sub {
+          margin: clamp(16px, 2.2vw, 26px) auto 0;
+          max-width: 46ch;
+          font-size: clamp(14px, 1.15vw, 16px);
+          line-height: 1.55;
+          letter-spacing: -0.005em;
+          color: var(--mrf-sub);
+        }
+        .mrf-r {
+          opacity: 0;
+          transform: translate3d(0, 14px, 0);
+          filter: blur(4px);
+          transition: opacity 900ms ease, transform 1100ms cubic-bezier(.16, 1, .3, 1), filter 900ms ease;
+          transition-delay: calc(var(--d, 0) * 1ms);
+        }
+        .mrf-in .mrf-r { opacity: 1; transform: none; filter: blur(0); }
+
+        .mrf-cta {
+          --mx: 0px;
+          --my: 0px;
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          height: 42px;
+          padding: 0 8px 0 20px;
+          border-radius: 999px;
+          background: var(--mrf-pill);
+          color: var(--mrf-pill-ink);
+          font-size: 13.5px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+          text-decoration: none;
+          overflow: hidden;
+          box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 10px 30px -12px rgba(20, 30, 10, 0.45), 0 2px 6px -2px rgba(20, 30, 10, 0.25);
+          transform: translate3d(var(--mx), var(--my), 0);
+          transition: transform 500ms cubic-bezier(.2, .9, .3, 1.2), color 450ms ease, box-shadow 450ms ease;
+        }
+        .mrf-cta::before {
+          content: "";
+          position: absolute;
+          left: var(--fx, 50%);
+          top: var(--fy, 50%);
+          width: 260px;
+          height: 260px;
+          margin: -130px 0 0 -130px;
+          border-radius: 50%;
+          background: var(--mrf-ground);
+          transform: scale(0);
+          transition: transform 650ms cubic-bezier(.16, 1, .3, 1);
+        }
+        .mrf-cta > * { position: relative; z-index: 1; }
+        .mrf-cta-arrow {
+          position: relative;
+          display: grid;
+          place-items: center;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: var(--mrf-ground);
+          color: var(--mrf-pill);
+          overflow: hidden;
+          transition: background 450ms ease, color 450ms ease;
+        }
+        .mrf-cta-arrow svg { grid-area: 1 / 1; transition: transform 520ms cubic-bezier(.65, 0, .25, 1); }
+        .mrf-cta-arrow .mrf-a2 { transform: translate(-150%, 150%); }
+        .mrf-cta:hover, .mrf-cta:focus-visible { color: var(--mrf-text); }
+        .mrf-cta:hover::before, .mrf-cta:focus-visible::before { transform: scale(1); }
+        .mrf-cta:hover .mrf-cta-arrow, .mrf-cta:focus-visible .mrf-cta-arrow { background: var(--mrf-pill); color: var(--mrf-ground); }
+        .mrf-cta:hover .mrf-a1, .mrf-cta:focus-visible .mrf-a1 { transform: translate(150%, -150%); }
+        .mrf-cta:hover .mrf-a2, .mrf-cta:focus-visible .mrf-a2 { transform: none; }
+        .mrf-cta:focus-visible { outline: 2px solid var(--mrf-ink); outline-offset: 3px; }
+
+        .mrf-cta-sec {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          height: 40px;
+          padding: 0 16px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(17, 20, 13, 0.12);
+          color: var(--mrf-ink);
+          font-size: 13px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+          transition: all 250ms ease;
+        }
+        .mrf-cta-sec:hover {
+          background: rgba(255, 255, 255, 0.95);
+          border-color: rgba(17, 20, 13, 0.25);
+          transform: translateY(-1px);
+        }
+      `}</style>
+
+      {/* ========================================================================= */}
+      {/* 1. TOP NAV (PALE TRANSLUCENT AESTHETIC HARMONIZING WITH MEADOW SKY)        */}
+      {/* ========================================================================= */}
+      <header className="sticky top-0 z-50 w-full border-b border-[rgba(17,20,13,0.08)] bg-[#f4f4ef]/85 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-lg bg-[#253019] text-[#ffffff] flex items-center justify-center font-extrabold text-xs font-mono shadow-sm">
+            G//
           </div>
           <div>
-            <span className="font-bold text-sm tracking-tight block text-foreground">
-              {APP_CONFIG.name}
-            </span>
-            <span className="text-[10px] text-muted-foreground font-mono block">
-              Dual-Engine Workstation
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm tracking-tight text-[#11140d]">GrindOS</span>
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#4d5d2c]/15 text-[#253019] font-medium border border-[#4d5d2c]/25">
+                Dual-Engine
+              </span>
+            </div>
+            <span className="text-[10px] text-[#556a33] font-mono block">140-Day Placement Workstation</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <a href="#curriculum" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
-            Curriculum
-          </a>
-          <a href="#compare" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
-            Compare
-          </a>
-          <a href="#features" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
-            Features
-          </a>
+        <nav className="hidden md:flex items-center gap-6 text-xs text-[#3b4234] font-medium">
+          <a href="#curriculum" className="hover:text-[#11140d] transition-colors">Curriculum</a>
+          <a href="#compare" className="hover:text-[#11140d] transition-colors">Compare</a>
+          <a href="#features" className="hover:text-[#11140d] transition-colors">Features</a>
+          <a href="#demo" className="hover:text-[#11140d] transition-colors">Live Demo</a>
           <button
             onClick={() => setIsPricingModalOpen(true)}
-            className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors cursor-pointer"
+            className="hover:text-[#11140d] transition-colors cursor-pointer"
           >
             Pricing
           </button>
-          <a href="#faq" className="text-xs text-muted-foreground hover:text-foreground hidden sm:inline transition-colors">
-            FAQ
-          </a>
+          <a href="#faq" className="hover:text-[#11140d] transition-colors">FAQ</a>
+        </nav>
 
-          {/* Authentication Action */}
+        <div className="flex items-center gap-2.5">
           {authUser ? (
             <button
               onClick={() => handleLaunch('web')}
-              className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center gap-1.5 hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
+              className="text-xs px-3.5 py-1.5 rounded-lg bg-[#253019] text-white font-medium flex items-center gap-1.5 hover:bg-[#1a2311] transition-all shadow-xs cursor-pointer"
             >
-              <UserCheck size={12} className="text-emerald-400" />
               <span>Enter App ({userProfile.name})</span>
-              <ArrowRight size={12} />
             </button>
           ) : (
             <button
               onClick={() => setIsAuthModalOpen(true)}
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="text-xs px-3.5 py-1.5 rounded-lg border border-[rgba(17,20,13,0.14)] bg-white/70 hover:bg-white text-[#11140d] font-medium flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
             >
-              <LogIn size={12} /> <span>Sign In</span>
+              <span>Sign In</span>
             </button>
           )}
 
-          {/* Direct interface launching triggers */}
           <button
-            onClick={() => handleLaunch('os')}
-            className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted font-mono font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="Launch in Retro Terminal OS format"
+            onClick={() => setIsDemoModalOpen(true)}
+            className="text-xs px-3 py-1.5 rounded-lg border border-[#4d5d2c]/30 bg-[#4d5d2c]/10 hover:bg-[#4d5d2c]/20 text-[#253019] font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <Terminal size={12} /> <span>OS Mode</span>
+            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
+            </svg>
+            <span>OS Shell</span>
           </button>
 
-          <button
-            onClick={() => handleLaunch('web')}
-            className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold flex items-center gap-1.5 hover:bg-primary/90 transition-colors shadow-xs cursor-pointer"
-            title="Launch in Modern Web format"
-          >
-            <Sparkles size={12} /> <span>Modern App</span>
-          </button>
+          {!authUser && (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="text-xs px-3.5 py-1.5 rounded-lg bg-[#253019] text-[#ffffff] font-medium flex items-center gap-1.5 hover:bg-[#1a2311] transition-all shadow-sm cursor-pointer"
+            >
+              <span>Start Free</span>
+            </button>
+          )}
         </div>
       </header>
 
-      {/* ── HERO SECTION: DUAL FORK ── */}
-      <section className="relative max-w-5xl mx-auto px-5 pt-16 pb-10 text-center">
-        {/* Ambient atmospheric backdrop glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[420px] pointer-events-none overflow-hidden -z-10">
-          <div className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[550px] h-[280px] bg-emerald-500/10 blur-[110px] rounded-full" />
-        </div>
+      {/* ========================================================================= */}
+      {/* 2. HERO SECTION WITH EXACT MEADOW RISE MOUNTAINS & MOVEMENTS              */}
+      {/* ========================================================================= */}
+      <MeadowRiseHero
+        onStartFree={() => setIsAuthModalOpen(true)}
+        onExploreDemo={() => setIsDemoModalOpen(true)}
+        onOpenPricing={() => setIsPricingModalOpen(true)}
+        authUser={authUser}
+        onEnterApp={() => handleLaunch('web')}
+        operatorName={userProfile.name}
+        seed={3}
+      />
 
-        {/* 21st.dev luxury status pill */}
-        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-card/80 border border-emerald-500/20 text-xs text-muted-foreground mb-6 shadow-sm backdrop-blur-xs">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="text-emerald-400 font-medium">100% Shared Cloud State</span>
-          <span className="text-border">/</span>
-          <span>Two Interfaces</span>
-          <span className="text-border">/</span>
-          <span className="text-foreground/80">Zero Silos</span>
-        </div>
-
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] max-w-4xl mx-auto mb-5 text-foreground">
-          One Structured Syllabus.<br />
-          <span style={{ fontFamily: '"Instrument Serif", "Cormorant Garamond", Georgia, serif' }} className="italic font-normal text-emerald-400">
-            Two Distinct Realities.
-          </span>
-        </h1>
-
-        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-6">
-          Master {CURRICULUM.totalProblems} curated algorithmic problems across {CURRICULUM.totalWeeks} disciplined weeks.
-          Choose between the deep retro immersion of a 90s terminal OS, or the crisp efficiency of a modern engineering dashboard.
-        </p>
-
-        {/* Primary Conversion Funnel CTA */}
-        <div className="flex items-center justify-center gap-3 mb-3.5 flex-wrap">
-          {authUser ? (
-            <button
-              onClick={() => handleLaunch('web')}
-              className="text-sm font-bold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <span>Go to Dashboard</span>
-              <ArrowRight size={14} />
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="text-sm font-semibold px-6 py-2.5 rounded-xl bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-              >
-                <span>Start 140-Day Prep Free</span>
-                <ArrowRight size={14} />
-              </button>
-              <button
-                onClick={() => setIsDemoModalOpen(true)}
-                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-xs"
-                title="Preview GrindOS with sample solved problems and telemetry"
-              >
-                <Sparkles size={14} className="text-emerald-400" />
-                <span>Explore Interactive Demo</span>
-              </button>
-              <button
-                onClick={() => setIsPricingModalOpen(true)}
-                className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-border bg-card/80 hover:bg-muted text-foreground flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-              >
-                <CreditCard size={14} />
-                <span>Lifetime Pro ($29)</span>
-              </button>
-            </>
-          )}
-        </div>
-        <div className="text-[11px] text-muted-foreground mb-8 font-mono">
-          ✓ Free Community Tier • ✓ Real-Time Cloud Sync • ✓ No Credit Card Required
-        </div>
-
-        {/* User state resume banner if authenticated and has active solve data */}
-        {authUser && stats.solvedCount > 0 && (
-          <div className="max-w-2xl mx-auto mb-9 bg-card border border-border rounded-2xl p-4 sm:p-5 flex items-center justify-between flex-wrap gap-3.5 text-left shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="size-9 rounded-xl bg-muted border border-border flex items-center justify-center text-base">
-                🔥
-              </div>
-              <div>
-                <div className="text-sm font-bold text-foreground">
-                  Welcome back, {userProfile.name}!
-                </div>
-                <div className="text-xs text-muted-foreground font-mono mt-0.5">
-                  Day {stats.currentDay} / {CURRICULUM.totalDays} • {stats.solvedCount} of {stats.totalProblems} solved ({progressPct}%) {stats.streak > 0 && `• ${stats.streak}d streak`}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleLaunch('os')}
-                className="text-xs h-8 font-mono gap-1.5"
-              >
-                <Terminal className="size-3.5" />
-                <span>Resume in OS</span>
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => handleLaunch('web')}
-                className="text-xs h-8 gap-1.5 font-semibold"
-              >
-                <span>Resume in Modern</span>
-                <ArrowRight className="size-3.5" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* ── THE EXPERIENCE FORK: DUAL INTERFACE CARDS ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mt-4">
+      {/* ========================================================================= */}
+      {/* 3. THE DUAL WORKSTATION FORK CARDS (RESTING IN MEADOW GROUND #253019)     */}
+      {/* ========================================================================= */}
+      <section className="relative z-20 max-w-5xl mx-auto px-5 pt-8 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           {/* OPTION 1: RETRO TERMINAL OS */}
-          <div style={{
-            background: '#040805',
-            border: '2px solid #1a6b42',
-            borderRadius: '1.5rem',
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxShadow: '0 0 25px rgba(61, 220, 132, 0.08)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Retro Badge */}
+          <div className="relative bg-[#1a2312] border-2 border-[#3b4e28] rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl overflow-hidden hover:border-[#6c8240] transition-all">
             <div>
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: 16
-              }}>
-                <span style={{
-                  fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                  padding: '2px 8px', borderRadius: 4,
-                  background: 'rgba(61, 220, 132, 0.15)', color: '#3ddc84',
-                  border: '1px solid rgba(61, 220, 132, 0.3)'
-                }}>
+              {/* Header Badge */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#4d5d2c]/40 text-[#c2d6a4] border border-[#6c8240]/40">
                   RETRO WORKSTATION
                 </span>
-                <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#888' }}>
+                <span className="text-[11px] font-mono text-[#a9b49c]">
                   VT220 • CHIP SYNTH
                 </span>
               </div>
 
-              <h2 style={{
-                fontSize: 22, fontWeight: 800, color: '#3ddc84',
-                fontFamily: 'var(--font-mono)', margin: '0 0 8px', letterSpacing: '-0.02em'
-              }}>
+              <h2 className="text-2xl font-extrabold text-[#c2d6a4] font-mono mb-2 tracking-tight">
                 GrindOS 95 Shell
               </h2>
 
-              <p style={{ fontSize: 13, color: '#9bb8a5', lineHeight: 1.5, margin: '0 0 20px' }}>
+              <p className="text-xs sm:text-sm text-[#a9b49c] leading-relaxed mb-5">
                 For engineers who thrive in deep-work terminal immersion, multi-window multitasking, retro sound feedback, and keyboard-driven efficiency.
               </p>
 
-              {/* Terminal Box Graphic */}
-              <div style={{
-                background: '#020403', border: '1px solid #134a2e',
-                borderRadius: 6, padding: '12px 14px', marginBottom: 20,
-                fontFamily: 'var(--font-mono)', fontSize: 11, color: '#3ddc84',
-                lineHeight: 1.6
-              }}>
-                <div style={{ color: '#888', borderBottom: '1px solid #0e3a24', paddingBottom: 6, marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+              {/* Interactive Terminal Box Graphic */}
+              <div className="bg-[#10170a] border border-[#2a381c] rounded-lg p-3.5 mb-5 font-mono text-xs text-[#a3b384] leading-relaxed shadow-inner">
+                <div className="text-[#7d8f63] border-b border-[#212c16] pb-1.5 mb-2 flex justify-between text-[11px]">
                   <span>MISSIONS.EXE — VT220</span>
                   <span>[ _ ▢ ✕ ]</span>
                 </div>
-                <div>C:\&gt; grindos --boot</div>
-                <div style={{ color: '#e8c35a' }}>[OK] 20 WEEKS / 140 DAYS / 332 PROBLEMS INITIALIZED</div>
+                <div>C:\&gt; grindos --boot --interactive</div>
+                <div className="text-[#f1dcc0]">[OK] 20 WEEKS / 140 DAYS / 332 PROBLEMS INITIALIZED</div>
                 <div>[OK] WINDOW MANAGER &amp; CHIP SYNTH ONLINE</div>
-                <div style={{ color: '#888' }}>&gt; MISSIONS.EXE • ORACLE.EXE • POMO.EXE</div>
+                <div className="text-[#7d8f63]">&gt; MISSIONS.EXE • ORACLE.EXE • POMO.EXE</div>
               </div>
 
-              {/* Feature Points */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-                {[
-                  'Draggable multi-window desktop with taskbar & Start menu',
-                  'VT220 terminal CLI & keyboard shortcuts',
-                  '8-bit oscillator audio synthesis & CRT phosphor themes',
-                  'Integrated Pomodoro timer & retro arcade mini-games'
-                ].map((feat, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b2d8be' }}>
-                    <span style={{ color: '#3ddc84', fontWeight: 800 }}>❯</span>
-                    <span>{feat}</span>
-                  </div>
-                ))}
+              {/* Feature Bullets */}
+              <div className="flex flex-col gap-2 mb-6 text-xs text-[#dbe6cf]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[#a3b384] font-bold">❯</span>
+                  <span>Draggable multi-window desktop with taskbar &amp; Start menu</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#a3b384] font-bold">❯</span>
+                  <span>VT220 terminal CLI &amp; keyboard shortcuts</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#a3b384] font-bold">❯</span>
+                  <span>8-bit oscillator audio synthesis &amp; CRT phosphor themes</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#a3b384] font-bold">❯</span>
+                  <span>Integrated Pomodoro timer &amp; retro arcade mini-games</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2.5">
               <button
                 onClick={() => handleLaunch('os')}
-                style={{
-                  background: '#3ddc84', color: '#000',
-                  border: '1px solid #3ddc84',
-                  borderRadius: 6, padding: '12px 18px',
-                  fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-mono)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  gap: 8, cursor: 'pointer', transition: 'all 0.15s ease',
-                  flex: 1
-                }}
+                className="flex-1 bg-[#4d5d2c] text-[#ffffff] border border-[#6c8240] rounded-lg py-2.5 px-4 text-xs font-bold font-mono flex items-center justify-center gap-2 hover:bg-[#5c7035] transition-all cursor-pointer shadow-md"
               >
-                <Terminal size={14} /> Launch Retro Terminal OS
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="4 17 10 11 4 5" />
+                  <line x1="12" y1="19" x2="20" y2="19" />
+                </svg>
+                <span>Launch Retro Terminal OS</span>
               </button>
               <button
                 onClick={() => handleTryDemo('os')}
-                style={{
-                  background: '#0a1a12', color: '#3ddc84',
-                  border: '1px solid rgba(61, 220, 132, 0.4)',
-                  borderRadius: 6, padding: '12px 14px',
-                  fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-mono)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  gap: 6, cursor: 'pointer', transition: 'all 0.15s ease'
-                }}
-                title="Preview Retro OS in guest demo mode"
+                className="bg-[#253019] text-[#c2d6a4] border border-[#4d5d2c] rounded-lg py-2.5 px-3.5 text-xs font-bold font-mono flex items-center justify-center gap-1.5 hover:bg-[#303e20] transition-all cursor-pointer"
               >
-                Demo OS
+                <span>Demo OS</span>
               </button>
             </div>
           </div>
 
           {/* OPTION 2: MODERN MINIMALIST WEB */}
-          <div className="bg-card border-2 border-border/80 rounded-3xl p-6 flex flex-col justify-between shadow-md hover:border-primary/40 transition-all relative overflow-hidden">
+          <div className="relative bg-[#1f2a16] border-2 border-[#3b4e28] rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl overflow-hidden hover:border-[#6c8240] transition-all">
             <div>
+              {/* Header Badge */}
               <div className="flex items-center justify-between mb-4">
-                <Badge variant="outline" className="font-mono font-bold text-[10px] uppercase tracking-wider px-2 py-0.5 bg-muted text-foreground border-border">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#314324] text-[#ffffff] border border-[#4d5d2c] uppercase tracking-wider">
                   Modern Dashboard
-                </Badge>
-                <span className="font-mono text-xs text-muted-foreground">
+                </span>
+                <span className="text-xs font-mono text-[#a9b49c]">
                   Linear • High Density
                 </span>
               </div>
 
-              <h2 className="text-xl font-bold font-sans text-foreground tracking-tight m-0 mb-2">
+              <h2 className="text-2xl font-bold font-sans text-white mb-2 tracking-tight">
                 Cadence Pro Web
               </h2>
 
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed m-0 mb-5">
+              <p className="text-xs sm:text-sm text-[#a9b49c] leading-relaxed mb-5">
                 For engineers who prefer a sleek executive developer dashboard, luminous telemetry charts, GitHub-style heatmaps, and structured Kanban tracking.
               </p>
 
               {/* Modern Card Graphic */}
-              <div className="bg-muted/40 border border-border/80 rounded-xl p-3.5 mb-5 text-xs text-foreground leading-relaxed">
-                <div className="flex justify-between border-b border-border/60 pb-1.5 mb-2 font-medium">
+              <div className="bg-[#151e0e] border border-[#2d3d1e] rounded-xl p-3.5 mb-5 text-xs text-white leading-relaxed">
+                <div className="flex justify-between border-b border-[#2d3d1e] pb-2 mb-2 font-medium">
                   <span>Day 14: Sliding Window &amp; Two Pointers</span>
-                  <span className="text-amber-500 font-mono font-semibold">🔥 4d</span>
+                  <span className="text-[#f1dcc0] font-mono font-semibold">🔥 4d</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground text-[11px] py-0.5">
-                  <span className="text-emerald-500 font-bold">✓</span>
-                  <span>Longest Substring Without Repeating</span>
-                  <span className="ml-auto text-amber-500 font-semibold">Med</span>
+                <div className="flex items-center gap-2 text-[#a9b49c] text-[11px] py-0.5">
+                  <span className="text-[#93a964] font-bold">✓</span>
+                  <span className="text-white">Longest Substring Without Repeating</span>
+                  <span className="ml-auto text-[#f1dcc0] font-semibold font-mono">Med</span>
                 </div>
-                <div className="flex items-center gap-2 text-muted-foreground text-[11px] py-0.5">
+                <div className="flex items-center gap-2 text-[#a9b49c] text-[11px] py-0.5">
                   <span className="opacity-40">○</span>
                   <span>Minimum Window Substring</span>
-                  <span className="ml-auto text-destructive font-semibold">Hard</span>
+                  <span className="ml-auto text-[#e8a48f] font-semibold font-mono">Hard</span>
                 </div>
               </div>
 
-              {/* Feature Points */}
-              <div className="flex flex-col gap-2 mb-6">
-                {[
-                  'Luminous midnight obsidian interface with Linear/Vercel fidelity',
-                  'Recharts analytics & 25-week activity heatmaps',
-                  'Placement pipeline Kanban board & interview tracker',
-                  'Quick command palette (Ctrl+K) & company track filtering'
-                ].map((feat, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="text-primary font-bold">•</span>
-                    <span>{feat}</span>
-                  </div>
-                ))}
+              {/* Feature Bullets */}
+              <div className="flex flex-col gap-2 mb-6 text-xs text-[#a9b49c]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[#93a964] font-bold">•</span>
+                  <span>Executive dashboard with Linear/Vercel visual fidelity</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#93a964] font-bold">•</span>
+                  <span>Interactive analytics &amp; 25-week activity heatmaps</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#93a964] font-bold">•</span>
+                  <span>Placement pipeline Kanban board &amp; interview tracker</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#93a964] font-bold">•</span>
+                  <span>Quick command palette (Ctrl+K) &amp; company track filtering</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button
-                size="lg"
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <button
                 onClick={() => handleLaunch('web')}
-                className="flex-1 h-11 text-xs font-semibold gap-2 shadow-xs cursor-pointer"
+                className="flex-1 bg-white text-[#11140d] rounded-lg py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#eef1e6] transition-all cursor-pointer shadow-md"
               >
-                <Sparkles className="size-4" />
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
+                </svg>
                 <span>Launch Modern Web App</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
+              </button>
+              <button
                 onClick={() => handleTryDemo('web')}
-                className="h-11 text-xs font-semibold gap-1.5 border-border cursor-pointer"
-                title="Preview Modern Dashboard with sample data"
+                className="border border-[#3b4e28] bg-[#1a2312] text-[#eef1e6] hover:bg-[#253019] rounded-lg py-2.5 px-3.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
-                Explore Demo
-              </Button>
+                <span>Explore Demo</span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* ── 100% SHARED STATE CALLOUT ── */}
-        <div className="mt-7 p-4 sm:p-5 rounded-2xl bg-card border border-border flex items-center justify-between flex-wrap gap-3.5 text-left shadow-xs">
-          <div className="flex items-center gap-3">
-            <RefreshCw className="size-5 text-emerald-500 shrink-0" />
+        {/* 100% SHARED STATE CALLOUT */}
+        <div className="mt-8 p-4 sm:p-5 rounded-2xl bg-[#1a2312] border border-[#354823] flex items-center justify-between flex-wrap gap-4 text-left shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="size-9 rounded-xl bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4] shrink-0">
+              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 21h5v-5" />
+              </svg>
+            </div>
             <div>
-              <div className="text-xs sm:text-sm font-bold text-foreground">
+              <div className="text-xs sm:text-sm font-bold text-white">
                 100% Synchronized Progress &amp; Zero Lock-in
               </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
+              <div className="text-xs text-[#a9b49c] mt-0.5">
                 Every problem solved, daily streak, and note taken in one interface is immediately reflected in the other. Switch back and forth anytime with 1 click.
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2.5 font-mono text-[11px] text-[#a9b49c]">
             <span>Dual View</span>
             <span>·</span>
             <span>Single Store</span>
             <span>·</span>
-            <span className="text-emerald-500 font-semibold">Cloud-First</span>
+            <span className="text-[#a3b384] font-semibold flex items-center gap-1">
+              <span className="size-1.5 rounded-full bg-[#a3b384]"></span>
+              Cloud-First (&lt; 50ms)
+            </span>
           </div>
         </div>
 
-        {/* Quick metrics bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-12 pt-7 border-t border-border text-center">
+        {/* Quick Curriculum Metrics Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10 pt-7 border-t border-[rgba(238,241,230,0.12)] text-center">
           <div>
-            <div className="text-2xl font-bold font-mono text-foreground">
-              {CURRICULUM.totalDays}
-            </div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">Curated Days</div>
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-white">140</div>
+            <div className="text-[11px] text-[#a9b49c] mt-0.5">Curated Days</div>
           </div>
           <div>
-            <div className="text-2xl font-bold font-mono text-foreground">
-              {CURRICULUM.totalProblems}+
-            </div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">Problems</div>
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-[#a3b384]">332+</div>
+            <div className="text-[11px] text-[#a9b49c] mt-0.5">Curated Problems</div>
           </div>
           <div>
-            <div className="text-2xl font-bold font-mono text-foreground">
-              {CURRICULUM.top150Count}
-            </div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">LeetCode Benchmark</div>
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-white">150</div>
+            <div className="text-[11px] text-[#a9b49c] mt-0.5">LeetCode Benchmark</div>
           </div>
           <div>
-            <div className="text-2xl font-bold font-mono text-foreground">
-              &lt; 50 ms
-            </div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">Cloud Sync Latency</div>
+            <div className="text-2xl sm:text-3xl font-bold font-mono text-[#f1dcc0]">&lt; 50 ms</div>
+            <div className="text-[11px] text-[#a9b49c] mt-0.5">Cloud Sync Latency</div>
           </div>
         </div>
       </section>
 
-      {/* ── INTERACTIVE DEMO CARD ── */}
-      <section id="demo" className="max-w-4xl mx-auto px-5 py-4 pb-16">
-        <div className="bg-card border border-border rounded-3xl p-6 shadow-md">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2.5">
+      {/* ========================================================================= */}
+      {/* 4. LIVE INTERACTIVE PROBLEM DEMO CARD                                      */}
+      {/* ========================================================================= */}
+      <section id="demo" className="max-w-4xl mx-auto px-5 py-6 pb-20">
+        <div className="bg-[#1a2312] border border-[#354823] rounded-3xl p-6 sm:p-7 shadow-lg">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div>
-              <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+              <span className="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
                 Live Experience Demo
               </span>
-              <h3 className="text-base font-bold text-foreground m-0">
+              <h3 className="text-base sm:text-lg font-bold text-white m-0">
                 Day 14: Sliding Window &amp; Two Pointers
               </h3>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground font-mono">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[#a9b49c] font-mono font-medium">
                 {solvedDemoCount} / 3 complete
               </span>
-              <div className="h-1.5 w-20 rounded-full bg-muted overflow-hidden">
+              <div className="h-2 w-24 rounded-full bg-[#12180d] border border-[#2d3e1e] overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                  style={{ width: `${(solvedDemoCount / 3) * 100}%` }}
+                  className="h-full bg-[#829a52] rounded-full transition-all duration-400"
+                  style={{ width: `${demoProgressPct}%` }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            {[
-              { id: 'p1', name: 'Longest Substring Without Repeating Characters', diff: 'Medium', tags: ['Google', 'Meta'], diffColor: 'text-amber-500' },
-              { id: 'p2', name: 'Minimum Window Substring', diff: 'Hard', tags: ['Amazon', 'Uber'], diffColor: 'text-destructive' },
-              { id: 'p3', name: 'Container With Most Water', diff: 'Medium', tags: ['Apple', 'Microsoft'], diffColor: 'text-amber-500' },
-            ].map((p) => {
-              const isChecked = !!demoSolved[p.id];
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => toggleDemoProblem(p.id)}
-                  className={`p-3 rounded-xl border flex items-center gap-3 transition-colors cursor-pointer ${
-                    isChecked
-                      ? 'bg-emerald-500/10 border-emerald-500/30'
-                      : 'bg-muted/30 border-border hover:bg-muted/60'
+          <div className="flex flex-col gap-2.5">
+            {/* Problem 1 */}
+            <div
+              onClick={() => toggleProblem(1)}
+              className={`p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer ${
+                demoSolved[1]
+                  ? 'bg-[#4d5d2c]/20 border-[#6c8240]/40'
+                  : 'bg-[#141b0e] border-[#2d3e1e] hover:bg-[#1a2312]'
+              }`}
+            >
+              <div
+                className={`size-5 rounded-md flex items-center justify-center shrink-0 border transition-all ${
+                  demoSolved[1]
+                    ? 'bg-[#6c8240] border-[#6c8240] text-white'
+                    : 'border-[#4d5d2c] bg-[#12180d]'
+                }`}
+              >
+                {demoSolved[1] && (
+                  <svg className="size-3.5 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 flex items-center gap-2.5 flex-wrap">
+                <span
+                  className={`text-xs sm:text-sm font-semibold ${
+                    demoSolved[1] ? 'line-through text-[#a9b49c]' : 'text-white'
                   }`}
                 >
-                  <div className={`size-4.5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
-                    isChecked ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-muted-foreground/40 bg-background'
-                  }`}>
-                    {isChecked && <Check className="size-3 text-white" />}
-                  </div>
+                  Longest Substring Without Repeating Characters
+                </span>
+                <span className="text-xs font-semibold font-mono text-[#f1dcc0]">Medium</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">
+                  Google
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">
+                  Meta
+                </span>
+              </div>
+            </div>
 
-                  <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
-                    <span className={`text-xs sm:text-sm font-semibold ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                      {p.name}
-                    </span>
-                    <span className={`text-xs font-semibold ${p.diffColor}`}>{p.diff}</span>
-                    {p.tags.map(t => (
-                      <Badge key={t} variant="outline" className="text-[10px] font-mono px-1.5 py-0 bg-background/50">
-                        {t}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {/* Problem 2 */}
+            <div
+              onClick={() => toggleProblem(2)}
+              className={`p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer ${
+                demoSolved[2]
+                  ? 'bg-[#4d5d2c]/20 border-[#6c8240]/40'
+                  : 'bg-[#141b0e] border-[#2d3e1e] hover:bg-[#1a2312]'
+              }`}
+            >
+              <div
+                className={`size-5 rounded-md flex items-center justify-center shrink-0 border transition-all ${
+                  demoSolved[2]
+                    ? 'bg-[#6c8240] border-[#6c8240] text-white'
+                    : 'border-[#4d5d2c] bg-[#12180d]'
+                }`}
+              >
+                {demoSolved[2] && (
+                  <svg className="size-3.5 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 flex items-center gap-2.5 flex-wrap">
+                <span
+                  className={`text-xs sm:text-sm font-semibold ${
+                    demoSolved[2] ? 'line-through text-[#a9b49c]' : 'text-white'
+                  }`}
+                >
+                  Minimum Window Substring
+                </span>
+                <span className="text-xs font-semibold font-mono text-[#e8a48f]">Hard</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">
+                  Amazon
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">
+                  Uber
+                </span>
+              </div>
+            </div>
+
+            {/* Problem 3 */}
+            <div
+              onClick={() => toggleProblem(3)}
+              className={`p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer ${
+                demoSolved[3]
+                  ? 'bg-[#4d5d2c]/20 border-[#6c8240]/40'
+                  : 'bg-[#141b0e] border-[#2d3e1e] hover:bg-[#1a2312]'
+              }`}
+            >
+              <div
+                className={`size-5 rounded-md flex items-center justify-center shrink-0 border transition-all ${
+                  demoSolved[3]
+                    ? 'bg-[#6c8240] border-[#6c8240] text-white'
+                    : 'border-[#4d5d2c] bg-[#12180d]'
+                }`}
+              >
+                {demoSolved[3] && (
+                  <svg className="size-3.5 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 flex items-center gap-2.5 flex-wrap">
+                <span
+                  className={`text-xs sm:text-sm font-semibold ${
+                    demoSolved[3] ? 'line-through text-[#a9b49c]' : 'text-white'
+                  }`}
+                >
+                  Container With Most Water
+                </span>
+                <span className="text-xs font-semibold font-mono text-[#f1dcc0]">Medium</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">
+                  Apple
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">
+                  Microsoft
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-[rgba(238,241,230,0.1)] flex items-center justify-between text-xs text-[#a9b49c]">
+            <span>Click each problem row to test interactive solving telemetry.</span>
+            <span className="text-[#a3b384] font-mono">140 Days • Zero Excuses</span>
           </div>
         </div>
       </section>
 
-      {/* ── EARLY ACCESS & CURRICULUM ARCHITECTURE ── */}
-      <section className="max-w-4xl mx-auto px-5 pb-16">
-        <div className="text-center mb-7">
-          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
-            Early Access
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 mb-2 font-sans">
-            Built for Engineers Who Are Serious About Tier-1 Roles
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-lg mx-auto m-0 leading-relaxed">
-            GrindOS is currently in early access. Be among the first engineers to master the full cloud-synced dual-engine curriculum.
-          </p>
-        </div>
-
-        {/* Structured curriculum trust metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-center">
-          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
-            <div className="text-2xl font-bold font-mono text-foreground">140</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">Structured Days</div>
-          </div>
-          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
-            <div className="text-2xl font-bold font-mono text-emerald-500">332</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">Curated Problems</div>
-          </div>
-          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
-            <div className="text-2xl font-bold font-mono text-foreground">20</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">Weeks of Structure</div>
-          </div>
-          <div className="bg-card border border-border rounded-2xl p-4 shadow-xs">
-            <div className="text-2xl font-bold font-mono text-amber-500">$29</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">Lifetime Pro Access</div>
-          </div>
-        </div>
-
-        {/* Early access invitation card */}
-        <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 text-center shadow-xs">
-          <div className="text-base font-bold text-foreground mb-2">
-            Join the Early Access Cohort
-          </div>
-          <p className="text-xs text-muted-foreground max-w-md mx-auto m-0 mb-5 leading-relaxed">
-            The Free Community tier is fully operational with live Supabase cloud sync. Lifetime Pro access is locked in at $29 for early adopters before public scaling.
-          </p>
-          <div className="flex justify-center gap-2.5 flex-wrap">
-            <Button
-              size="sm"
-              onClick={() => setIsAuthModalOpen(true)}
-              className="text-xs h-9 px-5 font-semibold"
-            >
-              Start Free • No Credit Card
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPricingModalOpen(true)}
-              className="text-xs h-9 px-4 font-semibold"
-            >
-              View Plan Details
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SIDE-BY-SIDE INTERFACE COMPARISON MATRIX ── */}
-      <section id="compare" className="max-w-4xl mx-auto px-5 pb-16">
+      {/* ========================================================================= */}
+      {/* 5. SIDE-BY-SIDE INTERFACE COMPARISON MATRIX                               */}
+      {/* ========================================================================= */}
+      <section id="compare" className="max-w-4xl mx-auto px-5 pb-20">
         <div className="text-center mb-8">
-          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+          <span className="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
             Compare Workstations
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Choose The Mode That Fits Your Workflow
           </h2>
         </div>
 
-        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
+        <div className="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-xs sm:text-sm">
               <thead>
-                <tr className="bg-muted/40 border-b border-border">
-                  <th className="p-3.5 sm:p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Feature</th>
-                  <th className="p-3.5 sm:p-4 text-xs font-bold text-[#3ddc84] font-mono">
-                    🖥️ Retro Terminal OS
-                  </th>
-                  <th className="p-3.5 sm:p-4 text-xs font-bold text-foreground">
-                    ✨ Modern Web App
-                  </th>
+                <tr className="bg-[#141b0e] border-b border-[#2d3e1e]">
+                  <th className="p-4 text-xs font-semibold text-[#a9b49c] uppercase tracking-wider">Feature</th>
+                  <th className="p-4 text-xs font-bold text-[#c2d6a4] font-mono">🖥️ Retro Terminal OS</th>
+                  <th className="p-4 text-xs font-bold text-white">✨ Modern Web App</th>
                 </tr>
               </thead>
-              <tbody>
-                {[
-                  { feature: 'Primary Aesthetic', os: '90s VT220 CRT Phosphor Terminal', web: 'Clean Swiss Monochrome SaaS' },
-                  { feature: 'Window Management', os: 'Multi-window draggable desktop', web: 'Streamlined dedicated page views' },
-                  { feature: 'Audio Synthesis', os: '8-bit Web Audio chiptune synth', web: 'Crisp minimal modern clicks' },
-                  { feature: 'Command Tools', os: 'Interactive CLI Terminal emulator', web: 'Command Palette (Ctrl+K)' },
-                  { feature: 'Focus Pomodoro', os: 'Retro CLI timer with arcade breaks', web: 'Persistent status bar timer' },
-                  { feature: 'Analytics View', os: 'ASCII metrics console & logs', web: 'Recharts interactive charts & heatmap' },
-                  { feature: 'Data & Progress', os: '100% Shared Real-Time State', web: '100% Shared Real-Time State' },
-                  { feature: 'Cloud & Device Sync', os: 'Direct Supabase Cloud Sync', web: 'Direct Supabase Cloud Sync' }
-                ].map((row, idx) => (
-                  <tr key={idx} className="border-b border-border/40 hover:bg-muted/20 transition-colors">
-                    <td className="p-3.5 sm:p-4 font-semibold text-foreground">{row.feature}</td>
-                    <td className="p-3.5 sm:p-4 text-[#9bb8a5] font-mono text-xs">{row.os}</td>
-                    <td className="p-3.5 sm:p-4 text-muted-foreground text-xs">{row.web}</td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-[#243118]">
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Primary Aesthetic</td>
+                  <td className="p-4 text-[#a9b49c] font-mono text-xs">90s VT220 CRT Phosphor Terminal</td>
+                  <td className="p-4 text-[#a9b49c] text-xs">Clean Swiss Monochrome SaaS</td>
+                </tr>
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Window Management</td>
+                  <td className="p-4 text-[#a9b49c] font-mono text-xs">Multi-window draggable desktop</td>
+                  <td className="p-4 text-[#a9b49c] text-xs">Streamlined dedicated page views</td>
+                </tr>
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Audio Synthesis</td>
+                  <td className="p-4 text-[#a9b49c] font-mono text-xs">8-bit Web Audio chiptune synth</td>
+                  <td className="p-4 text-[#a9b49c] text-xs">Crisp minimal modern clicks</td>
+                </tr>
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Command Tools</td>
+                  <td className="p-4 text-[#a9b49c] font-mono text-xs">Interactive CLI Terminal emulator</td>
+                  <td className="p-4 text-[#a9b49c] text-xs">Command Palette (Ctrl+K)</td>
+                </tr>
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Focus Pomodoro</td>
+                  <td className="p-4 text-[#a9b49c] font-mono text-xs">Retro CLI timer with arcade breaks</td>
+                  <td className="p-4 text-[#a9b49c] text-xs">Persistent status bar timer</td>
+                </tr>
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Analytics View</td>
+                  <td className="p-4 text-[#a9b49c] font-mono text-xs">ASCII metrics console &amp; logs</td>
+                  <td className="p-4 text-[#a9b49c] text-xs">Interactive charts &amp; heatmap</td>
+                </tr>
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Data &amp; Progress</td>
+                  <td className="p-4 text-[#a3b384] font-mono text-xs font-semibold">100% Shared Real-Time State</td>
+                  <td className="p-4 text-[#a3b384] font-mono text-xs font-semibold">100% Shared Real-Time State</td>
+                </tr>
+                <tr className="hover:bg-[#1f2b16]/50 transition-colors">
+                  <td className="p-4 font-semibold text-white">Cloud &amp; Device Sync</td>
+                  <td className="p-4 text-[#a3b384] font-mono text-xs font-semibold">Direct Supabase Cloud Sync</td>
+                  <td className="p-4 text-[#a3b384] font-mono text-xs font-semibold">Direct Supabase Cloud Sync</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
-
-        {/* Which Mode Should I Choose? (Decision Guide) */}
-        <div className="mt-5 bg-card border border-border rounded-2xl p-6 shadow-xs">
-          <h3 className="text-sm sm:text-base font-bold text-foreground m-0 mb-4 flex items-center gap-2">
-            <span>🧭</span> Which workstation should you start with?
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div style={{
-              background: '#040805',
-              border: '1px solid #1a6b42',
-              borderRadius: '0.75rem',
-              padding: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              gap: 12
-            }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#3ddc84', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
-                  Choose Retro Terminal OS if you:
-                </div>
-                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: '#9bb8a5', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <li>Want <strong>zero-distraction deep work</strong> with multi-window desktop tiling.</li>
-                  <li>Love <strong>keyboard-first terminal workflows</strong> and retro CRT/audio immersion.</li>
-                  <li>Are grinding coding sessions on desktop with built-in Pomodoro &amp; mini-breaks.</li>
-                </ul>
-              </div>
-              <button
-                onClick={() => handleLaunch('os')}
-                style={{
-                  background: '#3ddc84', color: '#000', border: 'none', borderRadius: 6,
-                  padding: '8px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
-                  cursor: 'pointer', textAlign: 'center'
-                }}
-              >
-                Start in Retro OS →
-              </button>
-            </div>
-
-            <div className="bg-muted/30 border border-border rounded-xl p-4 flex flex-col justify-between gap-3">
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-foreground mb-1.5">
-                  Choose Modern Web Dashboard if you:
-                </div>
-                <ul className="m-0 pl-4 text-xs text-muted-foreground leading-relaxed flex flex-col gap-1 list-disc">
-                  <li>Prefer <strong>executive telemetry</strong>: velocity graphs, heatmaps, and readiness dials.</li>
-                  <li>Are tracking <strong>active interview rounds &amp; offers</strong> via the Kanban pipeline.</li>
-                  <li>Want a mobile/laptop-responsive layout with seamless fast browsing.</li>
-                </ul>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => handleLaunch('web')}
-                className="w-full text-xs h-8 font-semibold"
-              >
-                Start in Modern Web →
-              </Button>
-            </div>
-          </div>
-          <div className="mt-4 text-xs text-muted-foreground text-center">
-            💡 <strong>No lock-in:</strong> You can switch back and forth at any second with 1 click in the top navigation. Your entire progress and notes remain synchronized across both in Supabase cloud.
-          </div>
-        </div>
       </section>
 
-      {/* ── BENTO FEATURES ── */}
-      <section id="features" className="max-w-4xl mx-auto px-5 pb-16">
+      {/* ========================================================================= */}
+      {/* 6. BENTO GRID: SYSTEM CAPABILITIES                                        */}
+      {/* ========================================================================= */}
+      <section id="features" className="max-w-4xl mx-auto px-5 pb-20">
         <div className="text-center mb-8">
-          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+          <span className="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
             System Capabilities
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Engineered for Placement Conversion
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {/* Card 1: Placement Readiness Engine */}
-          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
-            <Target className="size-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground m-0">Placement Readiness Engine</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed m-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Card 1 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+            <div className="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+              <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-white m-0">Placement Readiness Engine</h3>
+            <p className="text-xs text-[#a9b49c] leading-relaxed m-0">
               Calculates your interview odds formula, tracks pace against your target offer deadline, and benchmarks topic mastery across all 25 curriculum categories.
             </p>
           </div>
 
-          {/* Card 2: Placement Pipeline */}
-          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
-            <Briefcase className="size-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground m-0">Placement Pipeline Tracker</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed m-0">
-              Track applications across Wishlist, OA, Technical Rounds, and Offers with compensation metrics and notes.
+          {/* Card 2 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+            <div className="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+              <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect width="20" height="14" x="2" y="7" rx="2" />
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-white m-0">Placement Pipeline Tracker</h3>
+            <p className="text-xs text-[#a9b49c] leading-relaxed m-0">
+              Track applications across Wishlist, OA, Technical Rounds, and Offers with compensation metrics, date milestones, and custom feedback notes.
             </p>
           </div>
 
-          {/* Card 3: Company Tagging */}
-          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
-            <Building2 className="size-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground m-0">Company-Specific Tracks</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed m-0">
-              Filter curriculum problems directly by target companies: Google, Amazon, Microsoft, Meta, Uber, and Apple.
+          {/* Card 3 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+            <div className="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+              <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect width="16" height="20" x="4" y="2" rx="2" />
+                <path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-white m-0">Company-Specific Tracks</h3>
+            <p className="text-xs text-[#a9b49c] leading-relaxed m-0">
+              Filter curriculum problems directly by target companies: Google, Amazon, Microsoft, Meta, Uber, and Apple with high-frequency tags.
             </p>
           </div>
 
-          {/* Card 4: Cohort Competition */}
-          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
-            <Users className="size-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground m-0">Campus &amp; Squad Cohorts</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed m-0">
-              Create or join private 6-character code cohorts to compare streaks and progress with your college batch or friends.
+          {/* Card 4 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+            <div className="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+              <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-white m-0">Campus &amp; Squad Cohorts</h3>
+            <p className="text-xs text-[#a9b49c] leading-relaxed m-0">
+              Create or join private 6-character code cohorts to compare streaks, solve count, and leaderboard ranks with your college batch or squad.
             </p>
           </div>
 
-          {/* Card 5: Cloud Persistence */}
-          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
-            <Shield className="size-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground m-0">Enterprise Cloud Persistence</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed m-0">
-              All progress is synced directly to your secure Supabase cloud database. One-click JSON backup and data exports anytime.
+          {/* Card 5 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+            <div className="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+              <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-white m-0">Enterprise Cloud Persistence</h3>
+            <p className="text-xs text-[#a9b49c] leading-relaxed m-0">
+              All progress is synced directly to your secure Supabase cloud database with zero lock-in. One-click JSON backup and data exports anytime.
             </p>
           </div>
 
-          {/* Card 6: Focus Stopwatch */}
-          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-2 shadow-xs hover:border-border/90 transition-colors">
-            <Timer className="size-5 text-primary" />
-            <h3 className="text-sm font-bold text-foreground m-0">Deep-Work Practice Timer</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed m-0">
-              Built-in 25m, 45m, and 60m focus blocks that persist across page navigation to enforce timed problem-solving discipline.
+          {/* Card 6 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+            <div className="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+              <svg className="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="10" x2="14" y1="2" y2="2" />
+                <line x1="12" x2="15" y1="14" y2="11" />
+                <circle cx="12" cy="14" r="8" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-white m-0">Deep-Work Practice Timer</h3>
+            <p className="text-xs text-[#a9b49c] leading-relaxed m-0">
+              Built-in 25m, 45m, and 60m focus blocks that persist across page navigation to enforce live timed interview problem-solving discipline.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ── CURRICULUM ACCORDION ── */}
-      <section id="curriculum" className="max-w-4xl mx-auto px-5 pb-16">
+      {/* ========================================================================= */}
+      {/* 7. STRUCTURED 5-PHASE CURRICULUM ACCORDION                                 */}
+      {/* ========================================================================= */}
+      <section id="curriculum" className="max-w-4xl mx-auto px-5 pb-20">
         <div className="text-center mb-8">
-          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
-            {CURRICULUM.totalWeeks} Weeks · {CURRICULUM.totalDays} Days · {CURRICULUM.totalProblems} Problems
+          <span className="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
+            20 Weeks · 140 Days · 332 Problems
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Structured Algorithmic Syllabus
           </h2>
         </div>
 
-        <div className="flex flex-col gap-2.5">
-          {PHASES.map((phase) => {
-            const isOpen = openPhase === phase.id;
-            return (
-              <div
-                key={phase.id}
-                className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs transition-colors"
-              >
-                <div
-                  onClick={() => setOpenPhase(isOpen ? null : phase.id)}
-                  className="p-3.5 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5 sm:gap-3">
-                    <Badge variant="outline" className="font-mono text-xs px-2 py-0.5 bg-muted/50 text-foreground border-border">
-                      {phase.weeks}
-                    </Badge>
-                    <div>
-                      <div className="text-xs sm:text-sm font-semibold text-foreground">
-                        {phase.title}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">{phase.subtitle}</div>
-                    </div>
+        <div className="flex flex-col gap-3">
+          {/* Phase 1 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleAccordion(1)}
+              className="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+                  Weeks 1-5
+                </span>
+                <div>
+                  <div className="text-xs sm:text-sm font-semibold text-white">
+                    Linear Foundations &amp; Core Pointers
                   </div>
-
-                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {phase.problems} problems
-                    </span>
-                    {isOpen ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
-                  </div>
+                  <div className="text-[11px] text-[#a9b49c]">Arrays, Two Pointers, Sliding Window, Prefix Sums &amp; Hash Maps</div>
                 </div>
-
-                {isOpen && (
-                  <div className="p-4 sm:p-5 border-t border-border/60 bg-muted/20 text-xs">
-                    <p className="text-xs text-muted-foreground m-0 mb-3 leading-relaxed">
-                      {phase.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {phase.keyPatterns.map(pattern => (
-                        <Badge key={pattern} variant="secondary" className="font-mono text-[10px] px-2 py-0.5">
-                          {pattern}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      <strong className="text-foreground">Key Benchmarks:</strong> {phase.sampleProblems.join(' • ')}
-                    </div>
-                  </div>
-                )}
               </div>
-            );
-          })}
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-[#a9b49c] font-mono">65 problems</span>
+                <svg
+                  className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                    openPhase === 1 ? 'rotate-180' : ''
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </div>
+            {openPhase === 1 && (
+              <div className="p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+                <p className="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+                  Master core patterns tested in 70% of technical phone screens. Eliminates brute-force O(N^2) habits.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Opposite &amp; Fast/Slow Pointers
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Dynamic &amp; Fixed Sliding Window
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Prefix Sums &amp; Frequency Counting
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Monotonic Stack / Queue
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#a9b49c]">
+                  <strong className="text-white">Key Benchmarks:</strong> 3Sum (LC 15) • Longest Substring (LC 3) • Daily Temperatures (LC 739) • Trapping Rain Water (LC 42)
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Phase 2 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleAccordion(2)}
+              className="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+                  Weeks 6-10
+                </span>
+                <div>
+                  <div className="text-xs sm:text-sm font-semibold text-white">
+                    Hierarchical &amp; Graph Algorithms
+                  </div>
+                  <div className="text-[11px] text-[#a9b49c]">Binary Trees, BSTs, BFS/DFS, Topological Sort &amp; Shortest Path</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-[#a9b49c] font-mono">75 problems</span>
+                <svg
+                  className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                    openPhase === 2 ? 'rotate-180' : ''
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </div>
+            {openPhase === 2 && (
+              <div className="p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+                <p className="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+                  Deconstruct complex tree traversals and graph algorithms into reusable recursive and iterative mental models.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Tree DFS &amp; Path Sum
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Connected Components (Flood Fill)
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Topological Sort (Kahn's Algorithm)
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Dijkstra &amp; Shortest Path
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#a9b49c]">
+                  <strong className="text-white">Key Benchmarks:</strong> Lowest Common Ancestor (LC 236) • Course Schedule (LC 207) • Number of Islands (LC 200) • Word Ladder (LC 127)
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Phase 3 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleAccordion(3)}
+              className="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+                  Weeks 11-15
+                </span>
+                <div>
+                  <div className="text-xs sm:text-sm font-semibold text-white">
+                    Dynamic Programming &amp; Memoization
+                  </div>
+                  <div className="text-[11px] text-[#a9b49c]">1D/2D DP, Subsequences, Knapsack &amp; State Transitions</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-[#a9b49c] font-mono">65 problems</span>
+                <svg
+                  className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                    openPhase === 3 ? 'rotate-180' : ''
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </div>
+            {openPhase === 3 && (
+              <div className="p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+                <p className="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+                  Demystify DP by learning state definitions and recurrence transitions rather than memorizing solutions.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    0/1 Knapsack &amp; Unbounded
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Longest Common Subsequence (LCS)
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    State Machine DP
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Interval DP
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#a9b49c]">
+                  <strong className="text-white">Key Benchmarks:</strong> Coin Change (LC 322) • Longest Increasing Subsequence (LC 300) • Edit Distance (LC 72) • Target Sum (LC 494)
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Phase 4 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleAccordion(4)}
+              className="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+                  Weeks 16-18
+                </span>
+                <div>
+                  <div className="text-xs sm:text-sm font-semibold text-white">
+                    Architecture &amp; System Design Foundations
+                  </div>
+                  <div className="text-[11px] text-[#a9b49c]">Distributed Caching, Rate Limiting, Partitioning &amp; Resiliency</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-[#a9b49c] font-mono">28 problems</span>
+                <svg
+                  className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                    openPhase === 4 ? 'rotate-180' : ''
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </div>
+            {openPhase === 4 && (
+              <div className="p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+                <p className="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+                  Bridge algorithmic thinking with high-throughput distributed system design evaluated in senior loops.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Token Bucket &amp; Leaky Bucket
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Consistent Hashing &amp; Rings
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">
+                    Cache-Aside &amp; Write-Through
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#a9b49c]">
+                  <strong className="text-white">Key Benchmarks:</strong> TinyURL • Distributed Rate Limiter • Key-Value Store with LSM
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Phase 5 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleAccordion(5)}
+              className="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+                  Weeks 19-20
+                </span>
+                <div>
+                  <div className="text-xs sm:text-sm font-semibold text-white">
+                    Offer Sprint &amp; Timed Mock Pressure
+                  </div>
+                  <div className="text-[11px] text-[#a9b49c]">High-Frequency Speedruns, Top 150 Benchmarks &amp; Mock Interviews</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-[#a9b49c] font-mono">74 problems</span>
+                <svg
+                  className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                    openPhase === 5 ? 'rotate-180' : ''
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+            </div>
+            {openPhase === 5 && (
+              <div className="p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+                <p className="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+                  Simulate live interview pressure under strict 45-minute constraints. Focuses exclusively on top company-tagged variants.
+                </p>
+                <div className="text-[11px] text-[#a9b49c]">
+                  <strong className="text-white">Key Benchmarks:</strong> LRU Cache (LC 146) • Median of Two Sorted Arrays (LC 4) • Merge k Sorted Lists (LC 23) • Alien Dictionary (LC 269)
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section id="faq" className="max-w-4xl mx-auto px-5 pb-16">
+      {/* ========================================================================= */}
+      {/* 8. FREQUENTLY ASKED QUESTIONS (FAQ)                                       */}
+      {/* ========================================================================= */}
+      <section id="faq" className="max-w-4xl mx-auto px-5 pb-24">
         <div className="text-center mb-8">
-          <span className="text-[11px] font-mono uppercase font-bold text-primary tracking-wider block mb-1">
+          <span className="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
             Common Questions
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground m-0 font-sans">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Frequently Asked Questions
           </h2>
         </div>
 
-        <div className="flex flex-col gap-2">
-          {[
-            {
-              q: 'Why are there two different interfaces (Retro OS vs Modern Web)?',
-              a: 'Feedback showed users were passionately divided: some love the deep immersion of a 90s retro CRT window manager with chiptune audio, while others prefer the clean, minimalist modern web dashboard. We give you both running seamlessly on the exact same engine.'
-            },
-            {
-              q: 'Does my progress transfer when I switch between interfaces?',
-              a: 'Yes, 100%. Both interfaces read and write from the exact same Supabase cloud database. When you mark a problem solved or update a note in Modern Web, it is immediately reflected when you launch Retro OS, and vice versa — in real-time.'
-            },
-            {
-              q: 'How do I switch between Retro OS and Modern Web after choosing?',
-              a: 'In Retro OS, click the "MODERN UI" button in the taskbar or Start Menu. In Modern Web, click the "OS Shell" button in the top navigation bar. You can also return to this landing page at any time.'
-            },
-            {
-              q: 'How is my progress stored and synchronized across devices?',
-              a: 'GrindOS uses direct cloud synchronization backed by Supabase. Your solved problems, notes, streaks, and interview pipelines are securely synchronized across any device in real-time, with one-click full JSON export available anytime.'
-            },
-            {
-              q: 'How does the Placement Readiness algorithm work?',
-              a: 'Your readiness percentage is calculated from 4 transparent factors: Problem Coverage (40%), Streak Consistency (25%), Pace vs Target Deadline (25%), and Topic Breadth (10%).'
-            }
-          ].map((item, idx) => {
-            const isOpen = activeFaq === idx;
-            return (
-              <div
-                key={idx}
-                className="bg-card border border-border rounded-xl overflow-hidden shadow-xs transition-colors"
+        <div className="flex flex-col gap-2.5">
+          {/* FAQ 1 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleFaq(1)}
+              className="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors"
+            >
+              <span>Why are there two different interfaces (Retro OS vs Modern Web)?</span>
+              <svg
+                className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                  openFaq === 1 ? 'rotate-180' : ''
+                }`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
               >
-                <div
-                  onClick={() => setActiveFaq(isOpen ? null : idx)}
-                  className="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer text-xs sm:text-sm font-semibold text-foreground hover:bg-muted/30 transition-colors"
-                >
-                  <span>{item.q}</span>
-                  {isOpen ? <ChevronUp className="size-3.5 text-muted-foreground" /> : <ChevronDown className="size-3.5 text-muted-foreground" />}
-                </div>
-                {isOpen && (
-                  <div className="px-4 pb-3.5 pt-0 text-xs text-muted-foreground leading-relaxed">
-                    {item.a}
-                  </div>
-                )}
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            {openFaq === 1 && (
+              <div className="px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+                Feedback showed users were passionately divided: some love the deep immersion of a 90s retro CRT window manager with chiptune audio, while others prefer the clean, minimalist modern web dashboard. We give you both running seamlessly on the exact same engine.
               </div>
-            );
-          })}
+            )}
+          </div>
+
+          {/* FAQ 2 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleFaq(2)}
+              className="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors"
+            >
+              <span>Does my progress transfer when I switch between interfaces?</span>
+              <svg
+                className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                  openFaq === 2 ? 'rotate-180' : ''
+                }`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            {openFaq === 2 && (
+              <div className="px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+                Yes, 100%. Both interfaces read and write from the exact same Supabase cloud database. When you mark a problem solved or update a note in Modern Web, it is immediately reflected when you launch Retro OS, and vice versa — in real-time.
+              </div>
+            )}
+          </div>
+
+          {/* FAQ 3 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleFaq(3)}
+              className="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors"
+            >
+              <span>How is my progress stored and synchronized across devices?</span>
+              <svg
+                className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                  openFaq === 3 ? 'rotate-180' : ''
+                }`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            {openFaq === 3 && (
+              <div className="px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+                GrindOS uses direct cloud synchronization backed by Supabase. Your solved problems, notes, streaks, and interview pipelines are securely synchronized across any device in real-time, with one-click full JSON export available anytime.
+              </div>
+            )}
+          </div>
+
+          {/* FAQ 4 */}
+          <div className="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+            <div
+              onClick={() => toggleFaq(4)}
+              className="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors"
+            >
+              <span>How does the Placement Readiness algorithm work?</span>
+              <svg
+                className={`size-4 text-[#a9b49c] transition-transform duration-300 ${
+                  openFaq === 4 ? 'rotate-180' : ''
+                }`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+            {openFaq === 4 && (
+              <div className="px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+                Your readiness percentage is calculated from 4 transparent factors: Problem Coverage (40%), Streak Consistency (25%), Pace vs Target Deadline (25%), and Topic Breadth (10%).
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* ── MEADOW RISE INTERACTIVE CANVAS FOOTER ── */}
-      <MeadowRiseFooter
-        name="GrindOS"
-        brandHref="/"
-        heading="Master 140 days of *algorithmic prep* today."
-        subheading="332 curated LeetCode problems. Spaced repetition telemetry. Dual-engine workstation."
-        cta={{
-          label: "Start 140-Day Prep Free",
-          onClick: () => setIsAuthModalOpen(true),
-        }}
-        tagline="A disciplined placement operating system designed to get engineers and students placement-ready for Tier-1 tech companies."
-        placeholder="Enter your email for placement drops"
-        onSubscribe={async (email) => {
-          toast.success(`Subscribed ${email} for placement drops! 🚀`);
-        }}
-        columns={[
-          {
-            title: "Workstation",
-            links: [
-              { label: "Modern Bento App", onClick: () => handleLaunch('web') },
-              { label: "Retro Terminal OS", onClick: () => handleLaunch('os') },
-              { label: "Interactive Demo Sandbox", onClick: () => setIsDemoModalOpen(true) },
-              { label: "Curriculum Syllabus", href: "#curriculum" },
-            ],
-          },
-          {
-            title: "Preparation",
-            links: [
-              { label: "Placement Tracker", onClick: () => handleLaunch('web') },
-              { label: "Global Peer Cohorts", onClick: () => handleLaunch('web') },
-              { label: "Top 150 Benchmarks", href: "#features" },
-              { label: "Lifetime Pro License", onClick: () => setIsPricingModalOpen(true) },
-            ],
-          },
-          {
-            title: "Legal & System",
-            links: [
-              { label: "Pricing & Plans", onClick: () => setIsPricingModalOpen(true) },
-              { label: "Terms of Service", href: "/terms" },
-              { label: "Privacy Policy", href: "/privacy" },
-              { label: "Stealth Ops Console", href: "/_ops" },
-            ],
-          },
-        ]}
-        socialTitle="Community"
-        socials={[
-          { icon: "x", href: "https://x.com", label: "X (Twitter)" },
-          { icon: "linkedin", href: "https://linkedin.com", label: "LinkedIn" },
-        ]}
-        legal={[
-          { label: "Privacy Policy", href: "/privacy" },
-          { label: "Terms of Service", href: "/terms" },
-        ]}
-        copyright={`© ${new Date().getFullYear()} GrindOS. All rights reserved. Dual-Engine Placement Workstation.`}
+      {/* ========================================================================= */}
+      {/* 9. EXACT MEADOW RISE INTERACTIVE FOOTER                                    */}
+      {/* ========================================================================= */}
+      <MeadowRiseFooterExact
+        onStartFree={() => setIsAuthModalOpen(true)}
+        onOpenPricing={() => setIsPricingModalOpen(true)}
+        onOpenDemoChoice={() => setIsDemoModalOpen(true)}
+        onNavigate={(path) => navigate(path)}
+        authUser={authUser}
+        operatorName={userProfile.name}
+        seed={7}
       />
 
-      {/* Auth, Pricing & Demo Choice Modals */}
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
-      <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
+      {/* ========================================================================= */}
+      {/* 10. MODALS (AUTHENTICATION, PRICING, WORKSTATION DEMO CHOICE)             */}
+      {/* ========================================================================= */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        defaultTab="signin"
+      />
+
+      <PricingModal
+        isOpen={isPricingModalOpen}
+        onClose={() => setIsPricingModalOpen(false)}
+      />
+
       <DemoChoiceModal
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}
-        onSelectMode={onSelectMode}
       />
     </div>
   );
 };
+
+export default LandingPage;

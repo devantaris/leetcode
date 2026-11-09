@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GrindOS — Dual Engine Synchronized Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+    }
+
+    body {
+      background: #020504;
+      color: #ffffff;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Header */
+    #topHeader {
+      height: 58px;
+      width: 100%;
+      background: rgba(10, 15, 13, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 50;
+      backdrop-filter: blur(20px);
+    }
+
+    .engine-tag {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      position: relative;
+    }
+    .pulse-green {
+      background: #10b981;
+      box-shadow: 0 0 12px #10b981;
+    }
+    .pulse-cyan {
+      background: #38bdf8;
+      box-shadow: 0 0 12px #38bdf8;
+    }
+
+    .center-sync-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      font-size: 12px;
+      font-weight: 700;
+      color: #a7f3d0;
+      letter-spacing: 0.5px;
+    }
+
+    /* Top Timeline Progress Bar */
+    #timelineBar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #38bdf8, #a855f7);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+      z-index: 60;
+    }
+
+    /* Split Stage */
+    #splitStage {
+      flex: 1;
+      display: flex;
+      width: 1920px;
+      height: 1022px;
+      padding: 16px 24px;
+      gap: 20px;
+      position: relative;
+    }
+
+    /* Viewport Panes */
+    .viewport-pane {
+      flex: 1;
+      height: 100%;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .modern-pane {
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.12);
+    }
+
+    .retro-pane {
+      border-color: rgba(56, 189, 248, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.12);
+    }
+
+    /* Window Header */
+    .pane-header {
+      height: 42px;
+      background: rgba(22, 27, 34, 0.9);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .traffic-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+
+    .pane-title {
+      margin-left: 14px;
+      font-family: monospace;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .pane-body {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      opacity: 0;
+      transition: opacity 0.4s ease-in-out;
+    }
+    .screen-img.active {
+      opacity: 1;
+    }
+
+    /* Center Sync Divider */
+    #centerDivider {
+      width: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .divider-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(16,185,129,0.2), #10b981, rgba(56,189,248,0.8), rgba(16,185,129,0.2));
+      box-shadow: 0 0 12px #10b981;
+    }
+
+    .sync-node {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #020504;
+      border: 2px solid #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #34d399;
+      font-size: 14px;
+      font-weight: 800;
+      z-index: 10;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+      animation: pulseNode 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseNode {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
+      50% { transform: scale(1.15); box-shadow: 0 0 25px rgba(56, 189, 248, 0.9); border-color: #38bdf8; color: #38bdf8; }
+    }
+
+    /* Sync Energy Beam */
+    #syncBeam {
+      position: absolute;
+      height: 4px;
+      background: linear-gradient(90deg, #10b981, #38bdf8);
+      top: 380px;
+      left: 450px;
+      width: 0;
+      z-index: 100;
+      box-shadow: 0 0 16px #38bdf8;
+      border-radius: 2px;
+      pointer-events: none;
+      opacity: 0;
+      transition: width 0.35s ease-out, opacity 0.2s;
+    }
+
+    /* Floating Feature Banner */
+    #featureBanner {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 15, 13, 0.9);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 10px 28px;
+      border-radius: 9999px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(16, 185, 129, 0.2);
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 80;
+      letter-spacing: 0.4px;
+      transition: all 0.35s ease;
+    }
+
+    /* Virtual Cursor */
+    #vCursor {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      z-index: 120;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+      display: none;
+    }
+
+    #vCursor svg {
+      width: 100%;
+      height: 100%;
+      fill: #ffffff;
+      stroke: #000000;
+      stroke-width: 1.5;
+    }
+
+    .cursor-ripple {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #10b981;
+      top: -10px;
+      left: -10px;
+      transform: scale(0);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .cursor-ripple.click-anim {
+      animation: ripple 0.6s ease-out forwards;
+    }
+    @keyframes ripple {
+      0% { transform: scale(0.2); opacity: 1; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    /* Confetti Canvas */
+    #fxCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 90;
+    }
+
+    /* Final Hero CTA Modal */
+    #finalCtaModal {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(8, 12, 10, 0.95);
+      border: 2px solid #10b981;
+      border-radius: 24px;
+      padding: 50px 70px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      backdrop-filter: blur(30px);
+      box-shadow: 0 40px 140px rgba(0,0,0,0.95), 0 0 90px rgba(16, 185, 129, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 150;
+    }
+    #finalCtaModal.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+
+    .cta-pill {
+      margin-top: 24px;
+      padding: 16px 36px;
+      background: rgba(16, 185, 129, 0.18);
+      border: 2px solid #10b981;
+      border-radius: 16px;
+      font-size: 30px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 50px rgba(16, 185, 129, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <div id="topHeader">
+    <div class="engine-tag" style="color: #34d399;">
+      <div class="pulse-dot pulse-green"></div>
+      <span>Modern Cadence Pro (Web OS)</span>
+    </div>
+
+    <div class="center-sync-pill">
+      <span>⚡ 100% SHARED CLOUD STATE</span>
+      <span style="opacity: 0.4;">/</span>
+      <span>TWO REALITIES</span>
+      <span style="opacity: 0.4;">/</span>
+      <span>ZERO SILOS</span>
+    </div>
+
+    <div class="engine-tag" style="color: #38bdf8;">
+      <div class="pulse-dot pulse-cyan"></div>
+      <span>Retro Workstation (Windows 95 Shell)</span>
+    </div>
+
+    <div id="timelineBar"></div>
+  </div>
+
+  <!-- Stage -->
+  <div id="splitStage">
+
+    <!-- LEFT: Modern UI -->
+    <div class="viewport-pane modern-pane">
+      <div class="pane-header">
+        <div class="traffic-dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <div class="pane-title" id="mPaneTitle">CADENCE://DASHBOARD</div>
+      </div>
+      <div class="pane-body">
+        <img id="mDash1" class="screen-img active" src="../demo-video/dual-assets/m-dash-1.png" alt="Modern Dashboard Initial" />
+        <img id="mDash2" class="screen-img" src="../demo-video/dual-assets/m-dash-2.png" alt="Modern Dashboard Solved" />
+        <img id="mCurriculum" class="screen-img" src="../demo-video/dual-assets/m-curriculum.png" alt="Modern Curriculum" />
+        <img id="mAnalytics" class="screen-img" src="../demo-video/dual-assets/m-analytics.png" alt="Modern Analytics" />
+        <img id="mLeaderboard" class="screen-img" src="../demo-video/dual-assets/m-leaderboard.png" alt="Modern Leaderboard" />
+        <img id="mTracker" class="screen-img" src="../demo-video/dual-assets/m-tracker.png" alt="Modern Tracker" />
+      </div>
+    </div>
+
+    <!-- CENTER: Synchronized Neon Divider -->
+    <div id="centerDivider">
+      <div class="divider-line"></div>
+      <div class="sync-node">⇄</div>
+    </div>
+
+    <!-- RIGHT: Retro OS -->
+    <div class="viewport-pane retro-pane">
+      <div class="pane-header" style="background: #1e293b;">
+        <span style="font-size: 13px; font-weight: 700; color: #38bdf8;">■ WIN95 SHELL</span>
+        <div class="pane-title" id="osPaneTitle" style="color: #94a3b8;">C:\GRINDOS\MISSIONS.EXE</div>
+      </div>
+      <div class="pane-body">
+        <img id="osDash1" class="screen-img active" src="../demo-video/dual-assets/os-dash-1.png" alt="Retro Missions Initial" />
+        <img id="osDash2" class="screen-img" src="../demo-video/dual-assets/os-dash-2.png" alt="Retro Missions Solved" />
+        <img id="osCurriculum" class="screen-img" src="../demo-video/dual-assets/os-curriculum.png" alt="Retro Syllabus" />
+        <img id="osAnalytics" class="screen-img" src="../demo-video/dual-assets/os-analytics.png" alt="Retro Stats" />
+        <img id="osLeaderboard" class="screen-img" src="../demo-video/dual-assets/os-leaderboard.png" alt="Retro Cohort" />
+        <img id="osTracker" class="screen-img" src="../demo-video/dual-assets/os-tracker.png" alt="Retro Pipeline" />
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Dynamic Feature Banner -->
+  <div id="featureBanner">
+    <span style="color: #10b981;">⚡</span>
+    <span id="bannerText">Clicking Task Complete on Dashboard ➔ Real-Time Sync</span>
+  </div>
+
+  <!-- Virtual Cursor -->
+  <div id="vCursor">
+    <svg viewBox="0 0 24 24">
+      <path d="M4 2l16 12-7 1.5 4 7.5-3 1.5-4-7.5L4 20V2z"/>
+    </svg>
+    <div id="cursorRipple" class="cursor-ripple"></div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="fxCanvas" width="1920" height="1080"></canvas>
+
+  <!-- Final CTA Modal -->
+  <div id="finalCtaModal">
+    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; border-radius: 9999px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-size: 13px; font-weight: 700; text-transform: uppercase;">
+      <span>⚡ DUAL-ENGINE PLACEMENT OPERATING SYSTEM</span>
+    </div>
+    <h1 style="font-size: 52px; font-weight: 800; letter-spacing: -1.5px; margin-top: 18px; line-height: 1.15; background: linear-gradient(135deg, #ffffff 40%, #a7f3d0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      One Structured Syllabus.<br/>Two Distinct Realities.
+    </h1>
+    <p style="font-size: 20px; color: #94a3b8; margin-top: 12px; font-weight: 400;">
+      140-Day Master Roadmap • Top 150 Benchmark • Dual Engine • 100% Free
+    </p>
+
+    <div class="cta-pill">
+      <span style="color: #34d399;">👉</span>
+      <span>leetcode-psi.vercel.app</span>
+    </div>
+
+    <div style="margin-top: 16px; font-size: 14px; color: #64748b; font-weight: 500;">
+      Zero Paywalls • Keyboard-First • Open to Community
+    </div>
+  </div>
+
+  <script>
+    // Confetti System
+    const canvas = document.getElementById('fxCanvas');
+    const ctx = canvas.getContext('2d');
+    let confetti = [];
+
+    function triggerConfetti() {
+      confetti = [];
+      const colors = ['#10b981', '#34d399', '#6ee7b7', '#38bdf8', '#f59e0b', '#ffffff'];
+      for (let i = 0; i < 200; i++) {
+        confetti.push({
+          x: 960 + (Math.random() - 0.5) * 400,
+          y: 500 + (Math.random() - 0.5) * 150,
+          w: Math.random() * 10 + 6,
+          h: Math.random() * 6 + 4,
+          vx: (Math.random() - 0.5) * 20,
+          vy: Math.random() * -18 - 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 14,
+          gravity: 0.45,
+          opacity: 1
+        });
+      }
+    }
+
+    function renderConfetti() {
+      ctx.clearRect(0, 0, 1920, 1080);
+      confetti.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.rotation += p.vRot;
+        p.opacity -= 0.007;
+
+        if (p.opacity > 0) {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(0, p.opacity);
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        }
+      });
+      confetti = confetti.filter(p => p.opacity > 0);
+    }
+
+    // Timeline Director (30 seconds total)
+    const timelineBar = document.getElementById('timelineBar');
+    const bannerText = document.getElementById('bannerText');
+    const mPaneTitle = document.getElementById('mPaneTitle');
+    const osPaneTitle = document.getElementById('osPaneTitle');
+    const vCursor = document.getElementById('vCursor');
+    const cursorRipple = document.getElementById('cursorRipple');
+    const finalCta = document.getElementById('finalCtaModal');
+
+    // Modern Images
+    const mDash1 = document.getElementById('mDash1');
+    const mDash2 = document.getElementById('mDash2');
+    const mCurriculum = document.getElementById('mCurriculum');
+    const mAnalytics = document.getElementById('mAnalytics');
+    const mLeaderboard = document.getElementById('mLeaderboard');
+    const mTracker = document.getElementById('mTracker');
+
+    // Retro Images
+    const osDash1 = document.getElementById('osDash1');
+    const osDash2 = document.getElementById('osDash2');
+    const osCurriculum = document.getElementById('osCurriculum');
+    const osAnalytics = document.getElementById('osAnalytics');
+    const osLeaderboard = document.getElementById('osLeaderboard');
+    const osTracker = document.getElementById('osTracker');
+
+    function hideAllScreens() {
+      [mDash1, mDash2, mCurriculum, mAnalytics, mLeaderboard, mTracker,
+       osDash1, osDash2, osCurriculum, osAnalytics, osLeaderboard, osTracker].forEach(img => {
+        img.classList.remove('active');
+      });
+    }
+
+    const totalDuration = 30.0;
+    let startTime = null;
+    let click1Triggered = false;
+    let confettiTriggered = false;
+
+    function render(now) {
+      if (!startTime) startTime = now;
+      const elapsed = (now - startTime) / 1000;
+
+      // Update progress bar
+      const pct = Math.min(100, (elapsed / totalDuration) * 100);
+      timelineBar.style.width = pct + '%';
+
+      renderConfetti();
+
+      // ==========================================
+      // SCENE 1: DASHBOARD & TASK COMPLETION (0 - 6.5s)
+      // ==========================================
+      if (elapsed < 6.5) {
+        if (!click1Triggered && elapsed >= 2.2) {
+          vCursor.style.display = 'block';
+          // Cursor glides to problem checkbox on left
+          const t = Math.min(1, (elapsed - 2.2) / 1.0);
+          vCursor.style.transform = `translate(${180 + t * 60}px, ${380 + t * 40}px)`;
+
+          if (elapsed >= 3.2 && !click1Triggered) {
+            click1Triggered = true;
+            cursorRipple.classList.add('click-anim');
+            // Checkmark completes on Left!
+            mDash1.classList.remove('active');
+            mDash2.classList.add('active');
+
+            // Synchronous update on Right!
+            setTimeout(() => {
+              osDash1.classList.remove('active');
+              osDash2.classList.add('active');
+            }, 250);
+          }
+        } else if (elapsed < 2.2) {
+          mDash1.classList.add('active');
+          osDash1.classList.add('active');
+          mPaneTitle.innerText = 'CADENCE://DASHBOARD';
+          osPaneTitle.innerText = 'C:\\GRINDOS\\MISSIONS.EXE';
+          bannerText.innerText = '1. Dashboard: Clicking Task Complete ➔ Real-Time Solved Increment';
+        }
+      }
+
+      // ==========================================
+      // SCENE 2: CURRICULUM & SYLLABUS DB (6.5s - 12.0s)
+      // ==========================================
+      else if (elapsed >= 6.5 && elapsed < 12.0) {
+        vCursor.style.display = 'none';
+        hideAllScreens();
+        mCurriculum.classList.add('active');
+        osCurriculum.classList.add('active');
+        mPaneTitle.innerText = 'CADENCE://CURRICULUM';
+        osPaneTitle.innerText = 'C:\\GRINDOS\\SYLLABUS.EXE';
+        bannerText.innerText = '2. Curriculum: 140-Day Master Roadmap (332 Problems) & Top 150 Benchmark';
+      }
+
+      // ==========================================
+      // SCENE 3: ANALYTICS & HEATMAP (12.0s - 17.5s)
+      // ==========================================
+      else if (elapsed >= 12.0 && elapsed < 17.5) {
+        hideAllScreens();
+        mAnalytics.classList.add('active');
+        osAnalytics.classList.add('active');
+        mPaneTitle.innerText = 'CADENCE://ANALYTICS';
+        osPaneTitle.innerText = 'C:\\GRINDOS\\STATS.EXE';
+        bannerText.innerText = '3. Analytics: Consistency Heatmap & Spaced Repetition Telemetry';
+      }
+
+      // ==========================================
+      // SCENE 4: LEADERBOARD & COHORT (17.5s - 23.0s)
+      // ==========================================
+      else if (elapsed >= 17.5 && elapsed < 23.0) {
+        hideAllScreens();
+        mLeaderboard.classList.add('active');
+        osLeaderboard.classList.add('active');
+        mPaneTitle.innerText = 'CADENCE://LEADERBOARD';
+        osPaneTitle.innerText = 'C:\\GRINDOS\\COHORT.EXE';
+        bannerText.innerText = '4. Leaderboard: Global Peer Rankings & Cohort Telemetry';
+      }
+
+      // ==========================================
+      // SCENE 5: OFFER PIPELINE & CELEBRATION (23.0s - 30.0s)
+      // ==========================================
+      else if (elapsed >= 23.0) {
+        hideAllScreens();
+        mTracker.classList.add('active');
+        osTracker.classList.add('active');
+        mPaneTitle.innerText = 'CADENCE://TRACKER';
+        osPaneTitle.innerText = 'C:\\GRINDOS\\PIPELINE.EXE';
+        bannerText.innerText = '5. Placement Pipeline: Wishlist ➔ Applied ➔ OA ➔ Interview ➔ Offer 🎉';
+
+        if (elapsed >= 25.0 && !confettiTriggered) {
+          confettiTriggered = true;
+          triggerConfetti();
+          finalCta.classList.add('show');
+        }
+      }
+
+      if (elapsed < totalDuration) {
+        requestAnimationFrame(render);
+      } else {
+        window.__animationFinished = true;
+      }
+    }
+
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>

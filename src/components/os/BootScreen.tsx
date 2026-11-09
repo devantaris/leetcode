@@ -27,13 +27,15 @@ export const BootScreen: React.FC<BootScreenProps> = ({ onComplete }) => {
   const [showProgress, setShowProgress] = useState(false);
   const [progressWidth, setProgressWidth] = useState(0);
   const completedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   const finishBoot = useCallback(() => {
     if (completedRef.current) return;
     completedRef.current = true;
     beep(1200, 0.12);
-    onComplete();
-  }, [onComplete]);
+    onCompleteRef.current();
+  }, []);
 
   useEffect(() => {
     let index = 0;
@@ -53,9 +55,9 @@ export const BootScreen: React.FC<BootScreenProps> = ({ onComplete }) => {
         setTimeout(() => setProgressWidth(100), 50);
         setTimeout(() => {
           finishBoot();
-        }, 850);
+        }, 600);
       }
-    }, 120);
+    }, 90);
 
     return () => clearInterval(interval);
   }, [finishBoot]);

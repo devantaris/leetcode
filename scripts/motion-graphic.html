@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GrindOS Motion Graphics Cinema</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background: #030605;
+      color: #ffffff;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Canvas background for ambient floating particles */
+    #particleCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Ambient Cyber Grid */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(16, 185, 129, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(16, 185, 129, 0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(circle at 50% 50%, black 50%, transparent 85%);
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Aurora Glow Orbs */
+    .aurora {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(130px);
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.7;
+    }
+
+    .aurora-1 {
+      width: 900px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.22), transparent 70%);
+      top: -150px;
+      left: 10%;
+    }
+
+    .aurora-2 {
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(5, 150, 105, 0.2), transparent 70%);
+      bottom: -150px;
+      right: 10%;
+    }
+
+    /* Stage & Scene Containers */
+    #stage {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.96) translateY(24px);
+      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .scene.active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .scene.exit {
+      opacity: 0;
+      transform: scale(1.04) translateY(-24px);
+    }
+
+    /* Universal UI Elements */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 22px;
+      border-radius: 9999px;
+      font-size: 15px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .pill-red {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .pill-emerald {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.25);
+    }
+
+    .hero-title {
+      font-size: 80px;
+      font-weight: 900;
+      letter-spacing: -2.5px;
+      line-height: 1.08;
+      text-align: center;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ffffff 40%, #a7f3d0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.6));
+    }
+
+    .hero-subtitle {
+      font-size: 26px;
+      color: #94a3b8;
+      text-align: center;
+      max-width: 900px;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+
+    /* ─── SCENE 1: THE PROBLEM ──────────────────────────────────────── */
+    .sheet-mockup {
+      width: 980px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 20px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(239, 68, 68, 0.2);
+      margin-top: 36px;
+      overflow: hidden;
+      transform: perspective(1000px) rotateX(4deg);
+      position: relative;
+    }
+
+    .sheet-header {
+      background: #1e293b;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #334155;
+    }
+
+    .sheet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .sheet-table th, .sheet-table td {
+      padding: 14px 22px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sheet-table th {
+      background: rgba(255, 255, 255, 0.02);
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .status-red {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .strike-banner {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-4deg);
+      background: #ef4444;
+      color: white;
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: 2px;
+      padding: 16px 44px;
+      border-radius: 14px;
+      box-shadow: 0 15px 50px rgba(239, 68, 68, 0.7);
+      text-transform: uppercase;
+      z-index: 10;
+    }
+
+    /* ─── SCENE 2: INTRODUCING GRINDOS ──────────────────────────────── */
+    .brand-glow {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.35), transparent 70%);
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -1;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .logo-icon {
+      font-size: 96px;
+      filter: drop-shadow(0 0 40px rgba(245, 158, 11, 0.65));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .logo-text {
+      font-size: 110px;
+      font-weight: 950;
+      letter-spacing: -4px;
+      background: linear-gradient(135deg, #ffffff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 15px 50px rgba(16, 185, 129, 0.4);
+    }
+
+    .badges-row {
+      display: flex;
+      gap: 18px;
+      margin-top: 48px;
+    }
+
+    .badge-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      padding: 18px 32px;
+      border-radius: 18px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .badge-card span.highlight {
+      color: #34d399;
+      font-weight: 900;
+    }
+
+    /* ─── SCENE 3: CADENCE PRO DASHBOARD ────────────────────────────── */
+    .dashboard-window {
+      width: 1260px;
+      background: rgba(10, 16, 13, 0.88);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 26px;
+      box-shadow: 0 35px 90px rgba(0, 0, 0, 0.95), 0 0 60px rgba(16, 185, 129, 0.18);
+      backdrop-filter: blur(24px);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 22px;
+    }
+
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+    }
+
+    .metric-tile {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 20px;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 160px;
+      position: relative;
+    }
+
+    .metric-tile.primary {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.12));
+      border-color: rgba(16, 185, 129, 0.55);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.15);
+    }
+
+    .tile-label {
+      font-size: 14px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .tile-value {
+      font-size: 46px;
+      font-weight: 950;
+      letter-spacing: -1.5px;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+
+    .tile-sub {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .heatmap-preview {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .heatmap-cells {
+      display: grid;
+      grid-template-columns: repeat(28, 1fr);
+      grid-template-rows: repeat(5, 18px);
+      gap: 6px;
+    }
+
+    .cell {
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      transition: background 0.3s ease;
+    }
+
+    .cell.active-1 { background: rgba(16, 185, 129, 0.35); }
+    .cell.active-2 { background: rgba(16, 185, 129, 0.65); }
+    .cell.active-3 { background: rgba(16, 185, 129, 1); box-shadow: 0 0 12px rgba(16, 185, 129, 0.7); }
+
+    /* ─── SCENE 4: RETRO GRINDOS 95 SHELL ───────────────────────────── */
+    .retro-screen {
+      width: 1280px;
+      height: 740px;
+      background: #008080;
+      border: 5px solid #c0c0c0;
+      border-top-color: #dfdfdf;
+      border-left-color: #dfdfdf;
+      border-right-color: #606060;
+      border-bottom-color: #606060;
+      box-shadow: 0 35px 95px rgba(0, 0, 0, 0.95), 0 0 70px rgba(0, 128, 128, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .retro-screen::after {
+      content: " ";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 99;
+      opacity: 0.65;
+    }
+
+    .win95-taskbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 44px;
+      background: #c0c0c0;
+      border-top: 2px solid #ffffff;
+      display: flex;
+      align-items: center;
+      padding: 4px 10px;
+      gap: 10px;
+      z-index: 50;
+    }
+
+    .start-btn {
+      background: #c0c0c0;
+      border: 2px solid #ffffff;
+      border-right-color: #808080;
+      border-bottom-color: #808080;
+      padding: 4px 14px;
+      font-weight: 900;
+      font-family: "MS Sans Serif", Arial, sans-serif;
+      font-size: 15px;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .win95-window {
+      position: absolute;
+      background: #c0c0c0;
+      border: 3px solid #dfdfdf;
+      border-right-color: #000000;
+      border-bottom-color: #000000;
+      box-shadow: 3px 3px 0px #000;
+    }
+
+    .win-titlebar {
+      background: linear-gradient(90deg, #000080, #1084d0);
+      color: white;
+      padding: 5px 10px;
+      font-weight: bold;
+      font-family: "MS Sans Serif", Arial, sans-serif;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .terminal-window {
+      top: 50px;
+      left: 70px;
+      width: 750px;
+      height: 440px;
+    }
+
+    .terminal-body {
+      background: #000000;
+      color: #00ff66;
+      font-family: ui-monospace, "Courier New", monospace;
+      padding: 20px;
+      height: calc(100% - 32px);
+      overflow: hidden;
+      font-size: 17px;
+      line-height: 1.65;
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.75);
+    }
+
+    .stats-window {
+      top: 80px;
+      right: 60px;
+      width: 400px;
+      height: 360px;
+    }
+
+    .stats-body {
+      background: #ffffff;
+      color: #000;
+      padding: 20px;
+      font-family: "MS Sans Serif", Arial, sans-serif;
+      font-size: 14px;
+      height: calc(100% - 32px);
+      line-height: 1.5;
+    }
+
+    .alt-o-banner {
+      position: absolute;
+      top: 40px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 2px solid #34d399;
+      color: #34d399;
+      padding: 12px 28px;
+      border-radius: 9999px;
+      font-family: ui-monospace, monospace;
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: 2px;
+      box-shadow: 0 0 35px rgba(52, 211, 153, 0.6);
+      z-index: 100;
+    }
+
+    /* ─── SCENE 5: PLACEMENT PIPELINE & FINALE ──────────────────────── */
+    .kanban-board {
+      display: flex;
+      gap: 24px;
+      margin-top: 36px;
+    }
+
+    .kanban-col {
+      width: 290px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .col-header {
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .kanban-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .kanban-card.offer {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(16, 185, 129, 0.3));
+      border: 2.5px solid #f59e0b;
+      box-shadow: 0 0 45px rgba(245, 158, 11, 0.5);
+      transform: scale(1.06);
+    }
+
+    .cta-card {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .cta-link-pill {
+      font-size: 36px;
+      font-weight: 950;
+      font-family: ui-monospace, monospace;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      border: 2.5px solid #10b981;
+      padding: 18px 56px;
+      border-radius: 100px;
+      box-shadow: 0 0 60px rgba(16, 185, 129, 0.45);
+      letter-spacing: -0.5px;
+    }
+
+    /* Bottom Timeline Bar */
+    .timeline-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 7px;
+      background: linear-gradient(90deg, #10b981, #34d399, #f59e0b);
+      width: 0%;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particleCanvas" width="1920" height="1080"></canvas>
+  <div class="bg-grid"></div>
+  <div class="aurora aurora-1"></div>
+  <div class="aurora aurora-2"></div>
+  <div class="timeline-bar" id="timelineBar"></div>
+
+  <div id="stage">
+    <!-- ── SCENE 1: THE PAIN POINT ── -->
+    <div class="scene" id="scene1">
+      <div class="pill pill-red">❌ The Problem With DSA Prep</div>
+      <h1 class="hero-title">Interview Prep Is Broken.</h1>
+      <p class="hero-subtitle">Scattered spreadsheets. 40 abandoned tabs. Zero clarity on whether you're actually interview-ready.</p>
+
+      <div class="sheet-mockup">
+        <div class="sheet-header">
+          <span style="font-weight: bold; color: #cbd5e1; font-size: 14px;">📊 DSA_Tracker_Final_Final_v4.xlsx</span>
+          <span style="color: #ef4444; font-size: 13px; font-weight: 700;">⚠️ 14 Days Inactive</span>
+        </div>
+        <table class="sheet-table">
+          <thead>
+            <tr>
+              <th>DAY</th>
+              <th>PROBLEM</th>
+              <th>TOPIC</th>
+              <th>LAST ATTEMPT</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Day 14</td>
+              <td>Trapping Rain Water</td>
+              <td>Two Pointers</td>
+              <td>18 days ago</td>
+              <td><span class="status-red">Forgot Logic</span></td>
+            </tr>
+            <tr>
+              <td>Day 15</td>
+              <td>Course Schedule II</td>
+              <td>Topological Sort</td>
+              <td>21 days ago</td>
+              <td><span class="status-red">Unsolved</span></td>
+            </tr>
+            <tr>
+              <td>Day 16</td>
+              <td>Coin Change 2</td>
+              <td>Dynamic Prog</td>
+              <td>—</td>
+              <td><span class="status-red">Abandoned</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="strike-banner">Ditch The Spreadsheets.</div>
+      </div>
+    </div>
+
+    <!-- ── SCENE 2: INTRODUCING GRINDOS ── -->
+    <div class="scene" id="scene2">
+      <div class="brand-glow"></div>
+      <div class="pill pill-emerald">🔥 Introducing GrindOS</div>
+      <div class="logo-container">
+        <span class="logo-icon">🔥</span>
+        <span class="logo-text">GrindOS</span>
+      </div>
+      <h2 style="font-size: 42px; font-weight: 850; color: #e2e8f0; letter-spacing: -1.2px; text-align: center;">
+        The Dual-Engine Algorithmic Placement Operating System
+      </h2>
+      <p class="hero-subtitle" style="margin-top: 16px;">
+        One structured 140-day syllabus. Two distinct realities. Built for tier-1 offer velocity.
+      </p>
+
+      <div class="badges-row">
+        <div class="badge-card">📚 <span class="highlight">332</span> Curated Problems</div>
+        <div class="badge-card">🧠 <span class="highlight">SM-2</span> Spaced Repetition</div>
+        <div class="badge-card">🎯 <span class="highlight">Readiness</span> Odds Formula</div>
+        <div class="badge-card">⚡ <span class="highlight">&lt; 50ms</span> Cloud Sync</div>
+      </div>
+    </div>
+
+    <!-- ── SCENE 3: CADENCE PRO DASHBOARD ── -->
+    <div class="scene" id="scene3">
+      <div class="pill pill-emerald">⚡ Reality 1: Cadence Pro Web</div>
+      <h2 style="font-size: 46px; font-weight: 900; letter-spacing: -1.2px; margin-bottom: 24px;">
+        Linear-Grade Telemetry. Measure Actual Placement Odds.
+      </h2>
+
+      <div class="dashboard-window">
+        <div class="dash-header">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 14px; height: 14px; border-radius: 50%; background: #10b981; box-shadow: 0 0 12px #10b981;"></div>
+            <span style="font-weight: 800; font-size: 18px; letter-spacing: -0.5px;">Operator Dashboard</span>
+            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 6px;">LIVE CLOUD SYNC</span>
+          </div>
+          <span style="font-family: ui-monospace, monospace; font-size: 14px; color: #94a3b8;">140-DAY SYLLABUS • PHASE 3 (DYNAMIC PROGRAMMING)</span>
+        </div>
+
+        <div class="tiles-grid">
+          <div class="metric-tile primary">
+            <span class="tile-label" style="color: #34d399;">Total Solved</span>
+            <div class="tile-value" id="counterSolved">184</div>
+            <span class="tile-sub" style="color: #6ee7b7;">55% of curriculum (332 total)</span>
+          </div>
+          <div class="metric-tile">
+            <span class="tile-label">Active Streak</span>
+            <div class="tile-value" style="color: #f59e0b;">🔥 32d</div>
+            <span class="tile-sub">Daily solve discipline</span>
+          </div>
+          <div class="metric-tile">
+            <span class="tile-label">Interview Readiness</span>
+            <div class="tile-value" style="color: #34d399;">89%</div>
+            <span class="tile-sub">Tier-1 candidate benchmark</span>
+          </div>
+          <div class="metric-tile">
+            <span class="tile-label">Daily Target</span>
+            <div class="tile-value">3 / 3</div>
+            <span class="tile-sub">Today's mission locked</span>
+          </div>
+        </div>
+
+        <div class="heatmap-preview">
+          <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; color: #94a3b8;">
+            <span>140-DAY CURRICULUM ACTIVITY MATRIX</span>
+            <span style="color: #34d399;">CONSISTENCY RATING: ELITE</span>
+          </div>
+          <div class="heatmap-cells" id="heatmapCells">
+            <!-- 140 cells generated via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENE 4: RETRO GRINDOS 95 SHELL ── -->
+    <div class="scene" id="scene4">
+      <div class="alt-o-banner">⌨️ ALT + O FAST SWITCH TRIGGERED</div>
+      <div class="pill pill-emerald" style="margin-top: 24px;">👾 Reality 2: GrindOS 95 Shell</div>
+
+      <div class="retro-screen">
+        <div class="win95-window terminal-window">
+          <div class="win-titlebar">
+            <span>VT220 COMMAND CONSOLE — GRINDOS_CLI</span>
+            <div style="display: flex; gap: 3px;">
+              <button style="width: 16px; height: 16px; font-size: 10px; line-height: 1;">_</button>
+              <button style="width: 16px; height: 16px; font-size: 10px; line-height: 1;">X</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="termOutput">
+            <div>GRINDOS(TM) DUAL-CORE KERNEL V5.9 [ONLINE]</div>
+            <div>SHARED CLOUD STATE ENGINE: CONNECTED (38ms)</div>
+            <div>--------------------------------------------------</div>
+            <div style="color: #fff; margin-top: 6px;">&gt; grindos --missions</div>
+            <div>ACTIVE MISSION: DAY 42 [GRAPH TOPOLOGICAL SORT]</div>
+            <div>[X] LC 207: Course Schedule ......... [SOLVED]</div>
+            <div>[X] LC 210: Course Schedule II ........ [SOLVED]</div>
+            <div style="color: #fff; margin-top: 10px;">&gt; grindos --readiness --target "Tier-1 Tech"</div>
+            <div>ANALYZING COVERAGE (40%) + STREAK (25%) + BREADTH (10%)...</div>
+            <div style="color: #34d399; font-weight: bold; margin-top: 4px;">PREDICTED PLACEMENT ODDS: 92.4% [ELITE BENCHMARK]</div>
+            <div style="color: #fff; margin-top: 10px;">&gt; <span style="display: inline-block; width: 10px; height: 20px; background: #00ff66; animation: blink 0.8s infinite;"></span></div>
+          </div>
+        </div>
+
+        <div class="win95-window stats-window">
+          <div class="win-titlebar">
+            <span>TELEMETRY.EXE</span>
+            <button style="width: 16px; height: 16px; font-size: 10px; line-height: 1;">X</button>
+          </div>
+          <div class="stats-body">
+            <div style="font-weight: bold; font-size: 15px; margin-bottom: 10px;">PLACEMENT STATS</div>
+            <div>Current Phase: <strong>Hierarchical Graphs</strong></div>
+            <div>Active Streak: <strong>32 Days Consecutive</strong></div>
+            <div>Audio Synthesis: <strong>8-Bit Chip Synth</strong></div>
+            <hr style="margin: 12px 0; border: none; border-top: 1px solid #808080;">
+            <div style="font-size: 12px; color: #444; line-height: 1.5;">
+              Every solve in Retro OS updates Cadence Pro Web instantaneously with zero data silos.
+            </div>
+          </div>
+        </div>
+
+        <div class="win95-taskbar">
+          <div class="start-btn">
+            <span style="font-size: 16px;">🪟</span>
+            <span>Start</span>
+          </div>
+          <div style="background: #e2e8f0; border: 2px inset #808080; padding: 3px 12px; font-size: 13px; font-family: 'MS Sans Serif', Arial; font-weight: bold;">
+            VT220 Console
+          </div>
+          <div style="background: #e2e8f0; border: 2px inset #808080; padding: 3px 12px; font-size: 13px; font-family: 'MS Sans Serif', Arial;">
+            TELEMETRY.EXE
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCENE 5: PLACEMENT PIPELINE & FINALE ── -->
+    <div class="scene" id="scene5">
+      <div class="pill pill-emerald">🎯 The Outcome</div>
+      <h1 class="hero-title" style="font-size: 72px;">Built to Land the Offer.</h1>
+
+      <div class="kanban-board">
+        <div class="kanban-col">
+          <div class="col-header">
+            <span>APPLIED</span>
+            <span>12</span>
+          </div>
+          <div class="kanban-card">
+            <strong style="color: #f1f5f9; font-size: 15px;">Stripe</strong>
+            <span style="font-size: 13px; color: #94a3b8;">Backend Infrastructure</span>
+          </div>
+          <div class="kanban-card">
+            <strong style="color: #f1f5f9; font-size: 15px;">Databricks</strong>
+            <span style="font-size: 13px; color: #94a3b8;">Distributed Systems</span>
+          </div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="col-header">
+            <span>TECHNICAL LOOP</span>
+            <span>4</span>
+          </div>
+          <div class="kanban-card">
+            <strong style="color: #f1f5f9; font-size: 15px;">Google</strong>
+            <span style="font-size: 13px; color: #94a3b8;">L4 Systems Round</span>
+          </div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="col-header" style="color: #f59e0b;">
+            <span>OFFER RECEIVED</span>
+            <span>🎉</span>
+          </div>
+          <div class="kanban-card offer">
+            <strong style="color: #ffffff; font-size: 18px;">Tier-1 Tech / FAANG</strong>
+            <span style="font-size: 14px; color: #fef08a; font-weight: 800;">Software Engineer • Offer Secured</span>
+            <span style="font-size: 12px; color: #cbd5e1;">Converted via 140-Day Mastery</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-card">
+        <div class="cta-link-pill">leetcode-psi.vercel.app</div>
+        <p style="font-size: 20px; color: #cbd5e1; font-weight: 700;">
+          100% Free • Open Source • Try Interactive Guest Sandbox
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Particle Canvas Animation
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    const particles = [];
+
+    for (let i = 0; i < 90; i++) {
+      particles.push({
+        x: Math.random() * 1920,
+        y: Math.random() * 1080,
+        radius: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        color: Math.random() > 0.4 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.3)'
+      });
+    }
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, 1920, 1080);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = 1920;
+        if (p.x > 1920) p.x = 0;
+        if (p.y < 0) p.y = 1080;
+        if (p.y > 1080) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+    }
+
+    // Generate Heatmap cells
+    const heatmapContainer = document.getElementById('heatmapCells');
+    for (let i = 0; i < 140; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (i < 95) {
+        const rand = Math.random();
+        if (rand > 0.6) cell.classList.add('active-3');
+        else if (rand > 0.3) cell.classList.add('active-2');
+        else cell.classList.add('active-1');
+      }
+      heatmapContainer.appendChild(cell);
+    }
+
+    // Timeline Director (27 seconds total)
+    const scenes = [
+      { id: 'scene1', start: 0, end: 5.0 },
+      { id: 'scene2', start: 5.0, end: 10.5 },
+      { id: 'scene3', start: 10.5, end: 16.5 },
+      { id: 'scene4', start: 16.5, end: 22.0 },
+      { id: 'scene5', start: 22.0, end: 27.5 }
+    ];
+
+    const totalDuration = 27.5;
+    const timelineBar = document.getElementById('timelineBar');
+
+    let startTime = null;
+
+    function render(now) {
+      if (!startTime) startTime = now;
+      const elapsed = (now - startTime) / 1000;
+
+      drawParticles();
+
+      // Update timeline progress bar
+      const progressPct = Math.min(100, (elapsed / totalDuration) * 100);
+      timelineBar.style.width = progressPct + '%';
+
+      // Update scene active classes
+      scenes.forEach((sc) => {
+        const el = document.getElementById(sc.id);
+        if (elapsed >= sc.start && elapsed < sc.end) {
+          el.classList.add('active');
+          el.classList.remove('exit');
+        } else if (elapsed >= sc.end) {
+          el.classList.remove('active');
+          el.classList.add('exit');
+        } else {
+          el.classList.remove('active');
+          el.classList.remove('exit');
+        }
+      });
+
+      if (elapsed < totalDuration) {
+        requestAnimationFrame(render);
+      } else {
+        window.__animationFinished = true;
+      }
+    }
+
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>

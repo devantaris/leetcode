@@ -222,7 +222,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
   const [lastCloudSync, setLastCloudSync] = useState<Date | null>(null);
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('grindos_demo_mode') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const isPro = Boolean(userProfile?.isPro);
 
@@ -978,6 +984,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setSolveHistory(sampleHistory);
     setProblemNotes({ 'w1d1p1': 'Optimal O(N) using HashMap for complement lookup.' });
     setPlacements(samplePlacements);
+    try {
+      localStorage.setItem('grindos_demo_mode', 'true');
+    } catch {}
     setIsDemoMode(true);
     toast.success('Loaded interactive demo telemetry! 🚀');
   }, []);
@@ -988,6 +997,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setProblemNotes({});
     setFlaggedProblems({});
     setPlacements([]);
+    try {
+      localStorage.removeItem('grindos_demo_mode');
+    } catch {}
     setIsDemoMode(false);
     toast.success('Demo data cleared! Dashboard reset to blank state.');
   }, []);

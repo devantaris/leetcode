@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GrindOS — 140-Day Placement Operating System</title>
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='10' fill='%23253019'/><text x='50%' y='68%' font-family='monospace' font-weight='700' font-size='55' fill='%23ffffff' text-anchor='middle'>G//</text></svg>" />
+  
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;450;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --mrf-sans: "Inter Tight", "Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
+      --mrf-serif: "Instrument Serif", "Cormorant Garamond", Georgia, serif;
+      --mrf-mono: "JetBrains Mono", monospace;
+      --mrf-ground: #253019;
+      --mrf-ink: #11140d;
+      --mrf-sub: #3b4234;
+      --mrf-pill: #ffffff;
+      --mrf-pill-ink: #11140d;
+      --mrf-text: #eef1e6;
+      --mrf-muted: #a9b49c;
+      --mrf-line: rgba(238, 241, 230, 0.16);
+      --mrf-max: 1240px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--mrf-ground);
+      color: var(--mrf-text);
+      font-family: var(--mrf-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: #4d5d2c;
+      color: #ffffff;
+    }
+
+    /* ── Meadow Rise Exact Animation System ── */
+    .mrf-scene {
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .mrf-scene canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+    }
+
+    .mrf-h {
+      margin: 0;
+      max-width: 16ch;
+      font-family: var(--mrf-sans);
+      font-weight: 500;
+      font-size: clamp(38px, 6.3vw, 86px);
+      line-height: 1.02;
+      letter-spacing: -0.042em;
+      color: var(--mrf-ink);
+      text-wrap: balance;
+    }
+    .mrf-line { display: block; white-space: normal; }
+    .mrf-w {
+      display: inline-block;
+      overflow: hidden;
+      padding: 0.04em 0.06em 0.16em;
+      margin: -0.04em -0.06em -0.16em;
+      vertical-align: top;
+    }
+    .mrf-wi {
+      display: inline-block;
+      transform: translate3d(0, 108%, 0) rotate(4deg);
+      transform-origin: 0 100%;
+      transition: transform 1150ms cubic-bezier(.16, 1, .3, 1);
+      transition-delay: calc(var(--d, 0) * 1ms);
+    }
+    .mrf-acc .mrf-wi {
+      font-family: var(--mrf-serif);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 1.07em;
+      letter-spacing: -0.02em;
+      padding-right: 0.04em;
+      transform: translate3d(-0.08em, 0, 0) skewX(-10deg);
+      clip-path: inset(-20% 100% -30% -5%);
+      filter: blur(6px);
+      opacity: 0.2;
+      transition: clip-path 1400ms cubic-bezier(.65, 0, .25, 1), transform 1600ms cubic-bezier(.16, 1, .3, 1), filter 1100ms ease, opacity 900ms ease;
+      transition-delay: calc(var(--d, 0) * 1ms);
+    }
+    .mrf-in .mrf-wi { transform: none; }
+    .mrf-in .mrf-acc .mrf-wi { clip-path: inset(-20% -10% -30% -5%); filter: blur(0); opacity: 1; }
+
+    .mrf-sub {
+      margin: clamp(16px, 2.2vw, 26px) auto 0;
+      max-width: 46ch;
+      font-size: clamp(14px, 1.15vw, 16px);
+      line-height: 1.55;
+      letter-spacing: -0.005em;
+      color: var(--mrf-sub);
+    }
+    .mrf-r {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+      filter: blur(4px);
+      transition: opacity 900ms ease, transform 1100ms cubic-bezier(.16, 1, .3, 1), filter 900ms ease;
+      transition-delay: calc(var(--d, 0) * 1ms);
+    }
+    .mrf-in .mrf-r { opacity: 1; transform: none; filter: blur(0); }
+
+    /* Meadow Rise Exact Magnetic CTA Pill */
+    .mrf-cta {
+      --mx: 0px;
+      --my: 0px;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 42px;
+      padding: 0 8px 0 20px;
+      border-radius: 999px;
+      background: var(--mrf-pill);
+      color: var(--mrf-pill-ink);
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      overflow: hidden;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 10px 30px -12px rgba(20, 30, 10, 0.45), 0 2px 6px -2px rgba(20, 30, 10, 0.25);
+      transform: translate3d(var(--mx), var(--my), 0);
+      transition: transform 500ms cubic-bezier(.2, .9, .3, 1.2), color 450ms ease, box-shadow 450ms ease;
+    }
+    .mrf-cta::before {
+      content: "";
+      position: absolute;
+      left: var(--fx, 50%);
+      top: var(--fy, 50%);
+      width: 260px;
+      height: 260px;
+      margin: -130px 0 0 -130px;
+      border-radius: 50%;
+      background: var(--mrf-ground);
+      transform: scale(0);
+      transition: transform 650ms cubic-bezier(.16, 1, .3, 1);
+    }
+    .mrf-cta > * { position: relative; z-index: 1; }
+    .mrf-cta-arrow {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--mrf-ground);
+      color: var(--mrf-pill);
+      overflow: hidden;
+      transition: background 450ms ease, color 450ms ease;
+    }
+    .mrf-cta-arrow svg { grid-area: 1 / 1; transition: transform 520ms cubic-bezier(.65, 0, .25, 1); }
+    .mrf-cta-arrow .mrf-a2 { transform: translate(-150%, 150%); }
+    .mrf-cta:hover, .mrf-cta:focus-visible { color: var(--mrf-text); }
+    .mrf-cta:hover::before, .mrf-cta:focus-visible::before { transform: scale(1); }
+    .mrf-cta:hover .mrf-cta-arrow, .mrf-cta:focus-visible .mrf-cta-arrow { background: var(--mrf-pill); color: var(--mrf-ground); }
+    .mrf-cta:hover .mrf-a1, .mrf-cta:focus-visible .mrf-a1 { transform: translate(150%, -150%); }
+    .mrf-cta:hover .mrf-a2, .mrf-cta:focus-visible .mrf-a2 { transform: none; }
+    .mrf-cta:focus-visible { outline: 2px solid var(--mrf-ink); outline-offset: 3px; }
+
+    /* Secondary Hero Button Pills */
+    .mrf-cta-sec {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(17, 20, 13, 0.12);
+      color: var(--mrf-ink);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      transition: all 250ms ease;
+    }
+    .mrf-cta-sec:hover {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(17, 20, 13, 0.25);
+      transform: translateY(-1px);
+    }
+
+    /* Wildflower Botany Drawings */
+    .mrf-botany {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: max(100%, 1100px);
+      height: 92%;
+      transform: translateX(-50%);
+      max-width: none;
+      color: var(--mrf-text);
+      opacity: 0.085;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .mrf-stem {
+      transform-box: view-box;
+      animation: mrf-sway 9s ease-in-out infinite alternate;
+    }
+    @keyframes mrf-sway {
+      from { transform: rotate(-0.9deg); }
+      to { transform: rotate(1.1deg); }
+    }
+    .mrf-draw {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.15;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      transition: stroke-dashoffset 2400ms cubic-bezier(.45, 0, .2, 1);
+      transition-delay: calc(var(--d, 0) * 1ms);
+      vector-effect: non-scaling-stroke;
+    }
+    .mrf-in .mrf-draw { stroke-dashoffset: 0; }
+
+    /* Petal Mark */
+    .mrf-mark { flex: none; overflow: visible; }
+    .mrf-mark .mrf-draw { stroke-width: 1.1; }
+    .mrf-petals {
+      transform-origin: 16px 16px;
+      transition: transform 1100ms cubic-bezier(.16, 1, .3, 1);
+    }
+    .mrf-logo:hover .mrf-petals { transform: rotate(45deg) scale(1.08); }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--mrf-ground); }
+    ::-webkit-scrollbar-thumb { background: #4d5d2c; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6c8240; }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- ========================================================================= -->
+  <!-- 1. TOP NAV (PALE TRANSLUCENT AESTHETIC HARMONIZING WITH MEADOW SKY)        -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-50 w-full border-b border-[rgba(17,20,13,0.08)] bg-[#f4f4ef]/85 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between transition-all">
+    <div class="flex items-center gap-3">
+      <div class="size-8 rounded-lg bg-[#253019] text-[#ffffff] flex items-center justify-center font-extrabold text-xs font-mono shadow-sm">
+        G//
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm tracking-tight text-[#11140d]">GrindOS</span>
+          <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#4d5d2c]/15 text-[#253019] font-medium border border-[#4d5d2c]/25">Dual-Engine</span>
+        </div>
+        <span class="text-[10px] text-[#556a33] font-mono block">140-Day Placement Workstation</span>
+      </div>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-6 text-xs text-[#3b4234] font-medium">
+      <a href="#curriculum" class="hover:text-[#11140d] transition-colors">Curriculum</a>
+      <a href="#compare" class="hover:text-[#11140d] transition-colors">Compare</a>
+      <a href="#features" class="hover:text-[#11140d] transition-colors">Features</a>
+      <a href="#demo" class="hover:text-[#11140d] transition-colors">Live Demo</a>
+      <button onclick="openModal('pricingModal')" class="hover:text-[#11140d] transition-colors cursor-pointer">Pricing</button>
+      <a href="#faq" class="hover:text-[#11140d] transition-colors">FAQ</a>
+    </nav>
+
+    <div class="flex items-center gap-2.5">
+      <button onclick="openModal('authModal')" class="text-xs px-3.5 py-1.5 rounded-lg border border-[rgba(17,20,13,0.14)] bg-white/70 hover:bg-white text-[#11140d] font-medium flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
+        <span>Sign In</span>
+      </button>
+
+      <button onclick="openModal('demoChoiceModal')" class="text-xs px-3 py-1.5 rounded-lg border border-[#4d5d2c]/30 bg-[#4d5d2c]/10 hover:bg-[#4d5d2c]/20 text-[#253019] font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer">
+        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <span>OS Shell</span>
+      </button>
+
+      <button onclick="openModal('authModal')" class="text-xs px-3.5 py-1.5 rounded-lg bg-[#253019] text-[#ffffff] font-medium flex items-center gap-1.5 hover:bg-[#1a2311] transition-all shadow-sm cursor-pointer">
+        <span>Start Free</span>
+      </button>
+    </div>
+  </header>
+
+
+  <!-- ========================================================================= -->
+  <!-- 2. HERO SECTION WITH EXACT MEADOW RISE MOUNTAINS, MOTIONS & MOVEMENTS      -->
+  <!-- ========================================================================= -->
+  <section id="heroRoot" class="relative w-full min-h-[640px] md:min-h-[740px] flex flex-col items-center justify-start text-center pt-16 pb-24 overflow-hidden">
+    
+    <!-- Exact Procedural Canvas Scene -->
+    <div id="heroScene" class="mrf-scene">
+      <canvas id="heroCanvas" aria-hidden="true"></canvas>
+    </div>
+
+    <!-- Hero Content Layer -->
+    <div class="relative z-10 max-w-4xl mx-auto px-5 flex flex-col items-center">
+      
+      <!-- 21st.dev Luxury Status Pill (Original Content) -->
+      <div class="mrf-r inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/75 border border-[#11140d]/10 text-xs text-[#3b4234] mb-7 shadow-xs backdrop-blur-md" style="--d: 380;">
+        <span class="flex h-2 w-2 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4d5d2c] opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-[#4d5d2c]"></span>
+        </span>
+        <span class="text-[#253019] font-semibold">100% Shared Cloud State</span>
+        <span class="text-[#11140d]/20">/</span>
+        <span>Two Interfaces</span>
+        <span class="text-[#11140d]/20">/</span>
+        <span class="text-[#11140d] font-semibold">Zero Silos</span>
+      </div>
+
+      <!-- Main Headline with Exact Meadow Word Mask Reveal & Serif Accent -->
+      <h1 class="mrf-h">
+        <span class="mrf-line">
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 520;">One</span></span>
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 595;">Structured</span></span>
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 670;">Syllabus.</span></span>
+        </span>
+        <span class="mrf-line">
+          <span class="mrf-w mrf-acc"><span class="mrf-wi" style="--d: 900;">Two</span></span>
+          <span class="mrf-w mrf-acc"><span class="mrf-wi" style="--d: 975;">Distinct</span></span>
+          <span class="mrf-w mrf-acc"><span class="mrf-wi" style="--d: 1050;">Realities.</span></span>
+        </span>
+      </h1>
+
+      <!-- Subtitle Description (Original Content with exact Meadow blur/fade) -->
+      <p class="mrf-sub mrf-r" style="--d: 1150;">
+        Master 332 curated algorithmic problems across 20 disciplined weeks. Choose between the deep retro immersion of a 90s terminal OS, or the crisp efficiency of a modern engineering dashboard.
+      </p>
+
+      <!-- Primary Action CTAs with Exact Meadow Magnetic Pill -->
+      <div class="mrf-cta-wrap mrf-r flex items-center justify-center gap-3.5 flex-wrap mt-7" style="--d: 1300;">
+        
+        <!-- Exact Magnetic Pill Button -->
+        <a id="heroCta" class="mrf-cta" href="#" onclick="openModal('authModal')">
+          <span>Start 140-Day Prep Free</span>
+          <span class="mrf-cta-arrow">
+            <svg class="mrf-a1" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+              <path d="M4.5 11.5l7-7M5.5 4.5h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg class="mrf-a2" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+              <path d="M4.5 11.5l7-7M5.5 4.5h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </a>
+
+        <!-- Secondary Buttons -->
+        <button onclick="openModal('demoChoiceModal')" class="mrf-cta-sec cursor-pointer">
+          <svg class="size-3.5 text-[#556a33]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+          <span>Explore Interactive Demo</span>
+        </button>
+
+        <button onclick="openModal('pricingModal')" class="mrf-cta-sec cursor-pointer">
+          <svg class="size-3.5 text-[#556a33]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          <span>Lifetime Pro ($29)</span>
+        </button>
+      </div>
+
+      <!-- Trust Bullet Points -->
+      <div class="mrf-r text-[11px] text-[#4d5d2c] font-mono flex items-center gap-3 flex-wrap justify-center mt-6" style="--d: 1450;">
+        <span class="flex items-center gap-1 font-medium text-[#253019]"><span>✓</span> Free Community Tier</span>
+        <span class="text-[#253019]/30">•</span>
+        <span class="flex items-center gap-1 font-medium text-[#253019]"><span>✓</span> Real-Time Cloud Sync</span>
+        <span class="text-[#253019]/30">•</span>
+        <span class="flex items-center gap-1 font-medium text-[#253019]"><span>✓</span> No Credit Card Required</span>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 3. THE DUAL WORKSTATION FORK CARDS (RESTING IN MEADOW GROUND #253019)     -->
+  <!-- ========================================================================= -->
+  <section class="relative z-20 max-w-5xl mx-auto px-5 pt-8 pb-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+      
+      <!-- OPTION 1: RETRO TERMINAL OS -->
+      <div class="relative bg-[#1a2312] border-2 border-[#3b4e28] rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl overflow-hidden hover:border-[#6c8240] transition-all">
+        <div>
+          <!-- Header Badge -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#4d5d2c]/40 text-[#c2d6a4] border border-[#6c8240]/40">
+              RETRO WORKSTATION
+            </span>
+            <span class="text-[11px] font-mono text-[#a9b49c]">
+              VT220 • CHIP SYNTH
+            </span>
+          </div>
+
+          <h2 class="text-2xl font-extrabold text-[#c2d6a4] font-mono mb-2 tracking-tight">
+            GrindOS 95 Shell
+          </h2>
+
+          <p class="text-xs sm:text-sm text-[#a9b49c] leading-relaxed mb-5">
+            For engineers who thrive in deep-work terminal immersion, multi-window multitasking, retro sound feedback, and keyboard-driven efficiency.
+          </p>
+
+          <!-- Interactive Terminal Box Graphic -->
+          <div class="bg-[#10170a] border border-[#2a381c] rounded-lg p-3.5 mb-5 font-mono text-xs text-[#a3b384] leading-relaxed shadow-inner">
+            <div class="text-[#7d8f63] border-b border-[#212c16] pb-1.5 mb-2 flex justify-between text-[11px]">
+              <span>MISSIONS.EXE — VT220</span>
+              <span>[ _ ▢ ✕ ]</span>
+            </div>
+            <div>C:\&gt; grindos --boot --interactive</div>
+            <div class="text-[#f1dcc0]">[OK] 20 WEEKS / 140 DAYS / 332 PROBLEMS INITIALIZED</div>
+            <div>[OK] WINDOW MANAGER &amp; CHIP SYNTH ONLINE</div>
+            <div class="text-[#7d8f63]">&gt; MISSIONS.EXE • ORACLE.EXE • POMO.EXE</div>
+          </div>
+
+          <!-- Feature Bullets -->
+          <div class="flex flex-col gap-2 mb-6 text-xs text-[#dbe6cf]">
+            <div class="flex items-center gap-2">
+              <span class="text-[#a3b384] font-bold">❯</span>
+              <span>Draggable multi-window desktop with taskbar &amp; Start menu</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#a3b384] font-bold">❯</span>
+              <span>VT220 terminal CLI &amp; keyboard shortcuts</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#a3b384] font-bold">❯</span>
+              <span>8-bit oscillator audio synthesis &amp; CRT phosphor themes</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#a3b384] font-bold">❯</span>
+              <span>Integrated Pomodoro timer &amp; retro arcade mini-games</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <button onclick="playRetroSound(); openModal('demoChoiceModal');" class="flex-1 bg-[#4d5d2c] text-[#ffffff] border border-[#6c8240] rounded-lg py-2.5 px-4 text-xs font-bold font-mono flex items-center justify-center gap-2 hover:bg-[#5c7035] transition-all cursor-pointer shadow-md">
+            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span>Launch Retro Terminal OS</span>
+          </button>
+          <button onclick="playRetroSound(); openModal('demoChoiceModal');" class="bg-[#253019] text-[#c2d6a4] border border-[#4d5d2c] rounded-lg py-2.5 px-3.5 text-xs font-bold font-mono flex items-center justify-center gap-1.5 hover:bg-[#303e20] transition-all cursor-pointer">
+            <span>Demo OS</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- OPTION 2: MODERN MINIMALIST WEB -->
+      <div class="relative bg-[#1f2a16] border-2 border-[#3b4e28] rounded-3xl p-6 sm:p-7 flex flex-col justify-between shadow-xl overflow-hidden hover:border-[#6c8240] transition-all">
+        <div>
+          <!-- Header Badge -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#314324] text-[#ffffff] border border-[#4d5d2c] uppercase tracking-wider">
+              Modern Dashboard
+            </span>
+            <span class="text-xs font-mono text-[#a9b49c]">
+              Linear • High Density
+            </span>
+          </div>
+
+          <h2 class="text-2xl font-bold font-sans text-white mb-2 tracking-tight">
+            Cadence Pro Web
+          </h2>
+
+          <p class="text-xs sm:text-sm text-[#a9b49c] leading-relaxed mb-5">
+            For engineers who prefer a sleek executive developer dashboard, luminous telemetry charts, GitHub-style heatmaps, and structured Kanban tracking.
+          </p>
+
+          <!-- Modern Card Graphic -->
+          <div class="bg-[#151e0e] border border-[#2d3d1e] rounded-xl p-3.5 mb-5 text-xs text-white leading-relaxed">
+            <div class="flex justify-between border-b border-[#2d3d1e] pb-2 mb-2 font-medium">
+              <span>Day 14: Sliding Window &amp; Two Pointers</span>
+              <span class="text-[#f1dcc0] font-mono font-semibold">🔥 4d</span>
+            </div>
+            <div class="flex items-center gap-2 text-[#a9b49c] text-[11px] py-0.5">
+              <span class="text-[#93a964] font-bold">✓</span>
+              <span class="text-white">Longest Substring Without Repeating</span>
+              <span class="ml-auto text-[#f1dcc0] font-semibold font-mono">Med</span>
+            </div>
+            <div class="flex items-center gap-2 text-[#a9b49c] text-[11px] py-0.5">
+              <span class="opacity-40">○</span>
+              <span>Minimum Window Substring</span>
+              <span class="ml-auto text-[#e8a48f] font-semibold font-mono">Hard</span>
+            </div>
+          </div>
+
+          <!-- Feature Bullets -->
+          <div class="flex flex-col gap-2 mb-6 text-xs text-[#a9b49c]">
+            <div class="flex items-center gap-2">
+              <span class="text-[#93a964] font-bold">•</span>
+              <span>Executive dashboard with Linear/Vercel visual fidelity</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#93a964] font-bold">•</span>
+              <span>Interactive analytics &amp; 25-week activity heatmaps</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#93a964] font-bold">•</span>
+              <span>Placement pipeline Kanban board &amp; interview tracker</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#93a964] font-bold">•</span>
+              <span>Quick command palette (Ctrl+K) &amp; company track filtering</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <button onclick="playTickSound(); openModal('authModal');" class="flex-1 bg-white text-[#11140d] rounded-lg py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#eef1e6] transition-all cursor-pointer shadow-md">
+            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+            <span>Launch Modern Web App</span>
+          </button>
+          <button onclick="playTickSound(); openModal('demoChoiceModal');" class="border border-[#3b4e28] bg-[#1a2312] text-[#eef1e6] hover:bg-[#253019] rounded-lg py-2.5 px-3.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+            <span>Explore Demo</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 100% SHARED STATE CALLOUT -->
+    <div class="mt-8 p-4 sm:p-5 rounded-2xl bg-[#1a2312] border border-[#354823] flex items-center justify-between flex-wrap gap-4 text-left shadow-sm">
+      <div class="flex items-center gap-3.5">
+        <div class="size-9 rounded-xl bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4] shrink-0">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+        </div>
+        <div>
+          <div class="text-xs sm:text-sm font-bold text-white">
+            100% Synchronized Progress &amp; Zero Lock-in
+          </div>
+          <div class="text-xs text-[#a9b49c] mt-0.5">
+            Every problem solved, daily streak, and note taken in one interface is immediately reflected in the other. Switch back and forth anytime with 1 click.
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 font-mono text-[11px] text-[#a9b49c]">
+        <span>Dual View</span>
+        <span>·</span>
+        <span>Single Store</span>
+        <span>·</span>
+        <span class="text-[#a3b384] font-semibold flex items-center gap-1">
+          <span class="size-1.5 rounded-full bg-[#a3b384]"></span>
+          Cloud-First (&lt; 50ms)
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick Curriculum Metrics Strip -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10 pt-7 border-t border-[rgba(238,241,230,0.12)] text-center">
+      <div>
+        <div class="text-2xl sm:text-3xl font-bold font-mono text-white">140</div>
+        <div class="text-[11px] text-[#a9b49c] mt-0.5">Curated Days</div>
+      </div>
+      <div>
+        <div class="text-2xl sm:text-3xl font-bold font-mono text-[#a3b384]">332+</div>
+        <div class="text-[11px] text-[#a9b49c] mt-0.5">Curated Problems</div>
+      </div>
+      <div>
+        <div class="text-2xl sm:text-3xl font-bold font-mono text-white">150</div>
+        <div class="text-[11px] text-[#a9b49c] mt-0.5">LeetCode Benchmark</div>
+      </div>
+      <div>
+        <div class="text-2xl sm:text-3xl font-bold font-mono text-[#f1dcc0]">&lt; 50 ms</div>
+        <div class="text-[11px] text-[#a9b49c] mt-0.5">Cloud Sync Latency</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 4. LIVE INTERACTIVE PROBLEM DEMO CARD                                      -->
+  <!-- ========================================================================= -->
+  <section id="demo" class="max-w-4xl mx-auto px-5 py-6 pb-20">
+    <div class="bg-[#1a2312] border border-[#354823] rounded-3xl p-6 sm:p-7 shadow-lg">
+      <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <div>
+          <span class="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
+            Live Experience Demo
+          </span>
+          <h3 class="text-base sm:text-lg font-bold text-white m-0">
+            Day 14: Sliding Window &amp; Two Pointers
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="demoCount" class="text-xs text-[#a9b49c] font-mono font-medium">
+            1 / 3 complete
+          </span>
+          <div class="h-2 w-24 rounded-full bg-[#12180d] border border-[#2d3e1e] overflow-hidden">
+            <div id="demoProgressBar" class="h-full bg-[#829a52] rounded-full transition-all duration-400" style="width: 33.3%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <!-- Problem 1 (Solved by default) -->
+        <div onclick="toggleProblem(1)" id="prob-1" class="p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer bg-[#4d5d2c]/20 border-[#6c8240]/40">
+          <div id="prob-chk-1" class="size-5 rounded-md flex items-center justify-center shrink-0 border transition-all bg-[#6c8240] border-[#6c8240] text-white">
+            <svg class="size-3.5 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="flex-1 min-w-0 flex items-center gap-2.5 flex-wrap">
+            <span id="prob-title-1" class="text-xs sm:text-sm font-semibold line-through text-[#a9b49c]">
+              Longest Substring Without Repeating Characters
+            </span>
+            <span class="text-xs font-semibold font-mono text-[#f1dcc0]">Medium</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">Google</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">Meta</span>
+          </div>
+        </div>
+
+        <!-- Problem 2 -->
+        <div onclick="toggleProblem(2)" id="prob-2" class="p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer bg-[#141b0e] border-[#2d3e1e] hover:bg-[#1a2312]">
+          <div id="prob-chk-2" class="size-5 rounded-md flex items-center justify-center shrink-0 border transition-all border-[#4d5d2c] bg-[#12180d]">
+          </div>
+          <div class="flex-1 min-w-0 flex items-center gap-2.5 flex-wrap">
+            <span id="prob-title-2" class="text-xs sm:text-sm font-semibold text-white">
+              Minimum Window Substring
+            </span>
+            <span class="text-xs font-semibold font-mono text-[#e8a48f]">Hard</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">Amazon</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">Uber</span>
+          </div>
+        </div>
+
+        <!-- Problem 3 -->
+        <div onclick="toggleProblem(3)" id="prob-3" class="p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer bg-[#141b0e] border-[#2d3e1e] hover:bg-[#1a2312]">
+          <div id="prob-chk-3" class="size-5 rounded-md flex items-center justify-center shrink-0 border transition-all border-[#4d5d2c] bg-[#12180d]">
+          </div>
+          <div class="flex-1 min-w-0 flex items-center gap-2.5 flex-wrap">
+            <span id="prob-title-3" class="text-xs sm:text-sm font-semibold text-white">
+              Container With Most Water
+            </span>
+            <span class="text-xs font-semibold font-mono text-[#f1dcc0]">Medium</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">Apple</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#12180d] border border-[#2d3e1e] text-[#a9b49c]">Microsoft</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-[rgba(238,241,230,0.1)] flex items-center justify-between text-xs text-[#a9b49c]">
+        <span>Click each problem row to test interactive solving telemetry.</span>
+        <span class="text-[#a3b384] font-mono">140 Days • Zero Excuses</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 5. SIDE-BY-SIDE INTERFACE COMPARISON MATRIX                               -->
+  <!-- ========================================================================= -->
+  <section id="compare" class="max-w-4xl mx-auto px-5 pb-20">
+    <div class="text-center mb-8">
+      <span class="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
+        Compare Workstations
+      </span>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+        Choose The Mode That Fits Your Workflow
+      </h2>
+    </div>
+
+    <div class="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden shadow-md">
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-left text-xs sm:text-sm">
+          <thead>
+            <tr class="bg-[#141b0e] border-b border-[#2d3e1e]">
+              <th class="p-4 text-xs font-semibold text-[#a9b49c] uppercase tracking-wider">Feature</th>
+              <th class="p-4 text-xs font-bold text-[#c2d6a4] font-mono">🖥️ Retro Terminal OS</th>
+              <th class="p-4 text-xs font-bold text-white">✨ Modern Web App</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#243118]">
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Primary Aesthetic</td>
+              <td class="p-4 text-[#a9b49c] font-mono text-xs">90s VT220 CRT Phosphor Terminal</td>
+              <td class="p-4 text-[#a9b49c] text-xs">Clean Swiss Monochrome SaaS</td>
+            </tr>
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Window Management</td>
+              <td class="p-4 text-[#a9b49c] font-mono text-xs">Multi-window draggable desktop</td>
+              <td class="p-4 text-[#a9b49c] text-xs">Streamlined dedicated page views</td>
+            </tr>
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Audio Synthesis</td>
+              <td class="p-4 text-[#a9b49c] font-mono text-xs">8-bit Web Audio chiptune synth</td>
+              <td class="p-4 text-[#a9b49c] text-xs">Crisp minimal modern clicks</td>
+            </tr>
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Command Tools</td>
+              <td class="p-4 text-[#a9b49c] font-mono text-xs">Interactive CLI Terminal emulator</td>
+              <td class="p-4 text-[#a9b49c] text-xs">Command Palette (Ctrl+K)</td>
+            </tr>
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Focus Pomodoro</td>
+              <td class="p-4 text-[#a9b49c] font-mono text-xs">Retro CLI timer with arcade breaks</td>
+              <td class="p-4 text-[#a9b49c] text-xs">Persistent status bar timer</td>
+            </tr>
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Analytics View</td>
+              <td class="p-4 text-[#a9b49c] font-mono text-xs">ASCII metrics console &amp; logs</td>
+              <td class="p-4 text-[#a9b49c] text-xs">Interactive charts &amp; heatmap</td>
+            </tr>
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Data &amp; Progress</td>
+              <td class="p-4 text-[#a3b384] font-mono text-xs font-semibold">100% Shared Real-Time State</td>
+              <td class="p-4 text-[#a3b384] font-mono text-xs font-semibold">100% Shared Real-Time State</td>
+            </tr>
+            <tr class="hover:bg-[#1f2b16]/50 transition-colors">
+              <td class="p-4 font-semibold text-white">Cloud &amp; Device Sync</td>
+              <td class="p-4 text-[#a3b384] font-mono text-xs font-semibold">Direct Supabase Cloud Sync</td>
+              <td class="p-4 text-[#a3b384] font-mono text-xs font-semibold">Direct Supabase Cloud Sync</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 6. BENTO GRID: SYSTEM CAPABILITIES                                        -->
+  <!-- ========================================================================= -->
+  <section id="features" class="max-w-4xl mx-auto px-5 pb-20">
+    <div class="text-center mb-8">
+      <span class="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
+        System Capabilities
+      </span>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+        Engineered for Placement Conversion
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Card 1 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+        <div class="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-white m-0">Placement Readiness Engine</h3>
+        <p class="text-xs text-[#a9b49c] leading-relaxed m-0">
+          Calculates your interview odds formula, tracks pace against your target offer deadline, and benchmarks topic mastery across all 25 curriculum categories.
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+        <div class="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-white m-0">Placement Pipeline Tracker</h3>
+        <p class="text-xs text-[#a9b49c] leading-relaxed m-0">
+          Track applications across Wishlist, OA, Technical Rounds, and Offers with compensation metrics, date milestones, and custom feedback notes.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+        <div class="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-white m-0">Company-Specific Tracks</h3>
+        <p class="text-xs text-[#a9b49c] leading-relaxed m-0">
+          Filter curriculum problems directly by target companies: Google, Amazon, Microsoft, Meta, Uber, and Apple with high-frequency tags.
+        </p>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+        <div class="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-white m-0">Campus &amp; Squad Cohorts</h3>
+        <p class="text-xs text-[#a9b49c] leading-relaxed m-0">
+          Create or join private 6-character code cohorts to compare streaks, solve count, and leaderboard ranks with your college batch or squad.
+        </p>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+        <div class="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-white m-0">Enterprise Cloud Persistence</h3>
+        <p class="text-xs text-[#a9b49c] leading-relaxed m-0">
+          All progress is synced directly to your secure Supabase cloud database with zero lock-in. One-click JSON backup and data exports anytime.
+        </p>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl p-5 flex flex-col gap-2.5 shadow-sm hover:border-[#6c8240] transition-all">
+        <div class="size-8 rounded-lg bg-[#4d5d2c]/40 border border-[#6c8240]/40 flex items-center justify-center text-[#c2d6a4]">
+          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-white m-0">Deep-Work Practice Timer</h3>
+        <p class="text-xs text-[#a9b49c] leading-relaxed m-0">
+          Built-in 25m, 45m, and 60m focus blocks that persist across page navigation to enforce live timed interview problem-solving discipline.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 7. STRUCTURED 5-PHASE CURRICULUM ACCORDION                                 -->
+  <!-- ========================================================================= -->
+  <section id="curriculum" class="max-w-4xl mx-auto px-5 pb-20">
+    <div class="text-center mb-8">
+      <span class="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
+        20 Weeks · 140 Days · 332 Problems
+      </span>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+        Structured Algorithmic Syllabus
+      </h2>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <!-- Phase 1 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+        <div onclick="toggleAccordion(1)" class="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+              Weeks 1-5
+            </span>
+            <div>
+              <div class="text-xs sm:text-sm font-semibold text-white">
+                Linear Foundations &amp; Core Pointers
+              </div>
+              <div class="text-[11px] text-[#a9b49c]">Arrays, Two Pointers, Sliding Window, Prefix Sums &amp; Hash Maps</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-xs text-[#a9b49c] font-mono">65 problems</span>
+            <svg id="acc-icon-1" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div id="acc-body-1" class="hidden p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+          <p class="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+            Master core patterns tested in 70% of technical phone screens. Eliminates brute-force O(N^2) habits.
+          </p>
+          <div class="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Opposite &amp; Fast/Slow Pointers</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Dynamic &amp; Fixed Sliding Window</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Prefix Sums &amp; Frequency Counting</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Monotonic Stack / Queue</span>
+          </div>
+          <div class="text-[11px] text-[#a9b49c]">
+            <strong class="text-white">Key Benchmarks:</strong> 3Sum (LC 15) • Longest Substring (LC 3) • Daily Temperatures (LC 739) • Trapping Rain Water (LC 42)
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+        <div onclick="toggleAccordion(2)" class="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+              Weeks 6-10
+            </span>
+            <div>
+              <div class="text-xs sm:text-sm font-semibold text-white">
+                Hierarchical &amp; Graph Algorithms
+              </div>
+              <div class="text-[11px] text-[#a9b49c]">Binary Trees, BSTs, BFS/DFS, Topological Sort &amp; Shortest Path</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-xs text-[#a9b49c] font-mono">75 problems</span>
+            <svg id="acc-icon-2" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div id="acc-body-2" class="hidden p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+          <p class="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+            Deconstruct complex tree traversals and graph algorithms into reusable recursive and iterative mental models.
+          </p>
+          <div class="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Tree DFS &amp; Path Sum</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Connected Components (Flood Fill)</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Topological Sort (Kahn's Algorithm)</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Dijkstra &amp; Shortest Path</span>
+          </div>
+          <div class="text-[11px] text-[#a9b49c]">
+            <strong class="text-white">Key Benchmarks:</strong> Lowest Common Ancestor (LC 236) • Course Schedule (LC 207) • Number of Islands (LC 200) • Word Ladder (LC 127)
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+        <div onclick="toggleAccordion(3)" class="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+              Weeks 11-15
+            </span>
+            <div>
+              <div class="text-xs sm:text-sm font-semibold text-white">
+                Dynamic Programming &amp; Memoization
+              </div>
+              <div class="text-[11px] text-[#a9b49c]">1D/2D DP, Subsequences, Knapsack &amp; State Transitions</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-xs text-[#a9b49c] font-mono">65 problems</span>
+            <svg id="acc-icon-3" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div id="acc-body-3" class="hidden p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+          <p class="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+            Demystify DP by learning state definitions and recurrence transitions rather than memorizing solutions.
+          </p>
+          <div class="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">0/1 Knapsack &amp; Unbounded</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Longest Common Subsequence (LCS)</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">State Machine DP</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Interval DP</span>
+          </div>
+          <div class="text-[11px] text-[#a9b49c]">
+            <strong class="text-white">Key Benchmarks:</strong> Coin Change (LC 322) • Longest Increasing Subsequence (LC 300) • Edit Distance (LC 72) • Target Sum (LC 494)
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 4 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+        <div onclick="toggleAccordion(4)" class="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+              Weeks 16-18
+            </span>
+            <div>
+              <div class="text-xs sm:text-sm font-semibold text-white">
+                Architecture &amp; System Design Foundations
+              </div>
+              <div class="text-[11px] text-[#a9b49c]">Distributed Caching, Rate Limiting, Partitioning &amp; Resiliency</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-xs text-[#a9b49c] font-mono">28 problems</span>
+            <svg id="acc-icon-4" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div id="acc-body-4" class="hidden p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+          <p class="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+            Bridge algorithmic thinking with high-throughput distributed system design evaluated in senior loops.
+          </p>
+          <div class="flex flex-wrap gap-1.5 mb-3 font-mono text-[10px]">
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Token Bucket &amp; Leaky Bucket</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Consistent Hashing &amp; Rings</span>
+            <span class="px-2 py-0.5 rounded bg-[#1f2b16] border border-[#354823] text-[#dbe6cf]">Cache-Aside &amp; Write-Through</span>
+          </div>
+          <div class="text-[11px] text-[#a9b49c]">
+            <strong class="text-white">Key Benchmarks:</strong> TinyURL • Distributed Rate Limiter • Key-Value Store with LSM
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 5 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-2xl overflow-hidden transition-all">
+        <div onclick="toggleAccordion(5)" class="p-4 sm:p-4.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#202b17] transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="font-mono text-xs px-2.5 py-0.5 rounded bg-[#2e3e1e] text-[#c2d6a4] border border-[#4d5d2c]">
+              Weeks 19-20
+            </span>
+            <div>
+              <div class="text-xs sm:text-sm font-semibold text-white">
+                Offer Sprint &amp; Timed Mock Pressure
+              </div>
+              <div class="text-[11px] text-[#a9b49c]">High-Frequency Speedruns, Top 150 Benchmarks &amp; Mock Interviews</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-xs text-[#a9b49c] font-mono">74 problems</span>
+            <svg id="acc-icon-5" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div id="acc-body-5" class="hidden p-4 sm:p-5 border-t border-[#243118] bg-[#141b0e] text-xs">
+          <p class="text-xs text-[#a9b49c] mb-3 leading-relaxed">
+            Simulate live interview pressure under strict 45-minute constraints. Focuses exclusively on top company-tagged variants.
+          </p>
+          <div class="text-[11px] text-[#a9b49c]">
+            <strong class="text-white">Key Benchmarks:</strong> LRU Cache (LC 146) • Median of Two Sorted Arrays (LC 4) • Merge k Sorted Lists (LC 23) • Alien Dictionary (LC 269)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 8. FREQUENTLY ASKED QUESTIONS (FAQ)                                       -->
+  <!-- ========================================================================= -->
+  <section id="faq" class="max-w-4xl mx-auto px-5 pb-24">
+    <div class="text-center mb-8">
+      <span class="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">
+        Common Questions
+      </span>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+        Frequently Asked Questions
+      </h2>
+    </div>
+
+    <div class="flex flex-col gap-2.5">
+      <!-- FAQ 1 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+        <div onclick="toggleFaq(1)" class="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors">
+          <span>Why are there two different interfaces (Retro OS vs Modern Web)?</span>
+          <svg id="faq-icon-1" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div id="faq-body-1" class="hidden px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+          Feedback showed users were passionately divided: some love the deep immersion of a 90s retro CRT window manager with chiptune audio, while others prefer the clean, minimalist modern web dashboard. We give you both running seamlessly on the exact same engine.
+        </div>
+      </div>
+
+      <!-- FAQ 2 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+        <div onclick="toggleFaq(2)" class="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors">
+          <span>Does my progress transfer when I switch between interfaces?</span>
+          <svg id="faq-icon-2" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div id="faq-body-2" class="hidden px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+          Yes, 100%. Both interfaces read and write from the exact same Supabase cloud database. When you mark a problem solved or update a note in Modern Web, it is immediately reflected when you launch Retro OS, and vice versa — in real-time.
+        </div>
+      </div>
+
+      <!-- FAQ 3 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+        <div onclick="toggleFaq(3)" class="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors">
+          <span>How is my progress stored and synchronized across devices?</span>
+          <svg id="faq-icon-3" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div id="faq-body-3" class="hidden px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+          GrindOS uses direct cloud synchronization backed by Supabase. Your solved problems, notes, streaks, and interview pipelines are securely synchronized across any device in real-time, with one-click full JSON export available anytime.
+        </div>
+      </div>
+
+      <!-- FAQ 4 -->
+      <div class="bg-[#1a2312] border border-[#354823] rounded-xl overflow-hidden transition-all">
+        <div onclick="toggleFaq(4)" class="p-4 flex items-center justify-between cursor-pointer font-semibold text-xs sm:text-sm text-white hover:bg-[#202b17] transition-colors">
+          <span>How does the Placement Readiness algorithm work?</span>
+          <svg id="faq-icon-4" class="size-4 text-[#a9b49c] transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div id="faq-body-4" class="hidden px-4 pb-4 pt-1 text-xs text-[#a9b49c] leading-relaxed">
+          Your readiness percentage is calculated from 4 transparent factors: Problem Coverage (40%), Streak Consistency (25%), Pace vs Target Deadline (25%), and Topic Breadth (10%).
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 9. EXACT MEADOW RISE INTERACTIVE FOOTER (SAME STUFF AT BOTTOM)            -->
+  <!-- ========================================================================= -->
+  <footer id="footerRoot" class="relative overflow-hidden bg-[#253019] text-[#eef1e6] border-t border-[rgba(238,241,230,0.14)]">
+    
+    <!-- Foothills Canvas Background Scene -->
+    <div id="footerScene" class="mrf-scene">
+      <canvas id="footerCanvas" aria-hidden="true"></canvas>
+    </div>
+
+    <!-- Wildflower Botanical Line Drawings -->
+    <svg class="mrf-botany" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+      <g id="botanyGroup"></g>
+    </svg>
+
+    <!-- Footer Hero Header & Magnetic CTA -->
+    <div class="relative z-10 pt-20 pb-16 px-5 text-center flex flex-col items-center">
+      <h2 class="mrf-h text-center max-w-2xl">
+        <span class="mrf-line">
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 520;">Master</span></span>
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 595;">140</span></span>
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 670;">days</span></span>
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 745;">of</span></span>
+        </span>
+        <span class="mrf-line">
+          <span class="mrf-w mrf-acc"><span class="mrf-wi" style="--d: 900;">algorithmic</span></span>
+          <span class="mrf-w mrf-acc"><span class="mrf-wi" style="--d: 975;">prep</span></span>
+          <span class="mrf-w"><span class="mrf-wi" style="--d: 1050;">today.</span></span>
+        </span>
+      </h2>
+
+      <p class="mrf-sub mrf-r max-w-xl mx-auto mb-7 leading-relaxed" style="--d: 1150;">
+        332 curated LeetCode problems. Spaced repetition telemetry. Dual-engine workstation.
+      </p>
+
+      <!-- Magnetic CTA Pill -->
+      <div class="mrf-cta-wrap mrf-r" style="--d: 1300;">
+        <a id="footerCta" class="mrf-cta" href="#" onclick="openModal('authModal')">
+          <span>Start 140-Day Prep Free</span>
+          <span class="mrf-cta-arrow">
+            <svg class="mrf-a1" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+              <path d="M4.5 11.5l7-7M5.5 4.5h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg class="mrf-a2" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+              <path d="M4.5 11.5l7-7M5.5 4.5h6v6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer Content Grid -->
+    <div class="relative z-10 max-w-[1240px] mx-auto px-5 sm:px-8 pb-12 pt-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[rgba(238,241,230,0.14)]">
+        
+        <!-- Brand & Newsletter -->
+        <div class="md:col-span-4 flex flex-col items-start">
+          <a class="mrf-logo mrf-r inline-flex items-center gap-3 text-[#eef1e6] text-lg font-medium tracking-tight mb-3" href="#" style="--d: 1250;">
+            <svg class="mrf-mark size-8" viewBox="0 0 32 32" fill="none">
+              <circle class="mrf-draw" cx="16" cy="16" r="14.6" style="--d: 1250;"/>
+              <g class="mrf-petals">
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" style="--d: 1330;"/>
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" transform="rotate(45 16 16)" style="--d: 1385;"/>
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" transform="rotate(90 16 16)" style="--d: 1440;"/>
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" transform="rotate(135 16 16)" style="--d: 1495;"/>
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" transform="rotate(180 16 16)" style="--d: 1550;"/>
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" transform="rotate(225 16 16)" style="--d: 1605;"/>
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" transform="rotate(270 16 16)" style="--d: 1660;"/>
+                <ellipse class="mrf-draw" cx="16" cy="10.4" rx="2.9" ry="5.6" transform="rotate(315 16 16)" style="--d: 1715;"/>
+              </g>
+              <circle class="mrf-draw" cx="16" cy="16" r="2.2" style="--d: 1800;"/>
+            </svg>
+            <span>GrindOS</span>
+          </a>
+          <p class="mrf-r text-xs text-[#a9b49c] leading-relaxed max-w-sm mb-5" style="--d: 1380;">
+            A disciplined placement operating system designed to get engineers and students placement-ready for Tier-1 tech companies.
+          </p>
+
+          <!-- Newsletter Form -->
+          <form onsubmit="handleSubscribe(event)" class="mrf-r relative flex items-center w-full max-w-xs border-b border-[rgba(238,241,230,0.2)] focus-within:border-white transition-colors pb-1" style="--d: 1500;">
+            <input type="email" id="newsletterEmail" placeholder="Enter your email for placement drops" required class="bg-transparent text-xs text-[#eef1e6] placeholder-[#a9b49c]/70 outline-none w-full py-1.5" />
+            <button type="submit" id="newsletterBtn" class="size-7 rounded-full bg-[#ffffff] text-[#11140d] flex items-center justify-center hover:scale-105 transition-all shrink-0 cursor-pointer">
+              <svg class="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 11.5l7-7M5.5 4.5h6v6"/></svg>
+            </button>
+          </form>
+          <span id="newsletterMsg" class="text-[11px] text-[#a3b384] mt-1.5 hidden font-mono">Subscribed for placement drops! 🚀</span>
+        </div>
+
+        <!-- Links Columns -->
+        <div class="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-[#eef1e6] mb-3">Workstation</h4>
+            <ul class="flex flex-col gap-2.5 text-xs text-[#a9b49c]">
+              <li><a href="#" onclick="openModal('demoChoiceModal')" class="hover:text-white transition-colors">Modern Bento App</a></li>
+              <li><a href="#" onclick="openModal('demoChoiceModal')" class="hover:text-white transition-colors">Retro Terminal OS</a></li>
+              <li><a href="#demo" class="hover:text-white transition-colors">Interactive Demo Sandbox</a></li>
+              <li><a href="#curriculum" class="hover:text-white transition-colors">Curriculum Syllabus</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-[#eef1e6] mb-3">Preparation</h4>
+            <ul class="flex flex-col gap-2.5 text-xs text-[#a9b49c]">
+              <li><a href="#features" class="hover:text-white transition-colors">Placement Tracker</a></li>
+              <li><a href="#features" class="hover:text-white transition-colors">Global Peer Cohorts</a></li>
+              <li><a href="#compare" class="hover:text-white transition-colors">Top 150 Benchmarks</a></li>
+              <li><a href="#" onclick="openModal('pricingModal')" class="hover:text-white transition-colors">Lifetime Pro License</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-[#eef1e6] mb-3">Legal &amp; System</h4>
+            <ul class="flex flex-col gap-2.5 text-xs text-[#a9b49c]">
+              <li><a href="#" onclick="openModal('pricingModal')" class="hover:text-white transition-colors">Pricing &amp; Plans</a></li>
+              <li><a href="#" onclick="alert('Terms of Service: All rights reserved GrindOS.')" class="hover:text-white transition-colors">Terms of Service</a></li>
+              <li><a href="#" onclick="alert('Privacy Policy: All client data encrypted via Supabase.')" class="hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" onclick="openModal('authModal')" class="hover:text-white transition-colors">Stealth Ops Console</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Copyright Bottom Bar -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#a9b49c]">
+        <div>
+          © 2026 GrindOS. All rights reserved. Dual-Engine Placement Workstation.
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="https://x.com" target="_blank" rel="noopener" class="hover:text-white transition-colors">
+            <svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener" class="hover:text-white transition-colors">
+            <svg class="size-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ========================================================================= -->
+  <!-- MODALS (AUTHENTICATION, PRICING, WORKSTATION CHOICE)                      -->
+  <!-- ========================================================================= -->
+  <div id="authModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-[#1a2312] border border-[#354823] rounded-3xl p-6 sm:p-7 shadow-2xl text-[#eef1e6]">
+      <button onclick="closeModal('authModal')" class="absolute top-4 right-4 text-[#a9b49c] hover:text-white cursor-pointer">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="size-10 rounded-xl bg-white text-[#11140d] flex items-center justify-center font-extrabold text-sm font-mono mx-auto mb-3 shadow-md">
+          G//
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">Enter GrindOS</h3>
+        <p class="text-xs text-[#a9b49c]">140-day dual-engine placement operating system</p>
+      </div>
+
+      <div class="flex gap-2 mb-4 bg-[#12180d] p-1 rounded-xl border border-[#2d3e1e]">
+        <button class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-[#253019] text-white">Sign In</button>
+        <button class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-[#a9b49c] hover:text-white">Create Account</button>
+      </div>
+
+      <form onsubmit="handleAuthSubmit(event)" class="flex flex-col gap-3">
+        <div>
+          <label class="block text-[11px] font-mono text-[#a9b49c] mb-1">EMAIL ADDRESS</label>
+          <input type="email" required placeholder="engineer@domain.com" class="w-full px-3.5 py-2.5 rounded-xl bg-[#12180d] border border-[#2d3e1e] text-xs text-white focus:border-[#829a52] outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-mono text-[#a9b49c] mb-1">PASSWORD</label>
+          <input type="password" required placeholder="••••••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-[#12180d] border border-[#2d3e1e] text-xs text-white focus:border-[#829a52] outline-none" />
+        </div>
+        <button type="submit" class="mt-2 w-full py-2.5 rounded-xl bg-white text-[#11140d] font-bold text-xs hover:bg-[#eef1e6] transition-all cursor-pointer shadow-md">
+          Authenticate &amp; Launch Workstation
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="pricingModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg bg-[#1a2312] border border-[#354823] rounded-3xl p-6 sm:p-7 shadow-2xl text-[#eef1e6]">
+      <button onclick="closeModal('pricingModal')" class="absolute top-4 right-4 text-[#a9b49c] hover:text-white cursor-pointer">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <span class="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">Early Access Licensing</span>
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-1">GrindOS Pro Lifetime</h3>
+        <p class="text-xs text-[#a9b49c]">One-time investment. Zero recurring monthly subscriptions.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="p-4 rounded-2xl bg-[#12180d] border border-[#2d3e1e] flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-bold text-[#a9b49c] mb-1">Community</div>
+            <div class="text-2xl font-bold text-white font-mono">$0</div>
+            <div class="text-[11px] text-[#7d8f63] mb-3">Free forever</div>
+            <ul class="text-[11px] text-[#a9b49c] space-y-1.5">
+              <li>✓ All 140 curriculum days</li>
+              <li>✓ Supabase cloud sync</li>
+              <li>✓ Both OS &amp; Web formats</li>
+            </ul>
+          </div>
+          <button onclick="closeModal('pricingModal'); openModal('authModal');" class="mt-4 w-full py-2 rounded-lg border border-[#354823] text-xs font-semibold text-white hover:bg-[#253019]">
+            Use Free
+          </button>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#243118] border-2 border-white flex flex-col justify-between relative shadow-lg">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-bold text-white">Lifetime Pro</span>
+              <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-white text-[#11140d]">EARLY BIRD</span>
+            </div>
+            <div class="text-2xl font-bold text-white font-mono">$29</div>
+            <div class="text-[11px] text-[#c2d6a4] mb-3">One-time payment</div>
+            <ul class="text-[11px] text-white space-y-1.5">
+              <li>✓ Unlimited Cohort creation</li>
+              <li>✓ Full interview Kanban tracker</li>
+              <li>✓ Top 150 Benchmark speedruns</li>
+              <li>✓ Custom notes &amp; telemetry exports</li>
+            </ul>
+          </div>
+          <button onclick="alert('Directing to secure Stripe checkout...'); closeModal('pricingModal');" class="mt-4 w-full py-2 rounded-lg bg-white text-[#11140d] text-xs font-bold hover:bg-[#eef1e6]">
+            Unlock Pro ($29)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="demoChoiceModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="relative w-full max-w-md bg-[#1a2312] border border-[#354823] rounded-3xl p-6 sm:p-7 shadow-2xl text-[#eef1e6]">
+      <button onclick="closeModal('demoChoiceModal')" class="absolute top-4 right-4 text-[#a9b49c] hover:text-white cursor-pointer">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="text-center mb-6">
+        <span class="text-[10px] font-mono uppercase font-bold text-[#a3b384] tracking-wider block mb-1">Interactive Sandbox</span>
+        <h3 class="text-xl font-bold text-white mb-1">Choose Your Workstation</h3>
+        <p class="text-xs text-[#a9b49c]">Select which format you would like to test</p>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <button onclick="playRetroSound(); alert('Launching Retro OS Shell Sandbox...'); closeModal('demoChoiceModal');" class="p-4 rounded-2xl bg-[#12180d] border border-[#2d3e1e] hover:border-[#6c8240] text-left transition-all cursor-pointer group">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold font-mono text-[#c2d6a4] group-hover:text-white">🖥️ Retro Terminal OS</span>
+            <span class="text-[10px] font-mono text-[#a9b49c]">VT220</span>
+          </div>
+          <div class="text-xs text-[#a9b49c]">Draggable multi-window desktop with chiptune sound synth and command terminal.</div>
+        </button>
+
+        <button onclick="playTickSound(); alert('Launching Modern Web App Sandbox...'); closeModal('demoChoiceModal');" class="p-4 rounded-2xl bg-[#1f2b16] border border-[#354823] hover:border-white text-left transition-all cursor-pointer group">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-white group-hover:text-[#c2d6a4]">✨ Modern Bento Web</span>
+            <span class="text-[10px] font-mono text-[#a9b49c]">LINEAR SAAS</span>
+          </div>
+          <div class="text-xs text-[#a9b49c]">Clean modern dashboard with live charts, placement pipeline, and heatmaps.</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT: EXACT PROCEDURAL MOUNTAIN SIMULATION (MEADOW RISE PHYSICS)    -->
+  <!-- ========================================================================= -->
+  <script>
+    // ---------------------------------------------------------------------------
+    // Exact Meadow Rise Mathematics & Offscreen Procedural Ridge Shading
+    // ---------------------------------------------------------------------------
+    function mrfRng(seed) {
+      let a = (seed | 0) ^ 0x9e3779b9;
+      return () => {
+        a = (a + 0x6d2b79f5) | 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function mrfHex(c) {
+      const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec((c || "").trim());
+      if (!m) return null;
+      let h = m[1];
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      const n = parseInt(h, 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+
+    function mrfClamp(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+    function mrfSmooth(e0, e1, x) { const t = mrfClamp((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); }
+    function mrfEase(t) { const c = mrfClamp(t); return 1 - (1 - c) * (1 - c) * (1 - c) * (1 - c); }
+
+    function mrfNoiseTable(seed) {
+      const rnd = mrfRng(seed * 7919 + 17);
+      const G = 32;
+      const lat = new Float32Array(G * G);
+      for (let i = 0; i < lat.length; i++) lat[i] = rnd();
+      const out = new Float32Array(65536);
+      for (let y = 0; y < 256; y++) {
+        const gy = y / 8;
+        const y0 = Math.floor(gy);
+        const fy = gy - y0;
+        const sy = fy * fy * (3 - 2 * fy);
+        const r0 = (y0 % G) * G;
+        const r1 = ((y0 + 1) % G) * G;
+        for (let x = 0; x < 256; x++) {
+          const gx = x / 8;
+          const x0 = Math.floor(gx);
+          const fx = gx - x0;
+          const sx = fx * fx * (3 - 2 * fx);
+          const c0 = x0 % G;
+          const c1 = (x0 + 1) % G;
+          const a = lat[r0 + c0] + (lat[r0 + c1] - lat[r0 + c0]) * sx;
+          const b = lat[r1 + c0] + (lat[r1 + c1] - lat[r1 + c0]) * sx;
+          out[(y << 8) | x] = a + (b - a) * sy;
+        }
+      }
+      return out;
+    }
+
+    function mrfSample(t, x, y) {
+      const x0 = x | 0;
+      const y0 = y | 0;
+      const fx = x - x0;
+      const fy = y - y0;
+      const xa = x0 & 255;
+      const xb = (x0 + 1) & 255;
+      const ya = (y0 & 255) << 8;
+      const yb = ((y0 + 1) & 255) << 8;
+      const a = t[ya | xa] + (t[ya | xb] - t[ya | xa]) * fx;
+      const b = t[yb | xa] + (t[yb | xb] - t[yb | xa]) * fx;
+      return a + (b - a) * fy;
+    }
+
+    function mrfLayerSpec(i, n, seed) {
+      const q = n > 1 ? i / (n - 1) : 1;
+      const rnd = mrfRng(seed * 977 + i * 131 + 7);
+      const count = q > 0.9 ? 2 : 3 + Math.floor(rnd() * 1.6);
+      const domes = [];
+      const span = 2.8 / count;
+      const lean = i % 2 ? 1 : -1;
+      for (let k = 0; k < count; k++) {
+        const c = -1.4 + (k + 0.15 + rnd() * 0.7) * span;
+        domes.push({
+          c,
+          w: (0.3 + rnd() * 0.32) * (1 + q * 0.7),
+          h: 0.42 + rnd() * 0.42 + 0.16 * Math.max(0, Math.min(1, 0.5 + c * lean * 0.6)),
+        });
+      }
+      return {
+        q,
+        base: 0.68 + q * 0.29,
+        amp: 0.27 - q * 0.17,
+        domes,
+        waves: [
+          { f: 1.6 + rnd() * 1.4, p: rnd() * 6.2832, a: 0.07 },
+          { f: 4.5 + rnd() * 3, p: rnd() * 6.2832, a: 0.025 },
+        ],
+        depth: 0.16 + q * 0.3,
+        haze: 0.03 + 0.5 * Math.pow(1 - q, 1.7),
+      };
+    }
+
+    function mrfCrestAt(spec, x, W, H) {
+      const u = (x - W / 2) / 1000;
+      let sum = 0;
+      for (let k = 0; k < spec.domes.length; k++) {
+        const d = spec.domes[k];
+        const z = (u - d.c) / d.w;
+        sum += Math.exp(14 * d.h * Math.exp(-z * z));
+      }
+      const top = Math.log(sum) / 14;
+      let wave = 0;
+      for (let k = 0; k < spec.waves.length; k++) {
+        const o = spec.waves[k];
+        wave += o.a * Math.sin(u * o.f * 6.2832 + o.p);
+      }
+      return H * (spec.base - spec.amp * (top + wave));
+    }
+
+    function mrfSeamAt(spec, x, W) {
+      const u = (x - W / 2) / 1000;
+      let a = 0;
+      let b = 0;
+      for (let k = 0; k < spec.domes.length; k++) {
+        const d = spec.domes[k];
+        const z = (u - d.c) / d.w;
+        const v = d.h * Math.exp(-z * z);
+        if (v > a) { b = a; a = v; }
+        else if (v > b) b = v;
+      }
+      const g = (a - b) / 0.07;
+      return b > 0.12 ? Math.exp(-g * g) : 0;
+    }
+
+    const MRF_L = (() => {
+      const v = [0.42, 0.78, 0.46];
+      const l = Math.hypot(v[0], v[1], v[2]);
+      return [v[0] / l, v[1] / l, v[2] / l];
+    })();
+
+    function mrfShade(m, t) {
+      const f = Math.pow(mrfClamp(t), 0.6);
+      const nx = m * 2.4 * (1 - f);
+      const ny = 1 - f + 0.18;
+      const nz = 0.22 + f * 1.15;
+      const l = Math.hypot(nx, ny, nz);
+      const d = (nx * MRF_L[0] + ny * MRF_L[1] + nz * MRF_L[2]) / l;
+      return mrfClamp(0.12 + 0.88 * d);
+    }
+
+    const MRF_STEPS = 64;
+    function mrfPaintLayer(px, w, h, o, c0 = 0, c1 = w) {
+      const { s, mx, top, W, H, spec, lit, shadow, haze, noise } = o;
+      const out = new Uint32Array(px.buffer, px.byteOffset, w * h);
+      const q = spec.q;
+      const depthPx = Math.max(1, spec.depth * H);
+      const A1 = 0.32 + 0.2 * q;
+      const A2 = 0.08 + 0.2 * q;
+      const A3 = 0.05 + 0.13 * q;
+      const lane = q * 97 + 4096;
+      const detailRows = Math.max(0, Math.min(h, Math.ceil((o.detailTo - top) * s)));
+      const dn = Math.ceil(depthPx * s) + 2;
+      const hzL = new Float32Array(dn);
+      const tL = new Uint8Array(dn);
+      const darkL = new Float32Array(dn);
+      const creaseL = new Float32Array(dn);
+      for (let j = 0; j < dn; j++) {
+        const d = j / s;
+        const t = mrfClamp(d / depthPx);
+        hzL[j] = mrfClamp(spec.haze + 0.16 * (1 - q) * Math.exp(-d / 9) + 0.2 * (1 - q) * t * t);
+        tL[j] = Math.round(t * (MRF_STEPS - 1));
+        darkL[j] = 1 - 0.3 * t * t;
+        creaseL[j] = 0.38 * (1 - t * 0.7);
+      }
+      const shadeT = new Float32Array(128 * MRF_STEPS);
+      for (let mi = 0; mi < 128; mi++) {
+        const mm = (mi / 127) * 4 - 2;
+        for (let k = 0; k < MRF_STEPS; k++) shadeT[mi * MRF_STEPS + k] = mrfShade(mm, k / (MRF_STEPS - 1));
+      }
+      const sR = shadow[0], sG = shadow[1], sB = shadow[2];
+      const dR = lit[0] - sR, dG = lit[1] - sG, dB = lit[2] - sB;
+      const hR = haze[0], hG = haze[1], hB = haze[2];
+      for (let c = Math.max(0, c0); c < Math.min(w, c1); c++) {
+        const X = (c + 0.5) / s - mx;
+        const cy = mrfCrestAt(spec, X, W, H);
+        const m = ((mrfCrestAt(spec, X + 1 / s, W, H) - mrfCrestAt(spec, X - 1 / s, W, H)) * s) / 2;
+        const seam = mrfSeamAt(spec, X, W);
+        const row = Math.round((Math.max(-2, Math.min(2, m)) + 2) * 31.75) * MRF_STEPS;
+        const cyRow = (cy - top) * s;
+        const start = Math.max(0, Math.floor(cyRow) - 1);
+        const pX = X * 0.045 + lane;
+        const cX = X * 0.3 + 4096;
+        const yBase = (start + 0.5) / s + top;
+        for (let r = start; r < h; r++) {
+          const dd = r + 0.5 - cyRow;
+          const cov = dd + 0.5;
+          if (cov <= 0) continue;
+          const j = dd < 0 ? 0 : dd >= dn ? dn - 1 : dd | 0;
+          const sh = shadeT[row + tL[j]] * darkL[j] * (1 - seam * creaseL[j]);
+          let R = sR + dR * sh;
+          let G = sG + dG * sh;
+          let B = sB + dB * sh;
+          if (r < detailRows) {
+            const d = dd / s;
+            const Y = yBase + (r - start) / s;
+            const patch = mrfSample(noise, pX, d * 0.09 + Y * 0.02 + lane) - 0.5;
+            const clump = mrfSample(noise, cX, d * 1.25 + lane) - 0.5;
+            let g = Math.imul(c + 7919, 374761393) ^ Math.imul(r + 104729, 668265263);
+            g = Math.imul(g ^ (g >>> 13), 1274126177);
+            const grain = ((g ^ (g >>> 16)) >>> 0) / 4294967296 - 0.5;
+            const tex = 1 + patch * A1 + clump * A2 + grain * A3;
+            R *= tex;
+            G *= tex;
+            B *= tex;
+          }
+          const hz = hzL[j];
+          R += (hR - R) * hz;
+          G += (hG - G) * hz;
+          B += (hB - B) * hz;
+          const A = cov >= 1 ? 255 : (cov * 255) | 0;
+          out[r * w + c] =
+            ((A << 24) |
+              ((B > 255 ? 255 : B < 0 ? 0 : B | 0) << 16) |
+              ((G > 255 ? 255 : G < 0 ? 0 : G | 0) << 8) |
+              (R > 255 ? 255 : R < 0 ? 0 : R | 0)) >>> 0;
+        }
+      }
+    }
+
+    function mrfMistBand(noise, w, h) {
+      const out = new Float32Array(w * h);
+      for (let y = 0; y < h; y++) {
+        const v = (y + 0.5) / h;
+        const bell = Math.exp(-Math.pow((v - 0.55) / 0.22, 2));
+        for (let x = 0; x < w; x++) {
+          const nx = (x * 256) / w;
+          const a = noise[((((y * 96) / h) | 0) << 8) | (nx | 0)];
+          const b = noise[(((((y * 40) / h) | 0) + 128) << 8) | (((nx * 2) | 0) & 255)];
+          out[y * w + x] = mrfClamp((a * 0.65 + b * 0.35 - 0.36) * 2.6) * bell;
+        }
+      }
+      return out;
+    }
+
+    // ---------------------------------------------------------------------------
+    // EXACT MEADOW PALETTE (No intelligent changes, 100% exact colors)
+    // ---------------------------------------------------------------------------
+    const MEADOW_PALETTE = {
+      sky: ["#f4f4ef", "#e9ece3"],
+      haze: "#e3e7dc",
+      glow: "#fffbef",
+      hills: [
+        ["#b7c2ab", "#9fac95"],
+        ["#a3b384", "#7d8f63"],
+        ["#93a964", "#677c42"],
+        ["#829a52", "#556a33"],
+        ["#6c8240", "#415325"],
+        ["#4d5d2c", "#283318"],
+      ],
+      ground: "#253019",
+      ink: "#11140d",
+      sub: "#3b4234",
+      pill: "#ffffff",
+      pillInk: "#11140d",
+      text: "#eef1e6",
+      muted: "#a9b49c",
+      line: "rgba(238, 241, 230, 0.16)",
+      night: false
+    };
+
+    // ---------------------------------------------------------------------------
+    // Exact Mountain Canvas Runner (Used identically for Hero & Footer)
+    // ---------------------------------------------------------------------------
+    function runMeadowCanvas(canvasId, containerId, seed = 3, isHero = true) {
+      const canvas = document.getElementById(canvasId);
+      const container = document.getElementById(containerId);
+      if (!canvas || !container) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const colors = MEADOW_PALETTE;
+      let W = 1, H = 1, SH = 1, cs = 1;
+      const noise = mrfNoiseTable(seed);
+      const n = colors.hills.length;
+      const specs = colors.hills.map((_, i) => mrfLayerSpec(i, n, seed));
+      let layers = specs.map(() => null);
+      let mistC = null;
+      let tx = 0, ty = 0, px = 0, py = 0;
+      let revealAt = performance.now();
+      let raf = 0;
+      const MX = 40;
+
+      function rgb(c, fb) { return mrfHex(c) || fb; }
+      function css(c, a) { return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
+
+      const sky0 = rgb(colors.sky[0], [244, 244, 239]);
+      const sky1 = rgb(colors.sky[1], [233, 236, 227]);
+      const hazeC = rgb(colors.haze, sky1);
+      const glowC = rgb(colors.glow, [255, 251, 239]);
+      const groundC = rgb(colors.ground, [37, 48, 25]);
+      const inkC = rgb(colors.ink, [17, 20, 13]);
+      const hillC = colors.hills.map(h => [rgb(h[0], [120, 140, 80]), rgb(h[1], [80, 100, 50])]);
+
+      function makeMist() {
+        const w = 320, h = 64;
+        const a = mrfMistBand(noise, w, h);
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        const g = c.getContext("2d");
+        if (!g) return;
+        const img = g.createImageData(w, h);
+        for (let i = 0; i < a.length; i++) {
+          img.data[i * 4] = hazeC[0];
+          img.data[i * 4 + 1] = hazeC[1];
+          img.data[i * 4 + 2] = hazeC[2];
+          img.data[i * 4 + 3] = a[i] * 255;
+        }
+        g.putImageData(img, 0, 0);
+        mistC = c;
+      }
+
+      function bakeLayers() {
+        layers = specs.map(() => null);
+        for (let i = 0; i < n; i++) {
+          const spec = specs[i];
+          let minC = Infinity;
+          for (let x = -MX; x <= W + MX; x += 3) minC = Math.min(minC, mrfCrestAt(spec, x, W, H));
+          const top = Math.floor(minC - 4);
+          const s = Math.min(window.devicePixelRatio || 1, spec.q > 0.5 ? 1.25 : 1);
+          const w = Math.ceil((W + MX * 2) * s);
+          const h = Math.ceil((SH - top) * s);
+          const c = document.createElement("canvas");
+          c.width = w; c.height = h;
+          const g = c.getContext("2d");
+          if (!g) continue;
+
+          let detailTo = H + 200;
+          if (i + 1 < n) {
+            let maxC = -Infinity;
+            for (let x = -MX; x <= W + MX; x += 3) maxC = Math.max(maxC, mrfCrestAt(specs[i + 1], x, W, H));
+            detailTo = Math.min(detailTo, maxC + 70);
+          }
+
+          const o = {
+            s, mx: MX, top, W, H, spec,
+            lit: hillC[i][0], shadow: hillC[i][1], haze: hazeC, noise, detailTo
+          };
+          const img = g.createImageData(w, h);
+          mrfPaintLayer(img.data, w, h, o, 0, w);
+          g.putImageData(img, 0, 0);
+          layers[i] = { c, top, w: w / s, h: h / s };
+        }
+      }
+
+      function measure() {
+        W = container.clientWidth || window.innerWidth;
+        H = container.clientHeight || (isHero ? 720 : 600);
+        SH = H + 180;
+        cs = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(W * cs);
+        canvas.height = Math.round(SH * cs);
+        makeMist();
+        bakeLayers();
+      }
+
+      function draw(now) {
+        ctx.setTransform(cs, 0, 0, cs, 0, 0);
+        const dt = now - revealAt;
+
+        // Pale Sky Gradient
+        const sky = ctx.createLinearGradient(0, 0, 0, H * 0.8);
+        sky.addColorStop(0, css(sky0, 1));
+        sky.addColorStop(1, css(sky1, 1));
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, SH);
+
+        // Sunlight Glow Following Mouse Pointer Across Sky
+        const ox = W * (0.7 + px * 0.3);
+        const oy = H * 0.14 + py * H * 0.08;
+        const dawn = mrfSmooth(0, 1600, dt);
+
+        const R = Math.max(W, H) * 0.62;
+        const glow = ctx.createRadialGradient(ox, oy, 0, ox, oy, R);
+        glow.addColorStop(0, css(glowC, 0.85 * dawn));
+        glow.addColorStop(0.35, css(glowC, 0.32 * dawn));
+        glow.addColorStop(1, css(glowC, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, W, SH);
+
+        // Pencil-thin Horizon Drawing Out from Center
+        if (dt < 1400) {
+          const p = Math.min(1, mrfEase(dt / 900));
+          const lw = p * W * 0.78;
+          const la = (1 - mrfSmooth(150, 1100, dt)) * 0.42;
+          if (la > 0 && lw > 0.5) {
+            const y = Math.round(H * specs[0].base);
+            const lg = ctx.createLinearGradient(W / 2 - lw / 2, 0, W / 2 + lw / 2, 0);
+            lg.addColorStop(0, css(inkC, 0));
+            lg.addColorStop(0.5, css(inkC, la));
+            lg.addColorStop(1, css(inkC, 0));
+            ctx.fillStyle = lg;
+            ctx.fillRect(W / 2 - lw / 2, y, lw, 1);
+          }
+        }
+
+        // Six Ridges Rising Through Horizon on Individual Springs
+        for (let i = 0; i < n; i++) {
+          const L = layers[i];
+          if (!L) continue;
+          const e = mrfEase((dt - 150 - i * 120) / 1700);
+          const rise = (1 - e) * H * (0.2 + 0.07 * i);
+          const lx = -px * (2 + i * 5);
+          const ly = -py * (1 + i * 2);
+
+          ctx.drawImage(L.c, -MX + lx, L.top + rise + ly, L.w, L.h);
+
+          // Mist Bands Drifting Between Ridges 1 and 3
+          if (mistC && (i === 1 || i === 3) && i + 1 < n) {
+            const bw = W * 1.7;
+            const bh = H * (i === 1 ? 0.26 : 0.2);
+            const speed = (i === 1 ? 7 : 11);
+            const off = ((now * speed) / 1000) % bw;
+            const my = H * specs[i + 1].base - bh * 0.62 + rise * 0.6;
+            ctx.globalAlpha = 0.55 * (i === 1 ? 0.9 : 0.65) * mrfSmooth(900, 2600, dt);
+            ctx.drawImage(mistC, -off + lx * 1.4, my, bw, bh);
+            ctx.drawImage(mistC, bw - off + lx * 1.4, my, bw, bh);
+            ctx.globalAlpha = 1;
+          }
+        }
+
+        // Light Pool on Grass
+        ctx.globalCompositeOperation = "soft-light";
+        const pool = ctx.createRadialGradient(ox, H * 0.7, 0, ox, H * 0.7, W * 0.5);
+        pool.addColorStop(0, css(glowC, 0.45 * dawn));
+        pool.addColorStop(1, css(glowC, 0));
+        ctx.fillStyle = pool;
+        ctx.fillRect(0, 0, W, SH);
+        ctx.globalCompositeOperation = "source-over";
+
+        // Initial Fog Lifting
+        const fog = 1 - mrfSmooth(100, 2100, dt);
+        if (fog > 0) {
+          const f = ctx.createLinearGradient(0, 0, 0, SH);
+          f.addColorStop(0, css(sky0, fog));
+          f.addColorStop(1, css(sky1, fog));
+          ctx.fillStyle = f;
+          ctx.fillRect(0, 0, W, SH);
+        }
+
+        // Nearest Hill Darkens into Ground (#253019)
+        const g = ctx.createLinearGradient(0, H - 30, 0, SH);
+        g.addColorStop(0, css(groundC, 0));
+        g.addColorStop(0.55, css(groundC, 0.72));
+        g.addColorStop(1, css(groundC, 1));
+        ctx.fillStyle = g;
+        ctx.fillRect(0, H - 30, W, SH - H + 31);
+      }
+
+      function loop(now) {
+        px += (tx - px) * 0.06;
+        py += (ty - py) * 0.06;
+        draw(now);
+        raf = requestAnimationFrame(loop);
+      }
+
+      function onPointerMove(e) {
+        const r = container.getBoundingClientRect();
+        tx = Math.max(-0.5, Math.min(0.5, (e.clientX - r.left) / Math.max(1, r.width) - 0.5));
+        ty = Math.max(-0.5, Math.min(0.5, (e.clientY - r.top) / Math.max(1, r.height) - 0.5));
+      }
+
+      function onPointerLeave() {
+        tx = 0; ty = 0;
+      }
+
+      window.addEventListener('resize', measure);
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      document.body.addEventListener('pointerleave', onPointerLeave);
+
+      measure();
+      loop(performance.now());
+    }
+
+    // ---------------------------------------------------------------------------
+    // Exact Magnetic CTA Pill Movement Tracking
+    // ---------------------------------------------------------------------------
+    function bindMagneticCta(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        const fx = e.clientX - r.left;
+        const fy = e.clientY - r.top;
+        el.style.setProperty('--fx', fx + 'px');
+        el.style.setProperty('--fy', fy + 'px');
+        el.style.setProperty('--mx', ((fx / r.width - 0.5) * 10).toFixed(2) + 'px');
+        el.style.setProperty('--my', ((fy / r.height - 0.5) * 8).toFixed(2) + 'px');
+      });
+      el.addEventListener('pointerleave', () => {
+        el.style.setProperty('--mx', '0px');
+        el.style.setProperty('--my', '0px');
+      });
+    }
+
+    // ---------------------------------------------------------------------------
+    // Exact Botanical Wildflowers for Footer
+    // ---------------------------------------------------------------------------
+    function renderBotany() {
+      const g = document.getElementById("botanyGroup");
+      if (!g) return;
+      const count = 9;
+      const rnd = mrfRng(31 + 5);
+      let svg = "";
+      for (let k = 0; k < count; k++) {
+        const x = 70 + (k + 0.2 + rnd() * 0.6) * (1060 / count);
+        const hgt = 150 + rnd() * 230;
+        const lean = (rnd() - 0.5) * 110;
+        const ax = x, ay = 420;
+        const bx = x + lean, by = 420 - hgt;
+        const cx = x + lean * 0.1, cy = 420 - hgt * 0.55;
+        const order = k / (count - 1);
+        const dStem = 1400 + order * 900;
+        const r = 15 + rnd() * 9;
+
+        svg += `<g class="mrf-stem" style="transform-origin: ${ax}px 420px; --sd: ${(k * 1.7).toFixed(1)};">
+          <path class="mrf-draw" d="M${ax.toFixed(1)} ${ay} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}" pathLength="1" style="--d: ${dStem.toFixed(0)};"/>
+          <circle class="mrf-draw" cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${(r * 0.35).toFixed(1)}" pathLength="1" style="--d: ${(dStem + 200).toFixed(0)};"/>
+        </g>`;
+      }
+      g.innerHTML = svg;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Web Audio Synthesizer Sounds
+    // ---------------------------------------------------------------------------
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playTickSound() {
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(740, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      } catch (e) {}
+    }
+
+    function playRetroSound() {
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.setValueAtTime(440, ctx.currentTime + 0.03);
+        osc.frequency.setValueAtTime(660, ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.07, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+      } catch (e) {}
+    }
+
+    function playVictorySound() {
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.06);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime + idx * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6 + idx * 0.06);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.06);
+          osc.stop(ctx.currentTime + 0.7 + idx * 0.06);
+        });
+      } catch (e) {}
+    }
+
+    // ---------------------------------------------------------------------------
+    // Interactive Demo Problem Solver Logic
+    // ---------------------------------------------------------------------------
+    const demoState = { 1: true, 2: false, 3: false };
+
+    function toggleProblem(id) {
+      playTickSound();
+      demoState[id] = !demoState[id];
+      const isSolved = demoState[id];
+
+      const row = document.getElementById(`prob-${id}`);
+      const chk = document.getElementById(`prob-chk-${id}`);
+      const title = document.getElementById(`prob-title-${id}`);
+
+      if (isSolved) {
+        row.className = "p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer bg-[#4d5d2c]/20 border-[#6c8240]/40";
+        chk.className = "size-5 rounded-md flex items-center justify-center shrink-0 border transition-all bg-[#6c8240] border-[#6c8240] text-white";
+        chk.innerHTML = '<svg class="size-3.5 stroke-[3]" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>';
+        title.className = "text-xs sm:text-sm font-semibold line-through text-[#a9b49c]";
+      } else {
+        row.className = "p-3.5 rounded-xl border flex items-center gap-3.5 transition-all cursor-pointer bg-[#141b0e] border-[#2d3e1e] hover:bg-[#1a2312]";
+        chk.className = "size-5 rounded-md flex items-center justify-center shrink-0 border transition-all border-[#4d5d2c] bg-[#12180d]";
+        chk.innerHTML = '';
+        title.className = "text-xs sm:text-sm font-semibold text-white";
+      }
+
+      const count = Object.values(demoState).filter(Boolean).length;
+      document.getElementById('demoCount').innerText = `${count} / 3 complete`;
+      document.getElementById('demoProgressBar').style.width = `${(count / 3) * 100}%`;
+
+      if (count === 3) {
+        playVictorySound();
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Accordion Controls (Curriculum & FAQ)
+    // ---------------------------------------------------------------------------
+    function toggleAccordion(id) {
+      playTickSound();
+      const body = document.getElementById(`acc-body-${id}`);
+      const icon = document.getElementById(`acc-icon-${id}`);
+      const isHidden = body.classList.contains('hidden');
+
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`acc-body-${i}`)?.classList.add('hidden');
+        document.getElementById(`acc-icon-${i}`)?.classList.remove('rotate-180');
+      }
+
+      if (isHidden) {
+        body.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      }
+    }
+
+    function toggleFaq(id) {
+      playTickSound();
+      const body = document.getElementById(`faq-body-${id}`);
+      const icon = document.getElementById(`faq-icon-${id}`);
+      const isHidden = body.classList.contains('hidden');
+
+      if (isHidden) {
+        body.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        body.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Modal Helpers
+    // ---------------------------------------------------------------------------
+    function openModal(id) {
+      playTickSound();
+      document.getElementById(id)?.classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id)?.classList.add('hidden');
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        ['authModal', 'pricingModal', 'demoChoiceModal'].forEach(id => closeModal(id));
+      }
+    });
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      playVictorySound();
+      confetti({ particleCount: 50, spread: 50, origin: { y: 0.5 } });
+      alert('Welcome to GrindOS! Initializing your synchronized cloud state...');
+      closeModal('authModal');
+    }
+
+    function handleSubscribe(e) {
+      e.preventDefault();
+      const btn = document.getElementById('newsletterBtn');
+      const msg = document.getElementById('newsletterMsg');
+      btn.innerHTML = `<span class="size-3 border-2 border-[#11140d] border-t-transparent rounded-full animate-spin"></span>`;
+      setTimeout(() => {
+        btn.innerHTML = `<svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+        msg.classList.remove('hidden');
+        playVictorySound();
+      }, 700);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Initialization on Page Load
+    // ---------------------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      // Trigger Meadow Rise reveal animations
+      setTimeout(() => {
+        document.body.classList.add('mrf-in');
+        document.getElementById('heroRoot')?.classList.add('mrf-in');
+        document.getElementById('footerRoot')?.classList.add('mrf-in');
+      }, 50);
+
+      // Render wildflower botany in footer ground
+      renderBotany();
+
+      // Run exact Meadow Rise mountain canvases
+      runMeadowCanvas('heroCanvas', 'heroScene', 3, true);
+      runMeadowCanvas('footerCanvas', 'footerScene', 7, false);
+
+      // Attach magnetic pointer listeners to CTA pills
+      bindMagneticCta('heroCta');
+      bindMagneticCta('footerCta');
+
+      // Open Phase 1 curriculum accordion by default
+      toggleAccordion(1);
+    });
+  </script>
+</body>
+</html>
