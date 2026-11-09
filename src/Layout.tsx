@@ -76,7 +76,7 @@ export const Layout: React.FC<LayoutProps> = ({ onSwitchToOS, onGoToHome }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('grindos-theme');
     if (saved === 'dark' || saved === 'light') return saved;
-    return 'light'; // Donezo / ACRU default clean light aesthetic
+    return 'dark'; // Meadow Deep Forest Default
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);

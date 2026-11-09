@@ -14,6 +14,8 @@ dist-ssr
 demo-video/
 *.webm
 scripts/*.png
+scripts/package*.json
+scripts/node_modules/
 
 # Editor directories and files
 .vscode/*
