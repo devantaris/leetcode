@@ -310,7 +310,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * NOTE: saveProblemNote must NEVER set solved_at -- that would ghost-solve the problem.
    */
   const setProblemNote = useCallback((problemId: string, note: string) => {
-    setProblemNotes((prev) => ({ ...prev, [problemId]: note }));
+    setProblemNotes((prev) => {
+      const updated = { ...prev };
+      if (!note || note.trim() === '') {
+        delete updated[problemId];
+      } else {
+        updated[problemId] = note;
+      }
+      return updated;
+    });
     if (authUser && authUser.provider === 'supabase') {
       CloudSyncService.saveProblemNote(authUser.id, problemId, note);
     }
