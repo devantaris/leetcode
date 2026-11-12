@@ -885,17 +885,14 @@ export class CloudSyncService {
     if (!sb || !userId) return { success: false };
 
     try {
-      const { error } = await sb.from('user_progress').upsert(
-        {
-          user_id: userId,
-          problem_id: problemId,
-          is_flagged: isFlagged,
-          solved_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,problem_id' }
-      );
+      const { error } = await sb
+        .from('user_progress')
+        .update({ is_flagged: isFlagged })
+        .eq('user_id', userId)
+        .eq('problem_id', problemId);
+
       if (error) {
-        console.warn('[CloudSync] Flag sync warning (is_flagged column not in DB):', error.message);
+        console.warn('[CloudSync] Flag update warning:', error.message);
         return { success: false, error: error.message };
       }
       return { success: true };
