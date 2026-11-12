@@ -297,6 +297,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [authUser]);
 
+  /**
+   * Sets a local approach note for a problem and persists it to the cloud.
+   *
+   * Persistence strategy:
+   * - If the problem is already solved (row exists in user_progress):
+   *   CloudSyncService.saveProblemNote() does a targeted UPDATE on approach_notes only.
+   * - If the problem is NOT yet solved (no row in DB):
+   *   The note lives in React state. The debounced pushToCloud (4s) will carry it
+   *   to the DB as part of the next full sync via problemNotes map -> solveEntries.
+   *
+   * NOTE: saveProblemNote must NEVER set solved_at -- that would ghost-solve the problem.
+   */
   const setProblemNote = useCallback((problemId: string, note: string) => {
     setProblemNotes((prev) => ({ ...prev, [problemId]: note }));
     if (authUser && authUser.provider === 'supabase') {
