@@ -857,17 +857,14 @@ export class CloudSyncService {
     if (!sb || !userId) return { success: false };
 
     try {
-      const { error } = await sb.from('user_progress').upsert(
-        {
-          user_id: userId,
-          problem_id: problemId,
-          approach_notes: notes,
-          solved_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,problem_id' }
-      );
+      const { error } = await sb
+        .from('user_progress')
+        .update({ approach_notes: notes })
+        .eq('user_id', userId)
+        .eq('problem_id', problemId);
+
       if (error) {
-        console.warn('[CloudSync] Note sync warning (approach_notes column not in DB):', error.message);
+        console.warn('[CloudSync] Note update warning:', error.message);
         return { success: false, error: error.message };
       }
       return { success: true };
