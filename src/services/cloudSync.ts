@@ -117,11 +117,13 @@ export class CloudSyncService {
             onConflict: 'user_id,problem_id',
           });
           if (progErr) {
-            // Fallback to baseline schema (user_id, problem_id, solved_at)
+            // Fallback: retry preserving approach_notes and is_flagged
             const baseBatch = batch.map((item) => ({
               user_id: item.user_id,
               problem_id: item.problem_id,
               solved_at: item.solved_at,
+              approach_notes: item.approach_notes,
+              is_flagged: item.is_flagged,
             }));
             const { error: baseProgErr } = await sb.from('user_progress').upsert(baseBatch, {
               onConflict: 'user_id,problem_id',
