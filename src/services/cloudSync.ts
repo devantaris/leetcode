@@ -101,13 +101,22 @@ export class CloudSyncService {
         ...Object.keys(payload.flaggedProblems || {}).filter((id) => payload.flaggedProblems?.[id]),
       ]);
 
-      const solveEntries = Array.from(allProblemIds).map((probId) => ({
-        user_id: payload.userId,
-        problem_id: probId,
-        solved_at: payload.solveHistory[probId] || new Date().toISOString(),
-        approach_notes: payload.problemNotes?.[probId] || '',
-        is_flagged: !!payload.flaggedProblems?.[probId],
-      }));
+      // Sentinel date for rows that have a note/flag but are NOT actually solved.
+      // pullFromCloud skips epoch-dated rows when building progressMap to prevent ghost solves.
+      const NOTE_ONLY_SENTINEL = new Date(0).toISOString(); // '1970-01-01T00:00:00.000Z'
+
+      const solveEntries = Array.from(allProblemIds).map((probId) => {
+        const isSolvedLocally = !!(payload.progress[probId] || payload.solveHistory[probId]);
+        return {
+          user_id: payload.userId,
+          problem_id: probId,
+          solved_at: isSolvedLocally
+            ? (payload.solveHistory[probId] || new Date().toISOString())
+            : NOTE_ONLY_SENTINEL, // note-only or flag-only: use sentinel, not a live timestamp
+          approach_notes: payload.problemNotes?.[probId] || '',
+          is_flagged: !!payload.flaggedProblems?.[probId],
+        };
+      });
 
       if (solveEntries.length > 0) {
         // Upsert in batches of 50
