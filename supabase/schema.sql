@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS public.placement_records (
 -- Idempotent migrations for existing deployments
 ALTER TABLE public.placement_records ADD COLUMN IF NOT EXISTS interview_date DATE;
 ALTER TABLE public.placement_records ADD COLUMN IF NOT EXISTS contact_info TEXT DEFAULT '';
+ALTER TABLE public.user_progress ADD COLUMN IF NOT EXISTS approach_notes TEXT DEFAULT '';
+ALTER TABLE public.user_progress ADD COLUMN IF NOT EXISTS is_flagged BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.user_progress ADD COLUMN IF NOT EXISTS difficulty TEXT DEFAULT 'Medium';
 
 -- 4. LEADERBOARD ENTRIES
 CREATE TABLE IF NOT EXISTS public.leaderboard_entries (

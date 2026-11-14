@@ -415,15 +415,33 @@ export class CloudSyncService {
     if (!sb || !userId) return { success: false, error: 'Database unauthenticated' };
 
     try {
-      const { error } = await sb
+      // If the problem has notes or is flagged, do NOT delete the row.
+      // Instead, set solved_at to the epoch sentinel so the notes/flags are preserved
+      // while the problem is correctly marked un-solved in progressMap.
+      const { data: existing } = await sb
         .from('user_progress')
-        .delete()
+        .select('approach_notes, is_flagged')
         .eq('user_id', userId)
-        .eq('problem_id', problemId);
+        .eq('problem_id', problemId)
+        .maybeSingle();
 
-      if (error) {
-        console.warn('[CloudSync] removeSolve warning:', error.message);
-        return { success: false, error: error.message };
+      if (existing && (existing.approach_notes || existing.is_flagged)) {
+        await sb
+          .from('user_progress')
+          .update({ solved_at: new Date(0).toISOString() })
+          .eq('user_id', userId)
+          .eq('problem_id', problemId);
+      } else {
+        const { error } = await sb
+          .from('user_progress')
+          .delete()
+          .eq('user_id', userId)
+          .eq('problem_id', problemId);
+
+        if (error) {
+          console.warn('[CloudSync] removeSolve warning:', error.message);
+          return { success: false, error: error.message };
+        }
       }
       return { success: true };
     } catch (err: unknown) {
@@ -934,17 +952,33 @@ export class CloudSyncService {
     const sb = getSupabase();
     if (!sb || !userId) return { success: false };
 
+    const NOTE_ONLY_SENTINEL = new Date(0).toISOString();
+
     try {
-      const { error } = await sb
+      const { data: updated, error: updateError } = await sb
         .from('user_progress')
         .update({ is_flagged: isFlagged })
         .eq('user_id', userId)
-        .eq('problem_id', problemId);
+        .eq('problem_id', problemId)
+        .select('problem_id');
 
-      if (error) {
-        console.warn('[CloudSync] Flag update warning:', error.message);
-        return { success: false, error: error.message };
+      if (updateError) {
+        console.warn('[CloudSync] Flag update warning:', updateError.message);
+        return { success: false, error: updateError.message };
       }
+
+      if (!updated || updated.length === 0) {
+        const { error: insertError } = await sb.from('user_progress').insert({
+          user_id: userId,
+          problem_id: problemId,
+          is_flagged: isFlagged,
+          solved_at: NOTE_ONLY_SENTINEL,
+        });
+        if (insertError) {
+          console.warn('[CloudSync] Flag insert for unsolved problem warning:', insertError.message);
+        }
+      }
+
       return { success: true };
     } catch (err: unknown) {
       return { success: false, error: err instanceof Error ? err.message : String(err) };
