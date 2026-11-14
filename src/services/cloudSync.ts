@@ -849,6 +849,14 @@ export class CloudSyncService {
 
   /**
    * Saves or updates an approach note for a specific problem.
+   *
+   * Strategy:
+   * 1. Try UPDATE on the existing row (problem already solved → row exists).
+   * 2. If no row was updated (problem not yet solved → no row in DB), INSERT a
+   *    "note-only" row using the epoch sentinel date (1970-01-01T00:00:00Z) for
+   *    solved_at. pullFromCloud skips epoch-dated rows when building progressMap
+   *    so the problem is NOT ghost-solved. When the user eventually solves the
+   *    problem, recordSolve upserts and overwrites solved_at with the real timestamp.
    */
   public static async saveProblemNote(
     userId: string,
@@ -858,17 +866,39 @@ export class CloudSyncService {
     const sb = getSupabase();
     if (!sb || !userId) return { success: false };
 
+    // Sentinel date used for note-only rows (never a real solve timestamp)
+    const NOTE_ONLY_SENTINEL = new Date(0).toISOString(); // '1970-01-01T00:00:00.000Z'
+
     try {
-      const { error } = await sb
+      // Step 1: Try UPDATE — only touches rows that already exist (solved problems)
+      const { data: updated, error: updateError } = await sb
         .from('user_progress')
         .update({ approach_notes: notes })
         .eq('user_id', userId)
-        .eq('problem_id', problemId);
+        .eq('problem_id', problemId)
+        .select('problem_id');
 
-      if (error) {
-        console.warn('[CloudSync] Note update warning:', error.message);
-        return { success: false, error: error.message };
+      if (updateError) {
+        console.warn('[CloudSync] Note update warning:', updateError.message);
+        return { success: false, error: updateError.message };
       }
+
+      // Step 2: If no row existed (unsolved problem), INSERT a note-only row
+      // using the epoch sentinel so pullFromCloud won't ghost-solve it.
+      if (!updated || updated.length === 0) {
+        const { error: insertError } = await sb.from('user_progress').insert({
+          user_id: userId,
+          problem_id: problemId,
+          approach_notes: notes,
+          solved_at: NOTE_ONLY_SENTINEL,
+        });
+        if (insertError) {
+          // Non-fatal: could be a rare race (concurrent solve/insert).
+          // The debounced pushToCloud will retry within 4 seconds.
+          console.warn('[CloudSync] Note insert for unsolved problem warning:', insertError.message);
+        }
+      }
+
       return { success: true };
     } catch (err: unknown) {
       return { success: false, error: err instanceof Error ? err.message : String(err) };
