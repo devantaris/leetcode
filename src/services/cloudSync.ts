@@ -286,8 +286,17 @@ export class CloudSyncService {
 
       if (progressData && progressData.length > 0) {
         progressData.forEach((row: any) => {
-          progressMap[row.problem_id] = true;
-          if (row.solved_at) historyMap[row.problem_id] = row.solved_at;
+          // Rows with solved_at = epoch sentinel (1970-01-01) are note-only rows —
+          // they were created by saveProblemNote for unsolved problems.
+          // Exclude them from progressMap and historyMap to prevent ghost solves.
+          const isNoteOnlyRow = row.solved_at
+            ? new Date(row.solved_at).getFullYear() < 1971
+            : false;
+
+          if (!isNoteOnlyRow) {
+            progressMap[row.problem_id] = true;
+            if (row.solved_at) historyMap[row.problem_id] = row.solved_at;
+          }
           if (row.approach_notes) notesMap[row.problem_id] = row.approach_notes;
           if (row.is_flagged) flagMap[row.problem_id] = true;
         });
