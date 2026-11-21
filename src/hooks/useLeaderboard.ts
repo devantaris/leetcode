@@ -6,6 +6,7 @@ import { supabase, isLeaderboardEnabled } from '../config/supabaseClient';
 import type { LeaderboardEntry } from '../config/supabaseClient';
 import { STORAGE_KEYS } from '../config/storageKeys';
 import { AuthService } from '../services/authService';
+import { calculateMaxStreak, calculateDaysActive } from '../utils/progressHelpers';
 
 const SYNC_DEBOUNCE_MS = 5 * 60 * 1000; // sync at most every 5 minutes
 const TOP_N = 50;
@@ -25,6 +26,9 @@ function getOrCreateUserId(): string {
 export interface LeaderboardStats {
   solvedCount: number;
   streak: number;
+  highestStreak?: number;
+  totalDaysSolved?: number;
+  daysActive?: number;
   daysLeft: number;
   oddsPercentage: number;
   displayName: string;
@@ -89,10 +93,57 @@ export function useLeaderboard(): UseLeaderboardReturn {
         .limit(TOP_N);
 
       if (fetchErr) throw fetchErr;
-      setEntries(data ?? []);
+
+      let list: LeaderboardEntry[] = (data ?? []).map((e: any) => ({
+        ...e,
+        highest_streak: e.highest_streak || e.streak || 0,
+        total_days_solved: e.total_days_solved || (e.streak > 0 ? e.streak : 0),
+        days_active: e.days_active || calculateDaysActive(e.created_at),
+      }));
+
+      // Enrich with real user_progress history so metrics are 100% accurate
+      const userIds = list.map(e => e.user_id).filter(Boolean);
+      if (userIds.length > 0) {
+        try {
+          const { data: progressRows } = await supabase
+            .from('user_progress')
+            .select('user_id, solved_at')
+            .in('user_id', userIds);
+
+          if (progressRows && progressRows.length > 0) {
+            const datesByUser = new Map<string, string[]>();
+            for (const row of progressRows) {
+              if (!row.solved_at) continue;
+              const dStr = row.solved_at.split('T')[0];
+              const arr = datesByUser.get(row.user_id) || [];
+              arr.push(dStr);
+              datesByUser.set(row.user_id, arr);
+            }
+
+            list = list.map(entry => {
+              const userDates = datesByUser.get(entry.user_id) || [];
+              const uniqueDates = Array.from(new Set(userDates));
+              const derivedHighestStreak = calculateMaxStreak(uniqueDates);
+              const derivedTotalDaysSolved = uniqueDates.length;
+              const derivedDaysActive = calculateDaysActive(entry.created_at);
+
+              return {
+                ...entry,
+                highest_streak: Math.max(entry.highest_streak || 0, entry.streak || 0, derivedHighestStreak),
+                total_days_solved: Math.max(entry.total_days_solved || 0, derivedTotalDaysSolved),
+                days_active: entry.days_active || derivedDaysActive,
+              };
+            });
+          }
+        } catch (enrichErr) {
+          console.warn('[Leaderboard] Progress enrichment skipped:', enrichErr);
+        }
+      }
+
+      setEntries(list);
 
       // Find our own entry
-      const mine = (data ?? []).find(e => e.user_id === userId.current) ?? null;
+      const mine = list.find(e => e.user_id === userId.current) ?? null;
       setMyEntry(mine);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to fetch leaderboard';
@@ -114,21 +165,33 @@ export function useLeaderboard(): UseLeaderboardReturn {
     setIsSyncing(true);
     setError(null);
     try {
-      const payload = {
+      const payload: Record<string, any> = {
         user_id: userId.current,
         display_name: isAnonymous ? 'Anonymous' : stats.displayName,
         tagline: isAnonymous ? '' : stats.tagline,
         is_anonymous: isAnonymous,
         solved_count: stats.solvedCount,
         streak: stats.streak,
+        highest_streak: stats.highestStreak ?? stats.streak,
+        total_days_solved: stats.totalDaysSolved ?? 0,
+        days_active: stats.daysActive ?? 1,
         days_remaining: Math.max(0, stats.daysLeft),
         readiness_pct: Math.min(100, Math.max(0, stats.oddsPercentage)),
         last_synced_at: new Date().toISOString(),
       };
 
-      const { error: upsertErr } = await supabase
+      let { error: upsertErr } = await supabase
         .from('leaderboard_entries')
         .upsert(payload, { onConflict: 'user_id' });
+
+      // If columns don't exist in Supabase yet, retry with base columns
+      if (upsertErr && (upsertErr.code === '42703' || upsertErr.message?.includes('column'))) {
+        const { highest_streak, total_days_solved, days_active, ...basePayload } = payload;
+        const retry = await supabase
+          .from('leaderboard_entries')
+          .upsert(basePayload, { onConflict: 'user_id' });
+        upsertErr = retry.error;
+      }
 
       if (upsertErr) throw upsertErr;
       setLastSyncedAt(new Date());

@@ -58,6 +58,9 @@ export interface AppStats {
   solvedCount: number;
   totalProblems: number;
   streak: number;
+  highestStreak: number;
+  totalDaysSolved: number;
+  daysActive: number;
   daysLeft: number;
   missedDaysCount: number;
   oddsPercentage: number;

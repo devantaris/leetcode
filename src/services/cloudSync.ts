@@ -3,6 +3,7 @@
 
 import { getSupabase } from '../config/supabaseClient';
 import type { UserProfile } from '../utils/progressHelpers';
+import { calculateMaxStreak, calculateDaysActive } from '../utils/progressHelpers';
 import type { PlacementRecord, UserProgressMap, SolveRecordMap, ProblemNoteMap, ProblemFlagMap, CohortInfo } from '../types';
 import { CURRICULUM } from '../data/curriculumStats';
 
@@ -15,6 +16,9 @@ export interface CloudSyncPayload {
   flaggedProblems?: ProblemFlagMap;
   placements: PlacementRecord[];
   streak: number;
+  highestStreak?: number;
+  totalDaysSolved?: number;
+  daysActive?: number;
   solvedCount: number;
 }
 
@@ -194,19 +198,30 @@ export class CloudSyncService {
         daysRemaining = 140;
       }
 
-      const { error: lbErr } = await sb.from('leaderboard_entries').upsert(
-        {
-          user_id: payload.userId,
-          display_name: payload.userProfile.name,
-          tagline: payload.userProfile.tagline || 'Software Engineer',
-          solved_count: payload.solvedCount,
-          streak: payload.streak,
-          days_remaining: daysRemaining,
-          readiness_pct: Math.min(100, Math.round((payload.solvedCount / totalProblems) * 100)),
-          last_synced_at: new Date().toISOString(),
-        },
+      const lbPayload: Record<string, any> = {
+        user_id: payload.userId,
+        display_name: payload.userProfile.name,
+        tagline: payload.userProfile.tagline || 'Software Engineer',
+        solved_count: payload.solvedCount,
+        streak: payload.streak,
+        highest_streak: payload.highestStreak ?? payload.streak,
+        total_days_solved: payload.totalDaysSolved ?? (payload.streak > 0 ? payload.streak : 0),
+        days_active: payload.daysActive ?? (payload.userProfile?.startDate ? calculateDaysActive(payload.userProfile.startDate) : 1),
+        days_remaining: daysRemaining,
+        readiness_pct: Math.min(100, Math.round((payload.solvedCount / totalProblems) * 100)),
+        last_synced_at: new Date().toISOString(),
+      };
+
+      let { error: lbErr } = await sb.from('leaderboard_entries').upsert(
+        lbPayload,
         { onConflict: 'user_id' }
       );
+
+      if (lbErr && (lbErr.code === '42703' || lbErr.message?.includes('column'))) {
+        const { highest_streak, total_days_solved, days_active, ...basePayload } = lbPayload;
+        const retry = await sb.from('leaderboard_entries').upsert(basePayload, { onConflict: 'user_id' });
+        lbErr = retry.error;
+      }
       if (lbErr) console.warn('[CloudSync] Leaderboard upsert warning:', lbErr.message);
 
       this.lastSyncTime = new Date();
@@ -877,7 +892,50 @@ export class CloudSyncService {
         console.warn('[Leaderboard] Cohort fetch error:', error.message);
         return [];
       }
-      return entries || [];
+
+      let list: any[] = (entries || []).map((e: any) => ({
+        ...e,
+        highest_streak: e.highest_streak || e.streak || 0,
+        total_days_solved: e.total_days_solved || (e.streak > 0 ? e.streak : 0),
+        days_active: e.days_active || calculateDaysActive(e.created_at),
+      }));
+
+      try {
+        const { data: progressRows } = await sb
+          .from('user_progress')
+          .select('user_id, solved_at')
+          .in('user_id', userIds);
+
+        if (progressRows && progressRows.length > 0) {
+          const datesByUser = new Map<string, string[]>();
+          for (const row of progressRows) {
+            if (!row.solved_at) continue;
+            const dStr = row.solved_at.split('T')[0];
+            const arr = datesByUser.get(row.user_id) || [];
+            arr.push(dStr);
+            datesByUser.set(row.user_id, arr);
+          }
+
+          list = list.map(entry => {
+            const userDates = datesByUser.get(entry.user_id) || [];
+            const uniqueDates = Array.from(new Set(userDates));
+            const derivedHighestStreak = calculateMaxStreak(uniqueDates);
+            const derivedTotalDaysSolved = uniqueDates.length;
+            const derivedDaysActive = calculateDaysActive(entry.created_at);
+
+            return {
+              ...entry,
+              highest_streak: Math.max(entry.highest_streak || 0, entry.streak || 0, derivedHighestStreak),
+              total_days_solved: Math.max(entry.total_days_solved || 0, derivedTotalDaysSolved),
+              days_active: entry.days_active || derivedDaysActive,
+            };
+          });
+        }
+      } catch (err) {
+        console.warn('[Leaderboard] Cohort progress enrichment skipped:', err);
+      }
+
+      return list;
     } catch {
       return [];
     }

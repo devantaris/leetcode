@@ -29,6 +29,8 @@ import {
   problemLookupMap,
   computeCurrentDay,
   computeCatchUpQueue,
+  calculateMaxStreak,
+  calculateDaysActive,
 } from '../utils/progressHelpers';
 import type { CatchUpItem } from '../utils/progressHelpers';
 export type { UserProfile } from '../utils/progressHelpers';
@@ -65,6 +67,8 @@ interface ProgressContextType {
   setProblemNote: (problemId: string, note: string) => void;
   toggleProblemFlag: (problemId: string) => void;
   streak: number;
+  highestStreak: number;
+  totalDaysSolved: number;
   dailySolveLog: DailySolveGroup[];
   stats: AppStats;
   userProfile: UserProfile;
@@ -119,7 +123,12 @@ interface ProgressContextType {
 export const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
 
 // ─── Streak + Log Computation ──────────────────────────────────────────────────
-function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { dailySolveLog: DailySolveGroup[]; streak: number } {
+function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { 
+  dailySolveLog: DailySolveGroup[]; 
+  streak: number;
+  highestStreak: number;
+  totalDaysSolved: number;
+} {
   const groupMap: { [dateStr: string]: DailySolveItem[] } = {};
 
   Object.entries(solveHistory).forEach(([problemId, isoTimestamp]) => {
@@ -160,10 +169,13 @@ function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { d
     };
   });
 
-  // Dynamic Streak Calculation
+  // Dynamic Streak & Stats Calculation
   const activeDatesSet = new Set<string>(Object.keys(groupMap));
+  const totalDaysSolved = activeDatesSet.size;
+  const histMaxStreak = calculateMaxStreak(Array.from(activeDatesSet), restDay);
+
   if (activeDatesSet.size === 0) {
-    return { dailySolveLog, streak: 0 };
+    return { dailySolveLog, streak: 0, highestStreak: 0, totalDaysSolved: 0 };
   }
 
   const restDayNum = restDay === 'sunday' ? 0 : restDay === 'saturday' ? 6 : -1;
@@ -183,10 +195,10 @@ function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { d
     if (activeDatesSet.has(prevDayStr)) {
       currentCheckDate = prevDay;
     } else {
-      return { dailySolveLog, streak: 0 };
+      return { dailySolveLog, streak: 0, highestStreak: histMaxStreak, totalDaysSolved };
     }
   } else {
-    return { dailySolveLog, streak: 0 };
+    return { dailySolveLog, streak: 0, highestStreak: histMaxStreak, totalDaysSolved };
   }
 
   let calculatedStreak = 0;
@@ -204,7 +216,9 @@ function computeLogAndStreak(solveHistory: SolveRecordMap, restDay: string): { d
     iterDate = addDays(iterDate, -1);
   }
 
-  return { dailySolveLog, streak: calculatedStreak };
+  const highestStreak = Math.max(calculatedStreak, histMaxStreak);
+
+  return { dailySolveLog, streak: calculatedStreak, highestStreak, totalDaysSolved };
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -232,7 +246,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const isPro = Boolean(userProfile?.isPro);
 
-  const { dailySolveLog, streak } = useMemo(
+  const { dailySolveLog, streak, highestStreak, totalDaysSolved } = useMemo(
     () => computeLogAndStreak(solveHistory, userProfile?.restDay || 'sunday'),
     [solveHistory, userProfile?.restDay]
   );
@@ -620,11 +634,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const projectedCompletionDate = format(addDays(now, projectedDaysNeeded), 'MMM dd, yyyy');
 
     const isOnTrack = missedDaysCount <= 3 && solvedCount >= Math.floor(currentDay * 1.5);
+    const daysActive = calculateDaysActive(userProfile?.startDate || (authUser?.createdAt ? authUser.createdAt : new Date()));
 
     return {
       solvedCount,
       totalProblems,
       streak,
+      highestStreak,
+      totalDaysSolved,
+      daysActive,
       daysLeft,
       missedDaysCount,
       oddsPercentage,
@@ -635,7 +653,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       projectedCompletionDate,
       readinessBreakdown
     };
-  }, [progress, streak, userProfile]);
+  }, [progress, streak, highestStreak, totalDaysSolved, userProfile, authUser?.createdAt]);
 
   const catchUpQueue = useMemo(
     () => computeCatchUpQueue(progress, PLAN_DATA, stats.currentDay),
@@ -1049,6 +1067,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setProblemNote,
     toggleProblemFlag,
     streak,
+    highestStreak,
+    totalDaysSolved,
     dailySolveLog,
     stats,
     userProfile: userProfile ?? DEFAULT_PROFILE,
@@ -1100,7 +1120,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     clearDemoData,
   }), [
     progress, solveHistory, problemNotes, flaggedProblems, setProblemNote, toggleProblemFlag,
-    streak, dailySolveLog, stats, userProfile, isOnboarded,
+    streak, highestStreak, totalDaysSolved, dailySolveLog, stats, userProfile, isOnboarded,
     updateProfile, resumeFromDay, toggleProblem, markDayComplete, isDayComplete,
     activeWeek, setActiveWeek, searchQuery, setSearchQuery, selectedDifficulty, setSelectedDifficulty,
     statusFilter, setStatusFilter, companyFilter, setCompanyFilter, placements, addPlacement,

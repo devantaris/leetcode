@@ -4,7 +4,8 @@ import { useLeaderboard } from '../hooks/useLeaderboard';
 import { CloudSyncService } from '../services/cloudSync';
 import { AuthModal } from '../components/modals/AuthModal';
 import { PricingModal } from '../components/modals/PricingModal';
-import { RefreshCw, Users, Globe, Copy, Check, Eye, EyeOff, LogIn, Cloud, Search } from 'lucide-react';
+import { calculateDaysActive } from '../utils/progressHelpers';
+import { RefreshCw, Users, Globe, Copy, Check, Eye, EyeOff, LogIn, Cloud, Search, Zap, Calendar, Flame } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,11 @@ interface CohortMemberEntry {
   is_anonymous?: boolean;
   solved_count: number;
   streak: number;
+  highest_streak?: number;
+  total_days_solved?: number;
+  days_active?: number;
   readiness_pct: number;
+  created_at?: string;
 }
 
 export const LeaderboardPage: React.FC = () => {
@@ -43,7 +48,7 @@ export const LeaderboardPage: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'solves' | 'streak' | 'readiness'>('solves');
+  const [sortBy, setSortBy] = useState<'solves' | 'streak' | 'highestStreak' | 'daysSolved' | 'daysActive' | 'readiness'>('solves');
 
   const {
     entries,
@@ -70,12 +75,27 @@ export const LeaderboardPage: React.FC = () => {
     }
     result.sort((a, b) => {
       if (sortBy === 'streak') {
-        return b.streak - a.streak || b.solved_count - a.solved_count;
+        return (b.streak || 0) - (a.streak || 0) || (b.solved_count || 0) - (a.solved_count || 0);
+      }
+      if (sortBy === 'highestStreak') {
+        const bestA = a.highest_streak || a.streak || 0;
+        const bestB = b.highest_streak || b.streak || 0;
+        return bestB - bestA || (b.solved_count || 0) - (a.solved_count || 0);
+      }
+      if (sortBy === 'daysSolved') {
+        const daysA = a.total_days_solved || (a.streak > 0 ? a.streak : 0);
+        const daysB = b.total_days_solved || (b.streak > 0 ? b.streak : 0);
+        return daysB - daysA || (b.solved_count || 0) - (a.solved_count || 0);
+      }
+      if (sortBy === 'daysActive') {
+        const actA = a.days_active || calculateDaysActive(a.created_at);
+        const actB = b.days_active || calculateDaysActive(b.created_at);
+        return actB - actA || (b.solved_count || 0) - (a.solved_count || 0);
       }
       if (sortBy === 'readiness') {
-        return b.readiness_pct - a.readiness_pct || b.solved_count - a.solved_count;
+        return (b.readiness_pct || 0) - (a.readiness_pct || 0) || (b.solved_count || 0) - (a.solved_count || 0);
       }
-      return b.solved_count - a.solved_count || b.streak - a.streak;
+      return (b.solved_count || 0) - (a.solved_count || 0) || (b.streak || 0) - (a.streak || 0);
     });
     return result;
   }, [entries, searchQuery, sortBy]);
@@ -84,6 +104,9 @@ export const LeaderboardPage: React.FC = () => {
     await syncStats({
       solvedCount: stats.solvedCount,
       streak: stats.streak,
+      highestStreak: stats.highestStreak,
+      totalDaysSolved: stats.totalDaysSolved,
+      daysActive: stats.daysActive,
       daysLeft: stats.daysLeft,
       oddsPercentage: stats.oddsPercentage,
       displayName: userProfile.name,
@@ -152,6 +175,9 @@ export const LeaderboardPage: React.FC = () => {
         tagline: userProfile.tagline || list[foundIdx].tagline,
         solved_count: Math.max(list[foundIdx].solved_count || 0, stats.solvedCount),
         streak: Math.max(list[foundIdx].streak || 0, stats.streak),
+        highest_streak: Math.max(list[foundIdx].highest_streak || 0, stats.highestStreak),
+        total_days_solved: Math.max(list[foundIdx].total_days_solved || 0, stats.totalDaysSolved),
+        days_active: Math.max(list[foundIdx].days_active || 0, stats.daysActive),
         readiness_pct: Math.max(list[foundIdx].readiness_pct || 0, stats.oddsPercentage),
       };
     } else {
@@ -163,17 +189,38 @@ export const LeaderboardPage: React.FC = () => {
         is_anonymous: false,
         solved_count: stats.solvedCount,
         streak: stats.streak,
+        highest_streak: stats.highestStreak,
+        total_days_solved: stats.totalDaysSolved,
+        days_active: stats.daysActive,
         readiness_pct: stats.oddsPercentage,
       });
     }
 
     return list.sort((a, b) => {
-      if (b.solved_count !== a.solved_count) {
-        return b.solved_count - a.solved_count;
+      if (sortBy === 'streak') {
+        return (b.streak || 0) - (a.streak || 0) || (b.solved_count || 0) - (a.solved_count || 0);
       }
-      return (b.streak || 0) - (a.streak || 0);
+      if (sortBy === 'highestStreak') {
+        const bestA = a.highest_streak || a.streak || 0;
+        const bestB = b.highest_streak || b.streak || 0;
+        return bestB - bestA || (b.solved_count || 0) - (a.solved_count || 0);
+      }
+      if (sortBy === 'daysSolved') {
+        const daysA = a.total_days_solved || (a.streak > 0 ? a.streak : 0);
+        const daysB = b.total_days_solved || (b.streak > 0 ? b.streak : 0);
+        return daysB - daysA || (b.solved_count || 0) - (a.solved_count || 0);
+      }
+      if (sortBy === 'daysActive') {
+        const actA = a.days_active || calculateDaysActive(a.created_at);
+        const actB = b.days_active || calculateDaysActive(b.created_at);
+        return actB - actA || (b.solved_count || 0) - (a.solved_count || 0);
+      }
+      if (sortBy === 'readiness') {
+        return (b.readiness_pct || 0) - (a.readiness_pct || 0) || (b.solved_count || 0) - (a.solved_count || 0);
+      }
+      return (b.solved_count || 0) - (a.solved_count || 0) || (b.streak || 0) - (a.streak || 0);
     });
-  }, [cohortEntries, authUser?.id, myEntry?.user_id, userProfile.name, userProfile.tagline, stats.solvedCount, stats.streak, stats.oddsPercentage]);
+  }, [cohortEntries, authUser?.id, myEntry?.user_id, userProfile.name, userProfile.tagline, stats.solvedCount, stats.streak, stats.highestStreak, stats.totalDaysSolved, stats.daysActive, stats.oddsPercentage, sortBy]);
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
@@ -239,9 +286,12 @@ export const LeaderboardPage: React.FC = () => {
             <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary font-mono text-xs py-1">
               Rank #{myRank || '—'}
             </Badge>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
               <strong className="text-foreground">{stats.solvedCount}</strong> solved ·{' '}
               <span className="text-amber-500 font-medium">🔥 {stats.streak}d streak</span> ·{' '}
+              <span className="text-orange-500 font-medium">⚡ {stats.highestStreak}d best</span> ·{' '}
+              <span className="text-foreground font-medium">📅 {stats.totalDaysSolved}d solved</span> ·{' '}
+              <span className="text-muted-foreground">Day {stats.daysActive}</span> ·{' '}
               <span className="text-primary font-semibold">{stats.oddsPercentage}% readiness</span>
             </span>
           </div>
@@ -322,49 +372,61 @@ export const LeaderboardPage: React.FC = () => {
 
             {/* Members table */}
             <Card className="shadow-xs border-border/60 overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="text-xs">
-                    <TableHead className="w-16">Rank</TableHead>
-                    <TableHead>Candidate</TableHead>
-                    <TableHead className="text-right">Solves</TableHead>
-                    <TableHead className="text-right">Streak</TableHead>
-                    <TableHead className="text-right">Readiness</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rankedCohortEntries.map((member, idx) => {
-                    const isMe = member.user_id === (authUser?.id || myEntry?.user_id) || member.id === 'me';
-                    return (
-                      <TableRow key={member.id || member.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
-                        <TableCell>{renderRankBadge(idx + 1)}</TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          <div className="flex items-center gap-2">
-                            <span>{member.is_anonymous ? 'Anonymous Grinder 🎭' : member.display_name}</span>
-                            {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
-                          </div>
-                          {member.tagline && !member.is_anonymous && (
-                            <div className="text-muted-foreground text-[11px] font-normal mt-0.5">
-                              {member.tagline}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-emerald-500 font-semibold">{member.solved_count}</TableCell>
-                        <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {member.streak}d</TableCell>
-                        <TableCell className="text-right font-mono text-primary font-semibold">{member.readiness_pct}%</TableCell>
-                      </TableRow>
-                    );
-                  })}
-
-                  {rankedCohortEntries.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-6 text-xs text-muted-foreground">
-                        {isCohortLoading ? 'Refreshing cohort standings...' : `No other batchmates yet. Share code "${activeCohort.code}" to compete together!`}
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="text-xs">
+                      <TableHead className="w-14">Rank</TableHead>
+                      <TableHead>Candidate</TableHead>
+                      <TableHead className="text-right">Solves</TableHead>
+                      <TableHead className="text-right">Active Streak</TableHead>
+                      <TableHead className="text-right" title="Highest consecutive solve streak recorded">Best Streak</TableHead>
+                      <TableHead className="text-right" title="Total unique calendar days with at least one solve">Days Solved</TableHead>
+                      <TableHead className="text-right" title="Total days since starting DSA preparation">DSA Journey</TableHead>
+                      <TableHead className="text-right">Readiness</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {rankedCohortEntries.map((member, idx) => {
+                      const isMe = member.user_id === (authUser?.id || myEntry?.user_id) || member.id === 'me';
+                      const bestStreak = isMe ? Math.max(member.highest_streak || 0, stats.highestStreak) : (member.highest_streak || member.streak || 0);
+                      const daysSolved = isMe ? Math.max(member.total_days_solved || 0, stats.totalDaysSolved) : (member.total_days_solved || (member.streak > 0 ? member.streak : 0));
+                      const daysActive = isMe ? Math.max(member.days_active || 0, stats.daysActive) : (member.days_active || calculateDaysActive(member.created_at));
+
+                      return (
+                        <TableRow key={member.id || member.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
+                          <TableCell>{renderRankBadge(idx + 1)}</TableCell>
+                          <TableCell className="font-medium text-foreground">
+                            <div className="flex items-center gap-2">
+                              <span>{member.is_anonymous ? 'Anonymous Grinder 🎭' : member.display_name}</span>
+                              {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
+                            </div>
+                            {member.tagline && !member.is_anonymous && (
+                              <div className="text-muted-foreground text-[11px] font-normal mt-0.5">
+                                {member.tagline}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-emerald-500 font-semibold">{member.solved_count}</TableCell>
+                          <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {member.streak}d</TableCell>
+                          <TableCell className="text-right font-mono text-orange-500 font-medium">⚡ {bestStreak}d</TableCell>
+                          <TableCell className="text-right font-mono text-foreground font-medium">📅 {daysSolved}d</TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">Day {daysActive}</TableCell>
+                          <TableCell className="text-right font-mono text-primary font-semibold">{member.readiness_pct}%</TableCell>
+                        </TableRow>
+                      );
+                    })}
+
+                    {rankedCohortEntries.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-6 text-xs text-muted-foreground">
+                          {isCohortLoading ? 'Refreshing cohort standings...' : `No other batchmates yet. Share code "${activeCohort.code}" to compete together!`}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </Card>
           </div>
         ) : (
@@ -455,65 +517,79 @@ export const LeaderboardPage: React.FC = () => {
               <span className="text-xs text-muted-foreground">Sort by:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'solves' | 'streak' | 'readiness')}
+                onChange={(e) => setSortBy(e.target.value as any)}
                 className="h-8.5 rounded-md border border-input bg-background px-2.5 text-xs text-foreground outline-none focus:border-ring"
               >
                 <option value="solves">Total Solves</option>
                 <option value="streak">Active Streak</option>
+                <option value="highestStreak">Highest Streak</option>
+                <option value="daysSolved">Total Days Solved</option>
+                <option value="daysActive">DSA Journey (Days Active)</option>
                 <option value="readiness">Readiness %</option>
               </select>
             </div>
           </div>
 
           <Card className="shadow-xs border-border/60 overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="text-xs">
-                  <TableHead className="w-16">Rank</TableHead>
-                  <TableHead>Candidate</TableHead>
-                  <TableHead className="text-right">Total Solves</TableHead>
-                  <TableHead className="text-right">Streak</TableHead>
-                  <TableHead className="text-right">Readiness</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEntries.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-12 text-xs text-muted-foreground">
-                      {searchQuery.trim()
-                        ? `No candidates match "${searchQuery}".`
-                        : isFetching
-                        ? 'Fetching live entries from cloud...'
-                        : 'No public leaderboard entries yet. Be the first to join above!'}
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="text-xs">
+                    <TableHead className="w-14">Rank</TableHead>
+                    <TableHead>Candidate</TableHead>
+                    <TableHead className="text-right">Total Solves</TableHead>
+                    <TableHead className="text-right">Active Streak</TableHead>
+                    <TableHead className="text-right" title="Highest consecutive solve streak recorded">Best Streak</TableHead>
+                    <TableHead className="text-right" title="Total unique calendar days with at least one solve">Days Solved</TableHead>
+                    <TableHead className="text-right" title="Total days since starting DSA preparation">DSA Journey</TableHead>
+                    <TableHead className="text-right">Readiness</TableHead>
                   </TableRow>
-                ) : (
-                  filteredEntries.map((entry, idx) => {
-                    const isMe = entry.user_id === myEntry?.user_id;
+                </TableHeader>
+                <TableBody>
+                  {filteredEntries.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-12 text-xs text-muted-foreground">
+                        {searchQuery.trim()
+                          ? `No candidates match "${searchQuery}".`
+                          : isFetching
+                          ? 'Fetching live entries from cloud...'
+                          : 'No public leaderboard entries yet. Be the first to join above!'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredEntries.map((entry, idx) => {
+                      const isMe = entry.user_id === myEntry?.user_id;
+                      const bestStreak = isMe ? Math.max(entry.highest_streak || 0, stats.highestStreak) : (entry.highest_streak || entry.streak || 0);
+                      const daysSolved = isMe ? Math.max(entry.total_days_solved || 0, stats.totalDaysSolved) : (entry.total_days_solved || (entry.streak > 0 ? entry.streak : 0));
+                      const daysActive = isMe ? Math.max(entry.days_active || 0, stats.daysActive) : (entry.days_active || calculateDaysActive(entry.created_at));
 
-                    return (
-                      <TableRow key={entry.id || entry.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
-                        <TableCell>{renderRankBadge(idx + 1)}</TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          <div className="flex items-center gap-2">
-                            <span>{entry.is_anonymous ? 'Anonymous Grinder 🎭' : entry.display_name}</span>
-                            {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
-                          </div>
-                          {entry.tagline && !entry.is_anonymous && (
-                            <div className="text-[11px] text-muted-foreground font-normal mt-0.5">
-                              {entry.tagline}
+                      return (
+                        <TableRow key={entry.id || entry.user_id} className={`text-xs ${isMe ? 'bg-primary/5 font-semibold' : ''}`}>
+                          <TableCell>{renderRankBadge(idx + 1)}</TableCell>
+                          <TableCell className="font-medium text-foreground">
+                            <div className="flex items-center gap-2">
+                              <span>{entry.is_anonymous ? 'Anonymous Grinder 🎭' : entry.display_name}</span>
+                              {isMe && <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">You</Badge>}
                             </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-emerald-500 font-semibold">{entry.solved_count}</TableCell>
-                        <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {entry.streak}d</TableCell>
-                        <TableCell className="text-right font-mono text-primary font-semibold">{entry.readiness_pct}%</TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                            {entry.tagline && !entry.is_anonymous && (
+                              <div className="text-[11px] text-muted-foreground font-normal mt-0.5">
+                                {entry.tagline}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-emerald-500 font-semibold">{entry.solved_count}</TableCell>
+                          <TableCell className="text-right font-mono text-amber-500 font-medium">🔥 {entry.streak}d</TableCell>
+                          <TableCell className="text-right font-mono text-orange-500 font-medium">⚡ {bestStreak}d</TableCell>
+                          <TableCell className="text-right font-mono text-foreground font-medium">📅 {daysSolved}d</TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">Day {daysActive}</TableCell>
+                          <TableCell className="text-right font-mono text-primary font-semibold">{entry.readiness_pct}%</TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </Card>
         </div>
       )}

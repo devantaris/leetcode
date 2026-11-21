@@ -56,6 +56,9 @@ ALTER TABLE public.placement_records ADD COLUMN IF NOT EXISTS contact_info TEXT 
 ALTER TABLE public.user_progress ADD COLUMN IF NOT EXISTS approach_notes TEXT DEFAULT '';
 ALTER TABLE public.user_progress ADD COLUMN IF NOT EXISTS is_flagged BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.user_progress ADD COLUMN IF NOT EXISTS difficulty TEXT DEFAULT 'Medium';
+ALTER TABLE public.leaderboard_entries ADD COLUMN IF NOT EXISTS highest_streak INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.leaderboard_entries ADD COLUMN IF NOT EXISTS total_days_solved INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.leaderboard_entries ADD COLUMN IF NOT EXISTS days_active INTEGER NOT NULL DEFAULT 0;
 
 -- 4. LEADERBOARD ENTRIES
 CREATE TABLE IF NOT EXISTS public.leaderboard_entries (
@@ -67,6 +70,9 @@ CREATE TABLE IF NOT EXISTS public.leaderboard_entries (
   is_anonymous   BOOLEAN NOT NULL DEFAULT FALSE,
   solved_count   INTEGER NOT NULL DEFAULT 0,
   streak         INTEGER NOT NULL DEFAULT 0,
+  highest_streak INTEGER NOT NULL DEFAULT 0,
+  total_days_solved INTEGER NOT NULL DEFAULT 0,
+  days_active    INTEGER NOT NULL DEFAULT 0,
   days_remaining INTEGER NOT NULL DEFAULT 0,
   readiness_pct  INTEGER NOT NULL DEFAULT 0,
   last_synced_at TIMESTAMPTZ NOT NULL DEFAULT now(),

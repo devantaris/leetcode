@@ -148,6 +148,9 @@ export interface LeaderboardEntry {
   is_anonymous: boolean;
   solved_count: number;
   streak: number;
+  highest_streak?: number;
+  total_days_solved?: number;
+  days_active?: number;
   days_remaining: number;
   readiness_pct: number;
   last_synced_at: string;

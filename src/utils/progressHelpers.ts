@@ -52,6 +52,69 @@ export function normalizeUserProfile(raw: any): UserProfile | null {
   };
 }
 
+/**
+ * Calculates the highest consecutive day streak from a list of date strings (YYYY-MM-DD).
+ * Accounts for rest day skips so the streak is not broken across scheduled rest days.
+ */
+export function calculateMaxStreak(dateStrings: string[], restDay: string = 'sunday'): number {
+  if (!dateStrings || dateStrings.length === 0) return 0;
+
+  const restDayNum = restDay === 'sunday' ? 0 : restDay === 'saturday' ? 6 : -1;
+  const uniqueDates = Array.from(new Set(dateStrings.filter(Boolean))).sort();
+  if (uniqueDates.length === 0) return 0;
+  if (uniqueDates.length === 1) return 1;
+
+  let maxStreak = 1;
+  let currentStreak = 1;
+
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const prevDate = new Date(uniqueDates[i - 1] + 'T00:00:00');
+    const currDate = new Date(uniqueDates[i] + 'T00:00:00');
+    const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      currentStreak++;
+    } else if (diffDays === 2) {
+      // Check if the single intermediate skipped day was a designated rest day
+      const intermediate = new Date(prevDate);
+      intermediate.setDate(intermediate.getDate() + 1);
+      if (intermediate.getDay() === restDayNum) {
+        currentStreak++;
+      } else {
+        currentStreak = 1;
+      }
+    } else {
+      currentStreak = 1;
+    }
+
+    if (currentStreak > maxStreak) {
+      maxStreak = currentStreak;
+    }
+  }
+
+  return maxStreak;
+}
+
+/**
+ * Calculates how many days a person has been doing DSA / practicing (1-indexed).
+ * If started today -> returns 1. If started 15 days ago -> returns 16.
+ */
+export function calculateDaysActive(startDateOrCreatedAt?: string | Date | null, now: Date = new Date()): number {
+  if (!startDateOrCreatedAt) return 1;
+  try {
+    const start = typeof startDateOrCreatedAt === 'string' ? new Date(startDateOrCreatedAt) : startDateOrCreatedAt;
+    if (isNaN(start.getTime())) return 1;
+
+    const startMidnight = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffMs = nowMidnight.getTime() - startMidnight.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(1, diffDays + 1);
+  } catch {
+    return 1;
+  }
+}
+
 export function generateUUID(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();

@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeUserProfile, computeCurrentDay, computeCatchUpQueue, generateUUID } from '../src/utils/progressHelpers';
+import { 
+  normalizeUserProfile, 
+  computeCurrentDay, 
+  computeCatchUpQueue, 
+  generateUUID,
+  calculateMaxStreak,
+  calculateDaysActive
+} from '../src/utils/progressHelpers';
 
 describe('progressHelpers unit test suite', () => {
   describe('normalizeUserProfile', () => {
@@ -140,6 +147,58 @@ describe('progressHelpers unit test suite', () => {
       const queue = computeCatchUpQueue({ p1: true, p2: true }, mockPlan, 3);
       expect(queue).toHaveLength(1);
       expect(queue[0].day).toBe(2);
+    });
+  });
+
+  describe('calculateMaxStreak', () => {
+    it('returns 0 for empty or invalid dates', () => {
+      expect(calculateMaxStreak([])).toBe(0);
+      expect(calculateMaxStreak([''])).toBe(0);
+    });
+
+    it('returns 1 for a single solve date', () => {
+      expect(calculateMaxStreak(['2026-11-01'])).toBe(1);
+    });
+
+    it('correctly calculates consecutive day streaks', () => {
+      const dates = ['2026-11-01', '2026-11-02', '2026-11-03', '2026-11-04'];
+      expect(calculateMaxStreak(dates)).toBe(4);
+    });
+
+    it('preserves streak across scheduled rest days (Sunday)', () => {
+      // 2026-11-07 is Saturday, 2026-11-08 is Sunday (rest day), 2026-11-09 is Monday
+      const dates = ['2026-11-07', '2026-11-09'];
+      expect(calculateMaxStreak(dates, 'sunday')).toBe(2);
+    });
+
+    it('breaks streak when non-rest days are skipped', () => {
+      // 2026-11-02 is Monday, 2026-11-04 is Wednesday (Tuesday was missed)
+      const dates = ['2026-11-02', '2026-11-04'];
+      expect(calculateMaxStreak(dates, 'sunday')).toBe(1);
+    });
+
+    it('finds the true max streak across multiple disjoint streaks', () => {
+      const dates = [
+        '2026-11-01', '2026-11-02', // streak of 2
+        '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-14', // streak of 5
+        '2026-11-20', // streak of 1
+      ];
+      expect(calculateMaxStreak(dates)).toBe(5);
+    });
+  });
+
+  describe('calculateDaysActive', () => {
+    it('returns 1 when date is null, undefined, or today', () => {
+      const today = new Date('2026-11-22T10:00:00');
+      expect(calculateDaysActive(null, today)).toBe(1);
+      expect(calculateDaysActive(undefined, today)).toBe(1);
+      expect(calculateDaysActive('2026-11-22', today)).toBe(1);
+    });
+
+    it('returns 1-indexed count of elapsed calendar days', () => {
+      const today = new Date('2026-11-22T12:00:00');
+      // From 2026-11-07 to 2026-11-22 is 15 calendar days difference -> 16th day
+      expect(calculateDaysActive('2026-11-07', today)).toBe(16);
     });
   });
 });
